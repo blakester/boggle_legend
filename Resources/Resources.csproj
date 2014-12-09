@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="Libraries\MySql.Data.dll" />
     <Content Include="Libraries\StringSocket.dll" />
     <Content Include="Libraries\StringSocketOfficial.dll" />
     <Content Include="Resources\dictionary.txt" />
