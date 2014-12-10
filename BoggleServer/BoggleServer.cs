@@ -30,7 +30,7 @@ namespace BB
         private TcpListener server; // Used to listen for player connections.
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
-        public static const string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
+        public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
             "uid=cs3500_blakeb;password=249827684";
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace BB
                     return GameId++;
                 }
             }
-            private set;
+            private set{}
         }
 
 
