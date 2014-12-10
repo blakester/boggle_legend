@@ -10,3 +10,8 @@ Keep an eye for:
 - Closing tcplistener and sockets
 - Upcassing all messages.
 
+
+Database Description
+Questions:
+
+

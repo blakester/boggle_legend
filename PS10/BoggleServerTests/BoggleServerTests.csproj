@@ -36,7 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="StringSocketOfficial">
-      <HintPath>..\Resources\Libraries\StringSocketOfficial.dll</HintPath>
+      <HintPath>X:\.win_my_documents\Visual Studio 2013\Projects\PS10\Resources\Libraries\StringSocketOfficial.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>

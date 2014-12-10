@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CustomNetworking;
 using System.Threading;
+using MySql.Data.MySqlClient;
 
 namespace BB
 {
@@ -29,6 +30,8 @@ namespace BB
         private TcpListener server; // Used to listen for player connections.
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
+        public static const string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
+            "uid=cs3500_blakeb;password=249827684";
 
         /// <summary>
         /// The length of a game in seconds.
@@ -54,6 +57,22 @@ namespace BB
 
 
         /// <summary>
+        /// .
+        /// </summary>
+        public static int GameId
+        { 
+            get
+            {
+                lock(new object())
+                {
+                    return GameId++;
+                }
+            }
+            private set;
+        }
+
+
+        /// <summary>
         /// Starts the server to begin listening for connections. Boggle
         /// games will use the settings specified in the command line
         /// arguments.
@@ -66,7 +85,7 @@ namespace BB
             // Initilize server
             BoggleServer BS = new BoggleServer(args);
             Console.Read(); //Keep Console window open.
-
+         
             // Closes TCPListener.
             if (BS.server != null)
                 BS.CloseServer();
@@ -135,6 +154,19 @@ namespace BB
             }
             else
                 CustomBoard = null;
+
+            using(MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                conn.Open();
+
+                MySqlCommand command = conn.CreateCommand();
+                command.CommandText = "SELECT COUNT(*) FROM Games";
+
+                using(MySqlDataReader reader = command.ExecuteReader())
+                {
+                    GameId = (int)command.ExecuteScalar();
+                }
+            }
 
             // Begin listening for connections on port 2000
             server = new TcpListener(IPAddress.Any, 2000);

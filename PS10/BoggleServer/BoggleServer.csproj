@@ -33,8 +33,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MySql.Data, Version=6.8.3.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>X:\.win_my_documents\Visual Studio 2013\Projects\PS10\Resources\Libraries\MySql.Data.dll</HintPath>
+    </Reference>
     <Reference Include="StringSocketOfficial">
-      <HintPath>..\Resources\Libraries\StringSocketOfficial.dll</HintPath>
+      <HintPath>X:\.win_my_documents\Visual Studio 2013\Projects\PS10\Resources\Libraries\StringSocketOfficial.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

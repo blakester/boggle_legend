@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CustomNetworking;
 using System.Threading;
 using System.Text.RegularExpressions;
+using MySql.Data.MySqlClient;
 
 namespace BB
 {
@@ -324,7 +325,129 @@ namespace BB
             // Send the messages
             one.Ss.BeginSend(playerOneStats, CloseSocket, one);
             two.Ss.BeginSend(playerTwoStats, CloseSocket, two);
+
+            UpdateDatabase();
         } // end private method End
+
+
+        
+        private void UpdateDatabase()
+        {
+            int gameId = BoggleServer.GameId;
+            using(MySqlConnection conn = new MySqlConnection(BoggleServer.connectionString))
+            {
+                conn.Open();
+                MySqlCommand command = conn.CreateCommand();
+
+                // Create command to insert player one's name into the Players table.
+                command.CommandText = "INSERT INTO Players(player_name) " +
+                    "VALUES (" + one.Name + ");";                
+
+                // Add command to insert player two's name into the Players table.
+                command.CommandText += "INSERT INTO Players(player_name) " +
+                    "VALUES (" + two.Name + ")";
+
+                // Execute the above commands.
+                command.ExecuteNonQuery();
+
+                command.CommandText = "SELECT * FROM Players WHERE player_name = " + one.Name +
+                    " OR player_name = " + two.Name;
+
+                // Get the IDs of player 1 and player 2
+                using(MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while(reader.Read())
+                    {
+                        if(reader["player_name"] == one.Name)                        
+                            one.Id = (int)reader["player_id"];
+                        else
+                            two.Id = (int)reader["player_id"];
+                    }
+                }
+
+                // Create command to insert game information into the Games table.
+                command.CommandText = "INSERT INTO Games(player_1_id, player_1_score, player_2_id, " +
+                    "player_2_score, board_config, time_limit) VALUES (" +
+                    one.Id + ", " +
+                    one.Score + ", " +
+                    two.Id + ", " +
+                    two.Score + ", " +
+                    board.ToString() + ", " +
+                    BoggleServer.GameLength;
+
+                // Execute the above command.
+                command.ExecuteNonQuery();
+
+                foreach(string word in one.LegalWords)
+                {
+                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+                        "VALUES (" + word + ", " +
+                        gameId + ", " +
+                        one.Id + ", " +
+                        0;                        
+                }
+
+                foreach (string word in two.LegalWords)
+                {
+                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+                        "VALUES (" + word + ", " +
+                        gameId + ", " +
+                        two.Id + ", " +
+                        0;
+                }
+
+                foreach (string word in one.IllegalWords)
+                {
+                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+                        "VALUES (" + word + ", " +
+                        gameId + ", " +
+                        one.Id + ", " +
+                        1;
+                }
+
+                foreach (string word in two.IllegalWords)
+                {
+                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+                        "VALUES (" + word + ", " +
+                        gameId + ", " +
+                        two.Id + ", " +
+                        1;
+                }
+
+                foreach (string word in one.SharedLegalWords)
+                {
+                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+                        "VALUES (" + word + ", " +
+                        gameId + ", " +
+                        one.Id + ", " +
+                        2;
+                }
+
+                foreach (string word in one.SharedLegalWords)
+                {
+                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+                        "VALUES (" + word + ", " +
+                        gameId + ", " +
+                        two.Id + ", " +
+                        2;
+                }
+
+                
+
+                
+                // RECORD
+                //1.the names and final scores of the two opponents
+
+                //2.the date and time at which the game ended
+
+                //3.the time limit that was used in the game
+
+                //4.the board that was used in the game
+
+                //5.and the five-part word summary that was reported to each client
+
+            }
+        }
 
 
         /// <summary>
