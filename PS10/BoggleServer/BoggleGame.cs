@@ -341,13 +341,18 @@ namespace BB
 
                 // Create command to insert player one's name into the Players table.
                 command.CommandText = "INSERT INTO Players(player_name) " +
-                    "VALUES (" + one.Name + ");";                
+                    "VALUES (@player_name)";
+                command.Parameters.Add("@player_name", one.Name);
+
+                // Execute the above command.
+                command.ExecuteNonQuery();
 
                 // Add command to insert player two's name into the Players table.
-                command.CommandText += "INSERT INTO Players(player_name) " +
-                    "VALUES (" + two.Name + ")";
+                command.CommandText = "INSERT INTO Players(player_name) " +
+                    "VALUES (@player_name)";
+                command.Parameters.Add("@player_name", two.Name);
 
-                // Execute the above commands.
+                // Execute the above command.
                 command.ExecuteNonQuery();
 
                 command.CommandText = "SELECT * FROM Players WHERE player_name = " + one.Name +
@@ -358,7 +363,7 @@ namespace BB
                 {
                     while(reader.Read())
                     {
-                        if(reader["player_name"] == one.Name)                        
+                        if((string)reader["player_name"] == one.Name)                        
                             one.Id = (int)reader["player_id"];
                         else
                             two.Id = (int)reader["player_id"];
