@@ -64,6 +64,12 @@ namespace BB
         { get; set; }
 
         /// <summary>
+        /// The player's database ID.
+        /// </summary>
+        public int Id
+        { get; set; }
+
+        /// <summary>
         /// Constructer to create player.
         /// </summary>
         /// <param name="s">players name</param>
