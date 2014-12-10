@@ -69,7 +69,7 @@ namespace BB
                     return gameId++;
                 }
             }
-            private set{}
+            private set { gameId = value; }
         }
 
 
