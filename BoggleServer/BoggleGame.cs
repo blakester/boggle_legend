@@ -342,21 +342,23 @@ namespace BB
                 // Create command to insert player one's name into the Players table.
                 command.CommandText = "INSERT INTO Players(player_name) " +
                     "VALUES (@player_name)";
-                command.Parameters.Add("@player_name", one.Name);
+                command.Prepare();
+                command.Parameters.AddWithValue("@player_name", one.Name);
 
                 // Execute the above command.
                 command.ExecuteNonQuery();
 
                 // Add command to insert player two's name into the Players table.
                 command.CommandText = "INSERT INTO Players(player_name) " +
-                    "VALUES (@player_name)";
-                command.Parameters.Add("@player_name", two.Name);
+                    "VALUES (@player2_name)";
+                command.Prepare();
+                command.Parameters.AddWithValue("@player2_name", two.Name);
 
                 // Execute the above command.
                 command.ExecuteNonQuery();
 
-                command.CommandText = "SELECT * FROM Players WHERE player_name = " + one.Name +
-                    " OR player_name = " + two.Name;
+                command.CommandText = "SELECT * FROM Players WHERE player_name='" + one.Name +
+                    "' OR player_name='" + two.Name + "'";
 
                 // Get the IDs of player 1 and player 2
                 using(MySqlDataReader reader = command.ExecuteReader())
