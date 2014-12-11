@@ -31,7 +31,7 @@ namespace BB
         private bool gameStart; // Is true when game starts, false otherwise.
         private readonly object playerlock; // Lock that protects Player while calculating scores.
 
-        
+
         /// <summary>
         /// Initializes a Boggle game with the specified Players.
         /// </summary>
@@ -56,7 +56,7 @@ namespace BB
 
             // Create a BoggleBoard with the specified
             // string of letters.  Random otherwise.
-            if (BoggleServer.CustomBoard == null)      
+            if (BoggleServer.CustomBoard == null)
                 board = new BoggleBoard();
             else
                 board = new BoggleBoard(BoggleServer.CustomBoard);
@@ -93,7 +93,7 @@ namespace BB
         /// the server and Player</param>
         private void WordSent(Exception e, object payload)
         {
-            if(e != null)
+            if (e != null)
             {
                 Terminate(e, payload);
             }
@@ -257,12 +257,12 @@ namespace BB
             two.Ss.BeginSend("TIME " + timeLeft + "\n", WordSent, two);
 
             // End the game if time is out.
-            if(timeLeft == 0)
+            if (timeLeft == 0)
             {
                 gameDone = true;
                 timer.Dispose();
                 End();
-            }     
+            }
         }
 
 
@@ -279,7 +279,7 @@ namespace BB
             // Notify the remaining Player.
             Player dead = (Player)payload;
             CloseSocket(null, payload);
-            if(dead.Opponent.Ss.Connected)
+            if (dead.Opponent.Ss.Connected)
                 dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent);
 
         }
@@ -330,47 +330,57 @@ namespace BB
         } // end private method End
 
 
-        
+
         private void UpdateDatabase()
         {
+            // Get this game's unique ID.
             int gameId = BoggleServer.GameId;
-            using(MySqlConnection conn = new MySqlConnection(BoggleServer.connectionString))
+
+            // Create a connection to the database specified in connectionString.
+            using (MySqlConnection conn = new MySqlConnection(BoggleServer.connectionString))
             {
                 conn.Open();
                 MySqlCommand command = conn.CreateCommand();
 
+                // WHAT HAPPENS IF NAME IS ALREADY IN Players?
                 // Create command to insert player one's name into the Players table.
                 command.CommandText = "INSERT INTO Players(player_name) " +
-                    "VALUES (@player_name)";
-                command.Prepare();
-                command.Parameters.AddWithValue("@player_name", one.Name);
+                    "VALUES (@player1_name)";
+                command.Prepare();               
+                command.Parameters.AddWithValue("@player1_name", one.Name);
+
+                // DO WE NEED THESE EXECUTES IN A "using"? LECT 24 SLIDE 8                 
+                // Execute the above command.
                 try
                 {
-                    // Execute the above command.
                     command.ExecuteNonQuery();
                 }
                 catch (MySqlException e) { }
 
-                // Add command to insert player two's name into the Players table.
+                // Create command to insert player two's name into the Players table.
                 command.CommandText = "INSERT INTO Players(player_name) " +
                     "VALUES (@player2_name)";
                 command.Prepare();
                 command.Parameters.AddWithValue("@player2_name", two.Name);
+
+                // Execute the above command.
                 try
                 {
-                    // Execute the above command.
                     command.ExecuteNonQuery();
                 }
                 catch (MySqlException e) { }
 
+                // Create command to select the rows of player one or player two,
+                // if their names already exist in the Players table.
                 command.CommandText = "SELECT * FROM Players WHERE player_name='" + one.Name +
                     "' OR player_name='" + two.Name + "'";
-                // Get the IDs of player 1 and player 2
-                using(MySqlDataReader reader = command.ExecuteReader())
+
+                // Get the IDs of player 1 and player 2.
+                using (MySqlDataReader reader = command.ExecuteReader())
                 {
-                    while(reader.Read())
+                    while (reader.Read())
                     {
-                        if((string)reader["player_name"] == one.Name)                        
+                        if ((string)reader["player_name"] == one.Name)
                             one.Id = (int)reader["player_id"];
                         else
                             two.Id = (int)reader["player_id"];
@@ -392,7 +402,7 @@ namespace BB
                 // Execute the above command.
                 command.ExecuteNonQuery();
 
-                foreach(string word in one.LegalWords)
+                foreach (string word in one.LegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
                         "VALUES (@word0, @gameid, @playerid, @type0)";
@@ -403,7 +413,6 @@ namespace BB
                     command.Parameters.AddWithValue("@type0", 0);
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
-                    
 
                 }
 
@@ -419,8 +428,6 @@ namespace BB
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
 
-
-
                 }
 
                 foreach (string word in one.IllegalWords)
@@ -434,7 +441,6 @@ namespace BB
                     command.Parameters.AddWithValue("@type3", 1);
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
-
 
                 }
 
@@ -450,7 +456,6 @@ namespace BB
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
 
-
                 }
 
                 foreach (string word in one.SharedLegalWords)
@@ -464,7 +469,6 @@ namespace BB
                     command.Parameters.AddWithValue("@type4", 2);
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
-
 
                 }
 
@@ -482,9 +486,9 @@ namespace BB
 
                 }
 
-                
 
-                
+
+
                 // RECORD
                 //1.the names and final scores of the two opponents
 
@@ -497,7 +501,7 @@ namespace BB
                 //5.and the five-part word summary that was reported to each client
 
             }
-        }
+        } // end private UpdateDatabase
 
 
         /// <summary>
@@ -510,11 +514,12 @@ namespace BB
         private string SetToString(HashSet<string> set)
         {
             string temp = " " + set.Count;
-            foreach(string s in set)
+            foreach (string s in set)
             {
                 temp += " " + s;
             }
             return temp;
         }
+
     } // end class BoggleGame
 } // end namespace BB
