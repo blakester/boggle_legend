@@ -335,7 +335,7 @@ namespace BB
         {
 
             // Get this game's unique ID.
-            int gameId = BoggleServer.gameId;
+            int gameId = BoggleServer.gameId++;
 
             // Create a connection to the database specified in connectionString.
             using (MySqlConnection conn = new MySqlConnection(BoggleServer.connectionString))
