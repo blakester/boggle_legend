@@ -32,7 +32,7 @@ namespace BB
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
         public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
             "uid=cs3500_blakeb;password=249827684";
-        private static int gameId;
+        public static int gameId;
 
         /// <summary>
         /// The length of a game in seconds.
@@ -60,17 +60,17 @@ namespace BB
         /// <summary>
         /// .
         /// </summary>
-        public static int GameId
-        { 
-            get
-            {
-                lock(new object())
-                {
-                    return gameId++;
-                }
-            }
-            private set { gameId = value; }
-        }
+        //public static int GameId
+        //{ 
+        //    get
+        //    {
+        //        lock(new object())
+        //        {
+        //            return gameId++;
+        //        }
+        //    }
+        //    private set { gameId = value; }
+        //}
 
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace BB
                 MySqlCommand command = conn.CreateCommand();
                 command.CommandText = "SELECT COUNT(*) FROM Games";
                 
-                GameId = Convert.ToInt32(command.ExecuteScalar());                
+                gameId = Convert.ToInt32(command.ExecuteScalar());                
             }
 
             // Begin listening for connections on port 2000
