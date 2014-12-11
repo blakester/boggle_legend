@@ -342,14 +342,12 @@ namespace BB
                 conn.Open();
                 MySqlCommand command = conn.CreateCommand();
 
-                // WHAT HAPPENS IF NAME IS ALREADY IN Players?
-                // Create command to insert player one's name into the Players table.
+                // Create command to insert player 1's name into the Players table.
                 command.CommandText = "INSERT INTO Players(player_name) " +
                     "VALUES (@player1_name)";
                 command.Prepare();               
                 command.Parameters.AddWithValue("@player1_name", one.Name);
-
-                // DO WE NEED THESE EXECUTES IN A "using"? LECT 24 SLIDE 8                 
+                 
                 // Execute the above command.
                 try
                 {
@@ -357,7 +355,7 @@ namespace BB
                 }
                 catch (MySqlException e) { }
 
-                // Create command to insert player two's name into the Players table.
+                // Create command to insert player 2's name into the Players table.
                 command.CommandText = "INSERT INTO Players(player_name) " +
                     "VALUES (@player2_name)";
                 command.Prepare();
@@ -370,12 +368,11 @@ namespace BB
                 }
                 catch (MySqlException e) { }
 
-                // Create command to select the rows of player one or player two,
-                // if their names already exist in the Players table.
+                // Create command to select the rows of player one and player two.
                 command.CommandText = "SELECT * FROM Players WHERE player_name='" + one.Name +
                     "' OR player_name='" + two.Name + "'";
 
-                // Get the IDs of player 1 and player 2.
+                // Execute above command and get the IDs of player 1 and player 2.
                 using (MySqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -390,7 +387,6 @@ namespace BB
                 // Create command to insert game information into the Games table.
                 command.CommandText = "INSERT INTO Games(player_1_id, player_1_score, player_2_id, " +
                     "player_2_score, board_config, time_limit) VALUES (@p1id, @p1s, @p2id, @p2s, @board, @time)";
-
                 command.Prepare();
                 command.Parameters.AddWithValue("@p1id", one.Id);
                 command.Parameters.AddWithValue("@p1s", one.Score);
@@ -402,6 +398,7 @@ namespace BB
                 // Execute the above command.
                 command.ExecuteNonQuery();
 
+                // Insert each legal word from player 1 into the Words table.
                 foreach (string word in one.LegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
@@ -416,6 +413,7 @@ namespace BB
 
                 }
 
+                // Insert each legal word from player 2 into the Words table.
                 foreach (string word in two.LegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
@@ -430,6 +428,7 @@ namespace BB
 
                 }
 
+                // Insert each illegal word from player 1 into the Words table.
                 foreach (string word in one.IllegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
@@ -444,6 +443,7 @@ namespace BB
 
                 }
 
+                // Insert each illegal word from player 2 into the Words table.
                 foreach (string word in two.IllegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
@@ -458,6 +458,7 @@ namespace BB
 
                 }
 
+                // Insert each shared word from player 1 into the Words table.
                 foreach (string word in one.SharedLegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
@@ -472,6 +473,7 @@ namespace BB
 
                 }
 
+                // Insert each shared word from player 2 into the Words table.
                 foreach (string word in one.SharedLegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +

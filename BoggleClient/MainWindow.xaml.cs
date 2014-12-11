@@ -62,7 +62,7 @@ namespace BoggleClient
                 if (playerTextBox.Text == "")
                 {
                     infoBox.Text = "Name cannot be empty...\n\n"
-                        + "Enter your name and server IP Adress then press Connect to play."; 
+                        + "Enter your name and server IP Address then press Connect to play."; 
                     return;
                 }
 
@@ -78,7 +78,7 @@ namespace BoggleClient
                 // Gets GUI elemtents ready for connection
                 infoBox.Visibility = System.Windows.Visibility.Visible;
                 infoBox.Text = "You have quit the game...\n\n"
-                    + "Enter your name and server IP Adress then press Connect to play.";
+                    + "Enter your name and server IP Address then press Connect to play.";
                 model.Terminate(false);
                 playerTextBox.IsEnabled = true;
                 serverTextBox.IsEnabled = true;            
@@ -135,11 +135,11 @@ namespace BoggleClient
                 // If player disconnected from server.
                 if(opponentDisconnect)
                     infoBox.Text = "Your opponent has fled...\n\n"
-                        + "Enter your name and server IP Adress then press Connect to play.";
+                        + "Enter your name and server IP Address then press Connect to play.";
                 // If connection with server was lost unwillingly.
                 else
                     infoBox.Text = "The connection to server was lost.\n\n"
-                        + "Enter your name and server IP Adress then press Connect to play.";
+                        + "Enter your name and server IP Address then press Connect to play.";
 
                 infoBox.Visibility = System.Windows.Visibility.Visible;
             }
@@ -337,8 +337,8 @@ namespace BoggleClient
         private void GameSocketFailHelper()
         {
             infoBox.Text = infoBox.Text = "Unable to connect to server.  Ensure you have"
-                + " entered the IP Adress correctly.\n\n"
-                + "Enter your name and server IP Adress then press Connect to play.";
+                + " entered the IP Address correctly.\n\n"
+                + "Enter your name and server IP Address then press Connect to play.";
         }
     }
 }
