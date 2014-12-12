@@ -212,24 +212,63 @@ namespace BB
                 return;
             }
 
-            if(Regex.IsMatch(request, @"^(GET /players)"))
-            {
-                
-            }
-            else if(Regex.IsMatch(request, @"^(GET /games\?player=)"))
-            {
-                
-            }
-            else if(Regex.IsMatch(request, @"^(GET /game\?id=)"))
-            {
+            string stringPattern1 = @"^(GET /players)";
+            string stringPattern2 = @"^(GET /games\?player=)";
+            string stringPattern3 = @"^(GET /game\?id=)";
+            
 
+            if(Regex.IsMatch(request, stringPattern1))
+            {
+                MainPage();
+            }
+            else if(Regex.IsMatch(request, stringPattern2))
+            {
+                string temp = request.Substring(18, request.Length - 9);
+                PlayerPage(temp);
+
+            }
+            else if(Regex.IsMatch(request, stringPattern3))
+            {
+                string temp = request.Substring(13, request.Length - 9);
+                GamePage(temp);
             }
             else
             {
-
+                ErrorPage();
             }
             
         }
+
+        private void MainPage()
+        {
+
+        }
+
+        private void PlayerPage(String player)
+        {
+            string page = "";
+
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                conn.Open();
+
+                MySqlCommand command = conn.CreateCommand();
+                command.CommandText = "SELECT * FROM Players";
+
+                
+            }
+        }
+
+        private void GamePage(string game)
+        {
+
+        }
+
+        private void ErrorPage()
+        {
+
+        }
+
 
         /// <summary>
         /// Called when a message has been received through
