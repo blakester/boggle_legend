@@ -28,12 +28,12 @@ namespace BB
     public class BoggleServer
     {
         private TcpListener server; // Used to listen for player connections.
-        private TcpListener webServer;
+        private TcpListener webServer; // Used to listen for web page requests.
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
         public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
-            "uid=cs3500_blakeb;password=249827684";
-        public static int gameId;
+            "uid=cs3500_blakeb;password=249827684"; // Used to connect to database.
+        public static int gameId; // Used to give games a unique ID
 
         /// <summary>
         /// The length of a game in seconds.
@@ -56,22 +56,6 @@ namespace BB
         /// </summary>
         public static string CustomBoard
         { get; private set; }
-
-
-        /// <summary>
-        /// .
-        /// </summary>
-        //public static int GameId
-        //{ 
-        //    get
-        //    {
-        //        lock(new object())
-        //        {
-        //            return gameId++;
-        //        }
-        //    }
-        //    private set { gameId = value; }
-        //}
 
 
         /// <summary>
@@ -157,6 +141,7 @@ namespace BB
             else
                 CustomBoard = null;
 
+            // Updates server gameId to match the count in database.
             using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
                 conn.Open();
@@ -167,15 +152,18 @@ namespace BB
                 gameId = Convert.ToInt32(command.ExecuteScalar());
             }
 
-            // Begin listening for connections on port 2000
+            // Begin listening for game connections on port 2000
             server = new TcpListener(IPAddress.Any, 2000);
             server.Start();
+
+            // Begin listening for webpage connection on port 2500
             webServer = new TcpListener(IPAddress.Any, 2500);
             webServer.Start();
+
             server.BeginAcceptSocket(ConnectionRequested, null);
             webServer.BeginAcceptSocket(WebRequested, null);
 
-        }// end constructor
+        }
 
 
         /// <summary>
@@ -211,18 +199,6 @@ namespace BB
                 ((StringSocket)payload).Close();
                 return;
             }
-
-
-
-            //StringSocket ss = (StringSocket)payload;
-
-            //ss.BeginSend("HTTP/1.1 200 OK\r\n" +
-            //"Connection: close\r\n" +
-            //"Content-Type: text/html; charset=UTF-8\r\n" +
-            //"\r\n" +
-            //"<!DOCTYPE html><html><body><h1>My First Heading</h1><p>My first paragraph.</p></body></html>", (ex, o) => { }, null);
-
-            //ss.Close();
 
             string stringPattern1 = @"^(GET /players)";
             string stringPattern2 = @"^(GET /games\?player=)";
@@ -274,8 +250,6 @@ namespace BB
             StringSocket ss = (StringSocket)payload;
             Dictionary<int ,string> players = new Dictionary<int,string>();
             
-
-
             using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
                 conn.Open();
@@ -331,7 +305,6 @@ namespace BB
                     }
 
                     page += "<tr><td>" + player.Value + "</td><td>" + win + "</td><td>" + loss + "</td><td>" + tie + "</td></tr>";
-                    //page += name + ": Wins (" + win + ") Losses (" + loss + ") Ties (" + tie + ")<br>";
                 }
 
             }
@@ -500,7 +473,7 @@ namespace BB
 
         private void ErrorPage()
         {
-
+            // Send html back Explaining error and explain valid options
         }
 
 
