@@ -87,7 +87,7 @@ namespace BB
             // Initilize server
             BoggleServer BS = new BoggleServer(args);
             Console.Read(); //Keep Console window open.
-         
+
             // Closes TCPListener.
             if (BS.server != null)
                 BS.CloseServer();
@@ -157,14 +157,14 @@ namespace BB
             else
                 CustomBoard = null;
 
-            using(MySqlConnection conn = new MySqlConnection(connectionString))
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
                 conn.Open();
 
                 MySqlCommand command = conn.CreateCommand();
                 command.CommandText = "SELECT COUNT(*) FROM Games";
-                
-                gameId = Convert.ToInt32(command.ExecuteScalar());                
+
+                gameId = Convert.ToInt32(command.ExecuteScalar());
             }
 
             // Begin listening for connections on port 2000
@@ -206,7 +206,7 @@ namespace BB
 
         private void SendPage(string request, Exception e, object payload)
         {
-            if(e != null || request == null)
+            if (e != null || request == null)
             {
                 ((StringSocket)payload).Close();
                 return;
@@ -214,34 +214,32 @@ namespace BB
 
 
 
-            StringSocket ss = (StringSocket)payload;
+            //StringSocket ss = (StringSocket)payload;
 
-            ss.BeginSend("HTTP/1.1 200 OK\r\n" +
-            "Connection: close\r\n" +
-            "Content-Type: text/html; charset=UTF-8\r\n" +
-            "\r\n" +
-            "<!DOCTYPE html><html><body><h1>My First Heading</h1><p>My first paragraph.</p></body></html>", (ex,o) => { }, null);
-            
-            ss.Close();           
+            //ss.BeginSend("HTTP/1.1 200 OK\r\n" +
+            //"Connection: close\r\n" +
+            //"Content-Type: text/html; charset=UTF-8\r\n" +
+            //"\r\n" +
+            //"<!DOCTYPE html><html><body><h1>My First Heading</h1><p>My first paragraph.</p></body></html>", (ex, o) => { }, null);
 
-
+            //ss.Close();
 
             string stringPattern1 = @"^(GET /players)";
             string stringPattern2 = @"^(GET /games\?player=)";
             string stringPattern3 = @"^(GET /game\?id=)";
-            
 
-            if(Regex.IsMatch(request, stringPattern1))
+
+            if (Regex.IsMatch(request, stringPattern1))
             {
-                MainPage();
+                MainPage(payload);
             }
-            else if(Regex.IsMatch(request, stringPattern2))
+            else if (Regex.IsMatch(request, stringPattern2))
             {
                 string temp = request.Substring(18, request.Length - 9);
                 PlayerPage(temp);
 
             }
-            else if(Regex.IsMatch(request, stringPattern3))
+            else if (Regex.IsMatch(request, stringPattern3))
             {
                 string temp = request.Substring(13, request.Length - 9);
                 GamePage(temp);
@@ -250,12 +248,94 @@ namespace BB
             {
                 ErrorPage();
             }
-            
+
         }
 
-        private void MainPage()
+        private void MainPage(object payload)
         {
+            string page = "HTTP/1.1 200 OK\r\n" +
+            "Connection: close\r\n" +
+            "Content-Type: text/html; charset=UTF-8\r\n" +
+            "\r\n" +
+            "<!DOCTYPE html><html>" +
+            "<style>" +
+                "table { width:500px; }" +
+                "table, th, td { border: 1px solid black; border-collapse: collapse; }" +
+                "th, td { padding: 5px; text-align: left; }" +
+                "table#t01 tr:nth-child(even) { background-color: #eee; }" +
+                "table#t01 tr:nth-child(odd) { background-color: #fff; }" +
+                "table#t01 th { background-color: black; color: white; }" +
+            "</style>" +
+            "<body><h1>Player Standings</h1><table id='t01'>" +
+            "<tr><th>Player Name</th><th>Wins</th><th>Losses</th><th>Ties</th></tr>";
 
+            StringSocket ss = (StringSocket)payload;
+            Dictionary<int ,string> players = new Dictionary<int,string>();
+            
+
+
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                conn.Open();
+
+                MySqlCommand command = conn.CreateCommand();
+                command.CommandText = "SELECT * FROM Players";
+
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        players.Add((int)reader["player_id"], (string)reader["player_name"]);
+                    }
+                }
+
+                foreach(KeyValuePair<int, string> player in players)
+                {
+                    int win = 0;
+                    int loss = 0;
+                    int tie = 0;
+                    command.Parameters.Clear();
+                    command.CommandText = "SELECT * FROM Games WHERE player_1_id = @id";
+                    command.Prepare();
+                    command.Parameters.AddWithValue("id", player.Key);
+                    using (MySqlDataReader reader2 = command.ExecuteReader())
+                    {
+                        while (reader2.Read())
+                        {
+                            if ((int)reader2["player_1_score"] > (int)reader2["player_2_score"])
+                                win++;
+                            else if ((int)reader2["player_1_score"] < (int)reader2["player_2_score"])
+                                loss++;
+                            else
+                                tie++;
+                        }
+                    }
+
+                    command.Parameters.Clear();
+                    command.CommandText = "SELECT * FROM Games WHERE player_2_id = @id";
+                    command.Prepare();
+                    command.Parameters.AddWithValue("id", player.Key);
+                    using (MySqlDataReader reader2 = command.ExecuteReader())
+                    {
+                        while (reader2.Read())
+                        {
+                            if ((int)reader2["player_2_score"] > (int)reader2["player_1_score"])
+                                win++;
+                            else if ((int)reader2["player_2_score"] < (int)reader2["player_1_score"])
+                                loss++;
+                            else
+                                tie++;
+                        }
+                    }
+
+                    page += "<tr><td>" + player.Value + "</td><td>" + win + "</td><td>" + loss + "</td><td>" + tie + "</td></tr>";
+                    //page += name + ": Wins (" + win + ") Losses (" + loss + ") Ties (" + tie + ")<br>";
+                }
+
+            }
+
+            page += "</p></body></html>";
+            ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
         }
 
         private void PlayerPage(String player)
@@ -269,7 +349,7 @@ namespace BB
                 MySqlCommand command = conn.CreateCommand();
                 command.CommandText = "SELECT * FROM Players";
 
-                
+
             }
         }
 
@@ -316,8 +396,8 @@ namespace BB
                     {
                         // Null if first player, non-null if second player.
                         if (firstPlayer == null)
-                            firstPlayer = thisPlayer; 
-      
+                            firstPlayer = thisPlayer;
+
                         // We have two players, so start a game between them
                         // in it's own thread so the lock can be released asap.
                         else
