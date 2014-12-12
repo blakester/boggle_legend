@@ -347,7 +347,7 @@ namespace BB
                 command.CommandText = "INSERT INTO Players(player_name) " +
                     "VALUES (@player1_name)";
                 command.Prepare();               
-                command.Parameters.AddWithValue("@player1_name", one.Name);
+                command.Parameters.AddWithValue("player1_name", one.Name);
                  
                 // Execute the above command.
                 try
@@ -360,7 +360,7 @@ namespace BB
                 command.CommandText = "INSERT INTO Players(player_name) " +
                     "VALUES (@player2_name)";
                 command.Prepare();
-                command.Parameters.AddWithValue("@player2_name", two.Name);
+                command.Parameters.AddWithValue("player2_name", two.Name);
 
                 // Execute the above command.
                 try
@@ -389,12 +389,12 @@ namespace BB
                 command.CommandText = "INSERT INTO Games(player_1_id, player_1_score, player_2_id, " +
                     "player_2_score, board_config, time_limit) VALUES (@p1id, @p1s, @p2id, @p2s, @board, @time)";
                 command.Prepare();
-                command.Parameters.AddWithValue("@p1id", one.Id);
-                command.Parameters.AddWithValue("@p1s", one.Score);
-                command.Parameters.AddWithValue("@p2id", two.Id);
-                command.Parameters.AddWithValue("@p2s", two.Score);
-                command.Parameters.AddWithValue("@board", board.ToString());
-                command.Parameters.AddWithValue("@time", BoggleServer.GameLength.ToString());
+                command.Parameters.AddWithValue("p1id", one.Id);
+                command.Parameters.AddWithValue("p1s", one.Score);
+                command.Parameters.AddWithValue("p2id", two.Id);
+                command.Parameters.AddWithValue("p2s", two.Score);
+                command.Parameters.AddWithValue("board", board.ToString());
+                command.Parameters.AddWithValue("time", BoggleServer.GameLength.ToString());
 
                 // Execute the above command.
                 command.ExecuteNonQuery();
@@ -403,12 +403,12 @@ namespace BB
                 foreach (string word in one.LegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word0, @gameid, @playerid, @type0)";
+                        "VALUES (@word, @gameid, @playerid, @type)";
                     command.Prepare();
-                    command.Parameters.AddWithValue("@word0", word);
-                    command.Parameters.AddWithValue("@gameid", gameId);
-                    command.Parameters.AddWithValue("@playerid", one.Id);
-                    command.Parameters.AddWithValue("@type0", 0);
+                    command.Parameters.AddWithValue("word", word);
+                    command.Parameters.AddWithValue("gameid", gameId);
+                    command.Parameters.AddWithValue("playerid", one.Id);
+                    command.Parameters.AddWithValue("type", 0);
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
 
@@ -418,12 +418,12 @@ namespace BB
                 foreach (string word in two.LegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word2, @gameid, @playerid, @type2)";
+                        "VALUES (@word, @gameid, @playerid, @type)";
                     command.Prepare();
-                    command.Parameters.AddWithValue("@word2", word);
-                    command.Parameters.AddWithValue("@gameid", gameId);
-                    command.Parameters.AddWithValue("@playerid", two.Id);
-                    command.Parameters.AddWithValue("type2", 0);
+                    command.Parameters.AddWithValue("word", word);
+                    command.Parameters.AddWithValue("gameid", gameId);
+                    command.Parameters.AddWithValue("playerid", two.Id);
+                    command.Parameters.AddWithValue("type", 0);
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
 
@@ -433,12 +433,12 @@ namespace BB
                 foreach (string word in one.IllegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word3, @gameid, @playerid, @type3)";
+                        "VALUES (@word, @gameid, @playerid, @type)";
                     command.Prepare();
-                    command.Parameters.AddWithValue("@word3", word);
-                    command.Parameters.AddWithValue("@gameid", gameId);
-                    command.Parameters.AddWithValue("@playerid", one.Id);
-                    command.Parameters.AddWithValue("@type3", 1);
+                    command.Parameters.AddWithValue("word", word);
+                    command.Parameters.AddWithValue("gameid", gameId);
+                    command.Parameters.AddWithValue("playerid", one.Id);
+                    command.Parameters.AddWithValue("type", 1);
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
 
@@ -448,12 +448,12 @@ namespace BB
                 foreach (string word in two.IllegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word4, @gameid, @playerid, @type4)";
+                        "VALUES (@word, @gameid, @playerid, @type)";
                     command.Prepare();
-                    command.Parameters.AddWithValue("@word4", word);
-                    command.Parameters.AddWithValue("@gameid", gameId);
-                    command.Parameters.AddWithValue("@playerid", two.Id);
-                    command.Parameters.AddWithValue("@type4", 1);
+                    command.Parameters.AddWithValue("word", word);
+                    command.Parameters.AddWithValue("gameid", gameId);
+                    command.Parameters.AddWithValue("playerid", two.Id);
+                    command.Parameters.AddWithValue("type", 1);
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
 
@@ -463,12 +463,12 @@ namespace BB
                 foreach (string word in one.SharedLegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word4, @gameid, @playerid, @type4)";
+                        "VALUES (@word, @gameid, @playerid, @type)";
                     command.Prepare();
-                    command.Parameters.AddWithValue("@word4", word);
-                    command.Parameters.AddWithValue("@gameid", gameId);
-                    command.Parameters.AddWithValue("@playerid", one.Id);
-                    command.Parameters.AddWithValue("@type4", 2);
+                    command.Parameters.AddWithValue("word", word);
+                    command.Parameters.AddWithValue("gameid", gameId);
+                    command.Parameters.AddWithValue("playerid", one.Id);
+                    command.Parameters.AddWithValue("type", 2);
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
 
@@ -478,12 +478,12 @@ namespace BB
                 foreach (string word in one.SharedLegalWords)
                 {
                     command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word5, @gameid, @playerid, @type5)";
+                        "VALUES (@word, @gameid, @playerid, @type)";
                     command.Prepare();
-                    command.Parameters.AddWithValue("@word5", word);
-                    command.Parameters.AddWithValue("@gameid", gameId);
-                    command.Parameters.AddWithValue("@playerid", two.Id);
-                    command.Parameters.AddWithValue("@type5", 2);
+                    command.Parameters.AddWithValue("word", word);
+                    command.Parameters.AddWithValue("gameid", gameId);
+                    command.Parameters.AddWithValue("playerid", two.Id);
+                    command.Parameters.AddWithValue("type", 2);
                     command.ExecuteNonQuery();
                     command.Parameters.Clear();
 
