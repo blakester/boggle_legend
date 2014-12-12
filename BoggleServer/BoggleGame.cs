@@ -335,7 +335,7 @@ namespace BB
         {
 
             // Get this game's unique ID.
-            int gameId = BoggleServer.gameId++;
+            int gameId = ++BoggleServer.gameId;
 
             // Create a connection to the database specified in connectionString.
             using (MySqlConnection conn = new MySqlConnection(BoggleServer.connectionString))
@@ -488,21 +488,6 @@ namespace BB
                     command.Parameters.Clear();
 
                 }
-
-
-
-
-                // RECORD
-                //1.the names and final scores of the two opponents
-
-                //2.the date and time at which the game ended
-
-                //3.the time limit that was used in the game
-
-                //4.the board that was used in the game
-
-                //5.and the five-part word summary that was reported to each client
-
             }
         } // end private UpdateDatabase
 
