@@ -28,6 +28,7 @@ namespace BB
     public class BoggleServer
     {
         private TcpListener server; // Used to listen for player connections.
+        private TcpListener webServer;
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
         public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
@@ -169,7 +170,10 @@ namespace BB
             // Begin listening for connections on port 2000
             server = new TcpListener(IPAddress.Any, 2000);
             server.Start();
+            webServer = new TcpListener(IPAddress.Any, 2500);
+            webServer.Start();
             server.BeginAcceptSocket(ConnectionRequested, null);
+            webServer.BeginAcceptSocket(WebRequested, null);
 
         }// end constructor
 
@@ -190,6 +194,42 @@ namespace BB
             server.BeginAcceptSocket(ConnectionRequested, null);
         }
 
+        private void WebRequested(IAsyncResult result)
+        {
+            Socket s = webServer.EndAcceptSocket(result);
+            StringSocket ss = new StringSocket(s, Encoding.UTF8);
+            ss.BeginReceive(SendPage, ss);
+
+            webServer.BeginAcceptSocket(WebRequested, null);
+        }
+
+
+        private void SendPage(string request, Exception e, object payload)
+        {
+            if(e != null || request == null)
+            {
+                ((StringSocket)payload).Close();
+                return;
+            }
+
+            if(Regex.IsMatch(request, @"^(GET /players)"))
+            {
+                
+            }
+            else if(Regex.IsMatch(request, @"^(GET /games\?player=)"))
+            {
+                
+            }
+            else if(Regex.IsMatch(request, @"^(GET /game\?id=)"))
+            {
+
+            }
+            else
+            {
+
+            }
+            
+        }
 
         /// <summary>
         /// Called when a message has been received through
@@ -278,6 +318,7 @@ namespace BB
         public void CloseServer()
         {
             server.Stop();
+            webServer.Stop();
         }
     } // end class BoggleServer
 } // end namespace BB
