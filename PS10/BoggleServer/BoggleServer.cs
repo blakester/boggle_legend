@@ -212,6 +212,20 @@ namespace BB
                 return;
             }
 
+
+
+            StringSocket ss = (StringSocket)payload;
+
+            ss.BeginSend("HTTP/1.1 200 OK\r\n" +
+            "Connection: close\r\n" +
+            "Content-Type: text/html; charset=UTF-8\r\n" +
+            "\r\n" +
+            "<!DOCTYPE html><html><body><h1>My First Heading</h1><p>My first paragraph.</p></body></html>", (ex,o) => { }, null);
+            
+            ss.Close();           
+
+
+
             string stringPattern1 = @"^(GET /players)";
             string stringPattern2 = @"^(GET /games\?player=)";
             string stringPattern3 = @"^(GET /game\?id=)";
