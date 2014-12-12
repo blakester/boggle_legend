@@ -235,14 +235,16 @@ namespace BB
             }
             else if (Regex.IsMatch(request, stringPattern2))
             {
-                string temp = request.Substring(18, request.Length - 9);
-                PlayerPage(temp);
+                string temp = request.Substring(18);
+                temp = temp.Remove(temp.Length - 10);
+                PlayerPage(temp, payload);
 
             }
             else if (Regex.IsMatch(request, stringPattern3))
             {
-                string temp = request.Substring(13, request.Length - 9);
-                GamePage(temp);
+                string temp = request.Substring(13);
+                temp = temp.Remove(temp.Length - 10);
+                GamePage(int.Parse(temp), payload);
             }
             else
             {
@@ -338,24 +340,162 @@ namespace BB
             ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
         }
 
-        private void PlayerPage(String player)
+        private void PlayerPage(String player, object payload)
         {
-            string page = "";
+            string page = "HTTP/1.1 200 OK\r\n" +
+            "Connection: close\r\n" +
+            "Content-Type: text/html; charset=UTF-8\r\n" +
+            "\r\n" +
+            "<!DOCTYPE html><html>" +
+            "<style>" +
+                "table { width:500px; }" +
+                "table, th, td { border: 1px solid black; border-collapse: collapse; }" +
+                "th, td { padding: 5px; text-align: left; }" +
+                "table#t01 tr:nth-child(even) { background-color: #eee; }" +
+                "table#t01 tr:nth-child(odd) { background-color: #fff; }" +
+                "table#t01 th { background-color: black; color: white; }" +
+            "</style>" +
+            "<body><h1>" + player + " Stats</h1><table id='t01'>" +
+            "<tr><th>Game Number</th><th>Date</th><th>Player's Score</th><th>Opponent's Name</th><th> Opponenet's Score<th></tr>";
+
+            StringSocket ss = (StringSocket)payload;
+            List<GamePlayed> gamesPlayed= new List<GamePlayed>();
 
             using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
                 conn.Open();
 
                 MySqlCommand command = conn.CreateCommand();
-                command.CommandText = "SELECT * FROM Players";
 
+                command.Parameters.Clear();
+                command.CommandText = "SELECT * FROM Players NATURAL JOIN Games WHERE Players.player_name = @name "
+                    + "AND (Players.player_id = Games.player_1_id OR Players.player_id = Games.player_2_id) ORDER BY game_id";
+                command.Prepare();
+                command.Parameters.AddWithValue("name", player);
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        GamePlayed temp = new GamePlayed();
+                        temp.Name = player;
+                        temp.OpponName = "";
+                        temp.GameId = (int)reader["game_id"];
+                        temp.Date = (System.DateTime)reader["date_time"];
+                        temp.Board = (string)reader["board_config"];
+                        temp.Time = (int)reader["time_limit"];
 
+                        if((int)reader["player_id"] == (int)reader["player_1_id"])
+                        {
+                            
+                            temp.Id = (int)reader["player_id"];
+                            temp.PScore = (int)reader["player_1_score"];
+                            temp.OpponId = (int)reader["player_2_id"];
+                            temp.OpponScore = (int)reader["player_2_score"];
+                            
+                        }
+                        else
+                        {
+                            temp.Id = (int)reader["player_id"];
+                            temp.PScore = (int)reader["player_2_score"];
+                            temp.OpponId = (int)reader["player_1_id"];
+                            temp.OpponScore = (int)reader["player_1_score"];
+                        }
+
+                        gamesPlayed.Add(temp);
+                        
+                    }
+                }
+           
+                foreach(GamePlayed game in gamesPlayed)
+                {
+                    command.Parameters.Clear();
+                    command.CommandText = "SELECT player_name FROM Players WHERE player_id = @id";
+                    command.Prepare();
+                    command.Parameters.AddWithValue("id", game.OpponId);
+
+                    game.OpponName = (string)(command.ExecuteScalar());
+
+                    page += "<tr><td>" + game.GameId + "</td><td>" + game.Date + "</td><td>" 
+                        + game.PScore + "</td><td>" + game.OpponName + "</td><td>" + game.OpponScore + "</td></tr>";
+                }
+
+                page += "</p></body></html>";
+                ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
             }
         }
 
-        private void GamePage(string game)
+        private void GamePage(int gameId, object payload)
         {
+            string page = "HTTP/1.1 200 OK\r\n" +
+            "Connection: close\r\n" +
+            "Content-Type: text/html; charset=UTF-8\r\n" +
+            "\r\n" +
+            "<!DOCTYPE html><html>" +
+            "<style>" +
+                "table { width:500px; }" +
+                "table, th, td { border: 1px solid black; border-collapse: collapse; }" +
+                "th, td { padding: 5px; text-align: left; }" +
+                "table#t01 tr:nth-child(even) { background-color: #eee; }" +
+                "table#t01 tr:nth-child(odd) { background-color: #fff; }" +
+                "table#t01 th { background-color: black; color: white; }" +
+            "</style>" +
+            "<body><h1>Game Summary</h1><table id='t01'>" +
+            "<tr><th>Game Number</th><th>Date</th><th>Time Limit</th></tr>";
 
+            StringSocket ss = (StringSocket)payload;
+            List<GamePlayed> gamesPlayed = new List<GamePlayed>();
+
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                conn.Open();
+
+                MySqlCommand command = conn.CreateCommand();
+                GamePlayed temp = new GamePlayed();
+
+                command.Parameters.Clear();
+                command.CommandText = "SELECT * FROM Games WHERE game_id = @id";
+                command.Prepare();
+                command.Parameters.AddWithValue("id", gameId);
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        temp.Id = (int)reader["player_1_id"];
+                        temp.OpponId = (int)reader["player_2_id"];
+                        temp.GameId = gameId;
+                        temp.PScore = (int)reader["player_1_score"];
+                        temp.OpponScore = (int)reader["player_2_score"];
+                        temp.Date = (System.DateTime)reader["date_time"];
+                        temp.Board = (string)reader["board_config"];
+                        temp.Time = (int)reader["time_limit"];
+                    }
+                }
+
+                command.Parameters.Clear();
+                command.CommandText = "SELECT * FROM Players WHERE player_id = @p1 OR player_id = @p2";
+                command.Prepare();
+                command.Parameters.AddWithValue("p1", temp.Id);
+                command.Parameters.AddWithValue("p2", temp.OpponId);
+
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (temp.Id == (int)reader["player_id"])
+                            temp.Name = (string)reader["player_name"];
+                        else
+                            temp.OpponName = (string)reader["player_name"];
+                    }
+                }
+
+                page += "<tr><td>" + gameId + "</td><td>" + temp.Date + "</td><td>" + temp.Time + "</td></tr>";
+                page += "<br><p>" + temp.Board + "</p><br>";
+                page += "<table id='t01'><tr><th>" + temp.Name + "</th><th>" + temp.OpponName + "</th></tr>";
+                page += "<tr><td>" + temp.PScore + "</td><td>" + temp.OpponScore + "</td></tr>";
+            }
+
+            page += "</p></body></html>";
+            ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
         }
 
         private void ErrorPage()
@@ -452,6 +592,45 @@ namespace BB
         {
             server.Stop();
             webServer.Stop();
+        }
+
+        private class GamePlayed
+        {
+            public string Name
+            { get; set; }
+
+            public int Id
+            { get; set; }
+
+            public int GameId
+            { get; set; }
+
+            public int PScore
+            { get; set; }
+
+            public string OpponName
+            { get; set; }
+
+            public int OpponId
+            { get; set; }
+
+            public int OpponScore
+            { get; set; }
+
+            public System.DateTime Date
+            { get; set; }
+
+            public string Board
+            { get; set; }
+
+            public int Time
+            { get; set; }
+
+            public GamePlayed()
+            {
+
+            }
+
         }
     } // end class BoggleServer
 } // end namespace BB
