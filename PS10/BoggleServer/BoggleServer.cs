@@ -1,5 +1,6 @@
 ﻿// Authors: Blake Burton, Cameron Minkel
 // Start date: 11/18/14
+// Version 2: Added webpage capability
 
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,9 @@ namespace BB
     /// 
     /// Once two clients have connected to this server on port 2000, the
     /// server will start a Boggle game between the two.
+    /// 
+    /// The server has been expanded to allow webpage request pertaining
+    /// to information from the Boggle Games.
     /// </summary>
     public class BoggleServer
     {
@@ -33,7 +37,6 @@ namespace BB
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
         public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
             "uid=cs3500_blakeb;password=249827684"; // Used to connect to database.
-        public static int gameId; // Used to give games a unique ID
 
         /// <summary>
         /// The length of a game in seconds.
@@ -56,6 +59,12 @@ namespace BB
         /// </summary>
         public static string CustomBoard
         { get; private set; }
+
+        /// <summary>
+        /// Holds the unique number to identify specific games.
+        /// </summary>
+        public static int GameId
+        { get; set; }
 
 
         /// <summary>
@@ -80,7 +89,7 @@ namespace BB
 
         /// <summary>
         /// Validates the command line arguments and begins listening
-        /// for client connections.
+        /// for client connections on both port 2000 and 2500.
         /// </summary>
         /// <param name="args">String array consisting of: length of
         /// game in seconds, pathname to legal words file, and 16 character
@@ -147,9 +156,11 @@ namespace BB
                 conn.Open();
 
                 MySqlCommand command = conn.CreateCommand();
+
+                // Counts the number of games currently.
                 command.CommandText = "SELECT COUNT(*) FROM Games";
 
-                gameId = Convert.ToInt32(command.ExecuteScalar());
+                GameId = Convert.ToInt32(command.ExecuteScalar());
             }
 
             // Begin listening for game connections on port 2000
@@ -167,7 +178,7 @@ namespace BB
 
 
         /// <summary>
-        /// Called when a connection has been received.
+        /// Called when a connection has been received on port 2000.
         /// </summary>
         /// <param name="result">Result of BeginAcceptSocket</param>
         private void ConnectionRequested(IAsyncResult result)
@@ -182,29 +193,51 @@ namespace BB
             server.BeginAcceptSocket(ConnectionRequested, null);
         }
 
+        /// <summary>
+        /// Called when a connection has been recieved on port 2500.
+        /// </summary>
+        /// <param name="result">Result of BeginAcceptSocket</param>
         private void WebRequested(IAsyncResult result)
         {
             Socket s = webServer.EndAcceptSocket(result);
             StringSocket ss = new StringSocket(s, Encoding.UTF8);
             ss.BeginReceive(SendPage, ss);
 
+            // Event loop.
             webServer.BeginAcceptSocket(WebRequested, null);
         }
 
-
+        /// <summary>
+        /// This method will parse out the request and direct the infomration
+        /// to the appropriate helper class.  This server will recognize
+        /// 
+        /// GET /players HTTP/1.1
+        /// GET /games?player=@name HTTP/1.1 where @name is player name.
+        /// GET /game?id=@ID HTTP/1.1 where @ID is the unique game number.
+        /// 
+        /// If none of these or Player or id does not exist, will return an
+        /// error page.
+        /// 
+        /// </summary>
+        /// <param name="request">HTML request</param>
+        /// <param name="e">Reports socket error, if any.</param>
+        /// <param name="payload">Holds the StringSocket.</param>
         private void SendPage(string request, Exception e, object payload)
         {
+            // If error, close socket.
             if (e != null || request == null)
             {
                 ((StringSocket)payload).Close();
                 return;
             }
 
+            // The start of the request string to determine which request
+            // was requested.
             string stringPattern1 = @"^(GET /players)";
             string stringPattern2 = @"^(GET /games\?player=)";
             string stringPattern3 = @"^(GET /game\?id=)";
 
-
+            // Find which request was requested and route to helper method.
             if (Regex.IsMatch(request, stringPattern1))
             {
                 MainPage(payload);
@@ -224,27 +257,34 @@ namespace BB
             }
             else
             {
-                ErrorPage();
+                ErrorPage(payload);
             }
-
         }
 
+        /// <summary>
+        /// Sends an HTML page to the requesting socket that lists
+        /// all the players and their pertinent information.
+        /// </summary>
+        /// <param name="payload">StringSocket that made request.</param>
         private void MainPage(object payload)
         {
+            string serverIp = GetServerIp();
+
+            // The start of the HTML page.
             string page = "HTTP/1.1 200 OK\r\n" +
             "Connection: close\r\n" +
             "Content-Type: text/html; charset=UTF-8\r\n" +
             "\r\n" +
             "<!DOCTYPE html><html>" +
             "<style>" +
-                "table { width:500px; }" +
+                "table { width:600px; }" +
                 "table, th, td { border: 1px solid black; border-collapse: collapse; }" +
                 "th, td { padding: 5px; text-align: left; }" +
                 "table#t01 tr:nth-child(even) { background-color: #eee; }" +
                 "table#t01 tr:nth-child(odd) { background-color: #fff; }" +
-                "table#t01 th { background-color: black; color: white; }" +
+                "table#t01 th { background-color: aqua; }" +
             "</style>" +
-            "<body><h1>Player Standings</h1><table id='t01'>" +
+            "<body><h1>Player Standings</h1><p><a href='http://" + serverIp + ":2500/players'>Home</a></p><table id='t01'>" +
             "<tr><th>Player Name</th><th>Wins</th><th>Losses</th><th>Ties</th></tr>";
 
             StringSocket ss = (StringSocket)payload;
@@ -257,6 +297,7 @@ namespace BB
                 MySqlCommand command = conn.CreateCommand();
                 command.CommandText = "SELECT * FROM Players";
 
+                // Adds all the players id and names into the dictionary
                 using (MySqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -265,75 +306,86 @@ namespace BB
                     }
                 }
 
+                // Counts all the wins, losses, and ties for each player.
+                // Concats each result to HTML page.
                 foreach(KeyValuePair<int, string> player in players)
                 {
                     int win = 0;
                     int loss = 0;
                     int tie = 0;
-                    command.Parameters.Clear();
+                    command.Parameters.Clear(); // Parameter do not like loops.
                     command.CommandText = "SELECT * FROM Games WHERE player_1_id = @id";
                     command.Prepare();
                     command.Parameters.AddWithValue("id", player.Key);
-                    using (MySqlDataReader reader2 = command.ExecuteReader())
+                    using (MySqlDataReader reader = command.ExecuteReader())
                     {
-                        while (reader2.Read())
+                        while (reader.Read())
                         {
-                            if ((int)reader2["player_1_score"] > (int)reader2["player_2_score"])
-                                win++;
-                            else if ((int)reader2["player_1_score"] < (int)reader2["player_2_score"])
-                                loss++;
+                            if (player.Key == (int)reader["player_1_id"])
+                            {
+                                if ((int)reader["player_1_score"] > (int)reader["player_2_score"])
+                                    win++;
+                                else if ((int)reader["player_1_score"] < (int)reader["player_2_score"])
+                                    loss++;
+                                else
+                                    tie++;
+                            }
                             else
-                                tie++;
-                        }
-                    }
+                            {
+                                if ((int)reader["player_2_score"] > (int)reader["player_1_score"])
+                                    win++;
+                                else if ((int)reader["player_2_score"] < (int)reader["player_1_score"])
+                                    loss++;
+                                else
+                                    tie++;
+                            }
+                        }// end while
+                    }// end using reader
 
-                    command.Parameters.Clear();
-                    command.CommandText = "SELECT * FROM Games WHERE player_2_id = @id";
-                    command.Prepare();
-                    command.Parameters.AddWithValue("id", player.Key);
-                    using (MySqlDataReader reader2 = command.ExecuteReader())
-                    {
-                        while (reader2.Read())
-                        {
-                            if ((int)reader2["player_2_score"] > (int)reader2["player_1_score"])
-                                win++;
-                            else if ((int)reader2["player_2_score"] < (int)reader2["player_1_score"])
-                                loss++;
-                            else
-                                tie++;
-                        }
-                    }
+                    page += "<tr><td>" + "<a href='http://" + serverIp + ":2500/games?player=" + player.Value + "'>" + player.Value + "</a>" + 
+                        "</td><td>" + win + "</td><td>" + loss + "</td><td>" + tie + "</td></tr>";
 
-                    page += "<tr><td>" + player.Value + "</td><td>" + win + "</td><td>" + loss + "</td><td>" + tie + "</td></tr>";
-                }
+                }// end foreach
+            }// end using conn
 
-            }
-
+            // Concates the end of the HTML page
             page += "</p></body></html>";
-            ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
+
+            // Send HTML page and close socket.
+            ss.BeginSend(page, (e, x) => { ss.Close(); }, null); 
         }
 
+        /// <summary>
+        /// Sends an HTML page to the requesting socket that lists
+        /// the information about the specific player.
+        /// </summary>
+        /// <param name="player">Player's name.</param>
+        /// <param name="payload">StringSocket that requested page.</param>
         private void PlayerPage(String player, object payload)
         {
+            string serverIp = GetServerIp();
+
+            // The start of the HTML page.
             string page = "HTTP/1.1 200 OK\r\n" +
             "Connection: close\r\n" +
             "Content-Type: text/html; charset=UTF-8\r\n" +
             "\r\n" +
             "<!DOCTYPE html><html>" +
             "<style>" +
-                "table { width:500px; }" +
+                "table { width:600px; }" +
                 "table, th, td { border: 1px solid black; border-collapse: collapse; }" +
                 "th, td { padding: 5px; text-align: left; }" +
                 "table#t01 tr:nth-child(even) { background-color: #eee; }" +
                 "table#t01 tr:nth-child(odd) { background-color: #fff; }" +
-                "table#t01 th { background-color: black; color: white; }" +
+                "table#t01 th { background-color: aqua; }" +
             "</style>" +
-            "<body><h1>" + player + " Stats</h1><table id='t01'>" +
-            "<tr><th>Game Number</th><th>Date</th><th>Player's Score</th><th>Opponent's Name</th><th> Opponenet's Score<th></tr>";
+            "<body><h1>" + player + " Stats</h1><p><a href='http://" + serverIp + ":2500/players'>Home</a></p><table id='t01'>" +
+            "<tr><th>Game Number</th><th>Date</th><th>Player's Score</th><th>Opponent's Name</th><th> Opponent's Score</th></tr>";
 
             StringSocket ss = (StringSocket)payload;
             List<GamePlayed> gamesPlayed= new List<GamePlayed>();
 
+            // Pulls all the Games from the specific player and saves the game information into a list.
             using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
                 conn.Open();
@@ -376,9 +428,10 @@ namespace BB
 
                         gamesPlayed.Add(temp);
                         
-                    }
-                }
+                    }// end while
+                } // end using reader
            
+                // Obtains the opponents name and concates info into HTML page.
                 foreach(GamePlayed game in gamesPlayed)
                 {
                     command.Parameters.Clear();
@@ -388,36 +441,52 @@ namespace BB
 
                     game.OpponName = (string)(command.ExecuteScalar());
 
-                    page += "<tr><td>" + game.GameId + "</td><td>" + game.Date + "</td><td>" 
-                        + game.PScore + "</td><td>" + game.OpponName + "</td><td>" + game.OpponScore + "</td></tr>";
+                    
+
+                    page += "<tr><td>" + "<a href='http://" + serverIp + ":2500/game?id=" + game.GameId + "'>" + game.GameId + "</a>" + 
+                        "</td><td>" + game.Date + "</td><td>" + game.PScore + "</td><td>" +
+                        "<a href='http://" + serverIp + ":2500/games?player=" + game.OpponName + "'>" + game.OpponName + "</a>" + 
+                        "</td><td>" + game.OpponScore + "</td></tr>";
                 }
 
                 page += "</p></body></html>";
                 ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
-            }
-        }
+            }// end using conn
+        }// end method
 
+        /// <summary>
+        /// Sends an HTML page to the requesting socket that lists
+        /// the information about the specific game.
+        /// </summary>
+        /// <param name="gameId">The unique game id for the game.</param>
+        /// <param name="payload">StringSocket that requested page.</param>
         private void GamePage(int gameId, object payload)
         {
+            string serverIp = GetServerIp();
+
+            // Start of HTML page.
             string page = "HTTP/1.1 200 OK\r\n" +
             "Connection: close\r\n" +
             "Content-Type: text/html; charset=UTF-8\r\n" +
             "\r\n" +
             "<!DOCTYPE html><html>" +
             "<style>" +
-                "table { width:500px; }" +
+                "table { width:600px; }" +
                 "table, th, td { border: 1px solid black; border-collapse: collapse; }" +
                 "th, td { padding: 5px; text-align: left; }" +
                 "table#t01 tr:nth-child(even) { background-color: #eee; }" +
                 "table#t01 tr:nth-child(odd) { background-color: #fff; }" +
-                "table#t01 th { background-color: black; color: white; }" +
+                "table#t01 th { background-color: aqua; text-align: left; }" +
+                "table#t02 td, th{ text-align: center; }" +
+                "table#t02 th { background-color: aqua; }" +
             "</style>" +
-            "<body><h1>Game Summary</h1><table id='t01'>" +
-            "<tr><th>Game Number</th><th>Date</th><th>Time Limit</th></tr>";
+            "<body><h1>Game Summary</h1><p><a href='http://" + serverIp + ":2500/players'>Home</a></p><table id='t01'>" +
+            "<tr><th>Game Number</th><th>Date</th><th>Time Limit (s)</th></tr>";
 
             StringSocket ss = (StringSocket)payload;
             List<GamePlayed> gamesPlayed = new List<GamePlayed>();
 
+            // retrieves game info and saves it into GamePlayed
             using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
                 conn.Open();
@@ -444,12 +513,12 @@ namespace BB
                     }
                 }
 
+                // Finds Oponnents name and concates info into HTML page.
                 command.Parameters.Clear();
                 command.CommandText = "SELECT * FROM Players WHERE player_id = @p1 OR player_id = @p2";
                 command.Prepare();
                 command.Parameters.AddWithValue("p1", temp.Id);
                 command.Parameters.AddWithValue("p2", temp.OpponId);
-
                 using (MySqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -461,19 +530,60 @@ namespace BB
                     }
                 }
 
+                char[] fakeBoard = (temp.Board).ToCharArray();
+            
                 page += "<tr><td>" + gameId + "</td><td>" + temp.Date + "</td><td>" + temp.Time + "</td></tr>";
-                page += "<br><p>" + temp.Board + "</p><br>";
-                page += "<table id='t01'><tr><th>" + temp.Name + "</th><th>" + temp.OpponName + "</th></tr>";
-                page += "<tr><td>" + temp.PScore + "</td><td>" + temp.OpponScore + "</td></tr>";
-            }
 
-            page += "</p></body></html>";
-            ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
-        }
+                
+                
+                page += "<table id='t01'><tr><th>" +
+                        "Score of <a href='http://" + serverIp + ":2500/games?player=" + temp.Name + "'>" + temp.Name + "</a>" + "</th><th>" +
+                        "Score of <a href='http://" + serverIp + ":2500/games?player=" + temp.OpponName + "'>" + temp.OpponName + "</a>" + "</th></tr>" +
+                        "<tr><td>" + temp.PScore + "</td><td>" + temp.OpponScore + "</td></tr>";
 
-        private void ErrorPage()
+                page += "<table id='t02'><tr><th colspan='4'>The Boggle Board</tr></td>" +
+                    "<tr><td><b>" + fakeBoard[0] + "</b></td><td><b>" + fakeBoard[1] + "</b></td><td><b>" + fakeBoard[2] + "</b></td><td><b>" + fakeBoard[3] + "</b></td></tr>" +
+                    "<tr><td><b>" + fakeBoard[4] + "</b></td><td><b>" + fakeBoard[5] + "</b></td><td><b>" + fakeBoard[6] + "</b></td><td><b>" + fakeBoard[7] + "</b></td></tr>" +
+                    "<tr><td><b>" + fakeBoard[8] + "</b></td><td><b>" + fakeBoard[9] + "</b></td><td><b>" + fakeBoard[10] + "</b></td><td><b>" + fakeBoard[11] + "</b></td></tr>" +
+                    "<tr><td><b>" + fakeBoard[12] + "</b></td><td><b>" + fakeBoard[13] + "</b></td><td><b>" + fakeBoard[14] + "</b></td><td><b>" + fakeBoard[15] + "</b></td></tr>";
+            }// end using conn
+
+            page += "</p></body></html>"; // End of HTML page.
+            ss.BeginSend(page, (e, x) => { ss.Close(); }, null); // Sends to socket and closes socket.
+        } // end method
+
+        /// <summary>
+        /// If a page request was made but their was an error trying to 
+        /// parse the information, this error page will be sent back.
+        /// </summary>
+        private void ErrorPage(object payload)
         {
-            // Send html back Explaining error and explain valid options
+            string serverIp = GetServerIp();
+
+            // Start of HTML page.
+            string page = "HTTP/1.1 200 OK\r\n" +
+            "Connection: close\r\n" +
+            "Content-Type: text/html; charset=UTF-8\r\n" +
+            "\r\n" +
+            "<!DOCTYPE html><html>" +
+            "<body><h1>ERROR</h1>" +
+            "<p>You have entered an address that is not recognized by our server.<br>" +
+            "You may enter one of the following three extensions:<br><br>" +
+            "1. /players<br>" +
+            "2. /games?player=@name (Where @name is the name of the player.)<br>" +
+            "3. /game?id=@id (Where @id is the unique id of a specific game.)<br><br>" +
+            "Thank you. Click <a href='http://" + serverIp + ":2500/players'>here</a> to see the list of players.</p>";
+
+            /// GET /players HTTP/1.1
+            /// GET /games?player=@name HTTP/1.1 where @name is player name.
+            /// GET /game?id=@ID HTTP/1.1 where @ID is the unique game number.
+
+            StringSocket ss = (StringSocket)payload;
+
+            page += "</p></body></html>"; // End of HTML page.
+            ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
+
+
         }
 
 
@@ -567,6 +677,25 @@ namespace BB
             webServer.Stop();
         }
 
+        /// <summary>
+        /// Get the servers ip address.
+        /// </summary>
+        /// <returns>Returns Server IP Address.</returns>
+        private string GetServerIp()
+        {
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    return ip.ToString();
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// Holds information temporarily about a game.
+        /// </summary>
         private class GamePlayed
         {
             public string Name
@@ -603,7 +732,6 @@ namespace BB
             {
 
             }
-
         }
     } // end class BoggleServer
 } // end namespace BB
