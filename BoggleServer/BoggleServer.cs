@@ -539,16 +539,55 @@ namespace BB
                 page += "<table id='t01'><tr><th>" +
                         "Score of <a href='http://" + serverIp + ":2500/games?player=" + temp.Name + "'>" + temp.Name + "</a>" + "</th><th>" +
                         "Score of <a href='http://" + serverIp + ":2500/games?player=" + temp.OpponName + "'>" + temp.OpponName + "</a>" + "</th></tr>" +
-                        "<tr><td>" + temp.PScore + "</td><td>" + temp.OpponScore + "</td></tr>";
+                        "<tr><td>" + temp.PScore + "</td><td>" + temp.OpponScore + "</td></tr></table>";
 
-                page += "<table id='t02'><tr><th colspan='4'>The Boggle Board</tr></td>" +
+                page += "<br><table id='t02'><tr><th colspan='4'>The Boggle Board</tr></td>" +
                     "<tr><td><b>" + fakeBoard[0] + "</b></td><td><b>" + fakeBoard[1] + "</b></td><td><b>" + fakeBoard[2] + "</b></td><td><b>" + fakeBoard[3] + "</b></td></tr>" +
                     "<tr><td><b>" + fakeBoard[4] + "</b></td><td><b>" + fakeBoard[5] + "</b></td><td><b>" + fakeBoard[6] + "</b></td><td><b>" + fakeBoard[7] + "</b></td></tr>" +
                     "<tr><td><b>" + fakeBoard[8] + "</b></td><td><b>" + fakeBoard[9] + "</b></td><td><b>" + fakeBoard[10] + "</b></td><td><b>" + fakeBoard[11] + "</b></td></tr>" +
-                    "<tr><td><b>" + fakeBoard[12] + "</b></td><td><b>" + fakeBoard[13] + "</b></td><td><b>" + fakeBoard[14] + "</b></td><td><b>" + fakeBoard[15] + "</b></td></tr>";
+                    "<tr><td><b>" + fakeBoard[12] + "</b></td><td><b>" + fakeBoard[13] + "</b></td><td><b>" + fakeBoard[14] + "</b></td><td><b>" + fakeBoard[15] + "</b></td></tr></table>";
+
+                List<string> p1Legal = new List<string>();
+                List<string> p2Legal = new List<string>();
+                List<string> shared = new List<string>();
+                List<string> p1Illegal = new List<string>();
+                List<string> p2Illegal = new List<string>();
+                command.Parameters.Clear();
+                command.CommandText = "SELECT * FROM Words WHERE game_id = @id";
+                command.Prepare();
+                command.Parameters.AddWithValue("id", temp.GameId);
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if(temp.Id == (int)reader["player_id"])
+                        {
+                            if ((int)(sbyte)reader["word_type"] == 0)
+                                p1Legal.Add((string)reader["word"]);
+                            else if ((int)(sbyte)reader["word_type"] == 1)
+                                p1Illegal.Add((string)reader["word"]);
+                            else
+                                shared.Add((string)reader["word"]);
+                        }
+                        else
+                        {
+                            if ((int)(sbyte)reader["word_type"] == 0)
+                                p2Legal.Add((string)reader["word"]);
+                            else if ((int)(sbyte)reader["word_type"] == 1)
+                                p2Illegal.Add((string)reader["word"]);
+                        }
+                    }
+                }
+
+                page += "<br><table id='t01'><tr><th>" + temp.Name + "<br>Legal Words</th><th>" + temp.Name + "<br>Illegal Words</th><th>" +
+                    temp.OpponName + "<br>Legal Words</th><th>" + temp.OpponName + "<br>Illegal Words</th><th>Shared Words</th></tr>";
+
+                page += "<tr><td>" + WordList(p1Legal) + "</td><td>" + WordList(p1Illegal) + "</td><td>" +
+                    WordList(p2Legal) + "</td><td>" + WordList(p2Illegal) + "</td><td>" + WordList(shared) + "</td></tr>";
+
             }// end using conn
 
-            page += "</p></body></html>"; // End of HTML page.
+            page += "</table></body></html>"; // End of HTML page.
             ss.BeginSend(page, (e, x) => { ss.Close(); }, null); // Sends to socket and closes socket.
         } // end method
 
@@ -691,6 +730,20 @@ namespace BB
             }
 
             return "";
+        }
+
+        private string WordList(List<string> words)
+        {
+            string temp = "";
+
+            foreach(string word in words)
+            {
+                temp += word + "<br>";
+            }
+
+            if (temp == "")
+                temp = "**NONE**";
+            return temp;
         }
 
         /// <summary>
