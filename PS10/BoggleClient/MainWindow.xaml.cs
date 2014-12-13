@@ -165,6 +165,9 @@ namespace BoggleClient
         /// <param name="s">String Tokens containing start game variables from server.</param>
         private void GameStartMessageHelper(string[] s)
         {
+            // Clear the word entry box.
+            wordEntryBox.Text = "";
+
             // Puts board string onto GUI.
             char[] boggleLetters = s[1].ToCharArray();
             BSpot1.Text = boggleLetters[0] + "";
