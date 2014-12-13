@@ -318,7 +318,7 @@ namespace BB
                     int loss = 0;
                     int tie = 0;
                     command.Parameters.Clear(); // Parameter do not like loops.
-                    command.CommandText = "SELECT * FROM Games WHERE player_1_id = @id";
+                    command.CommandText = "SELECT * FROM Games WHERE player_1_id = @id OR player_2_id = @id";
                     command.Prepare();
                     command.Parameters.AddWithValue("id", player.Key);
                     using (MySqlDataReader reader = command.ExecuteReader())
@@ -369,6 +369,7 @@ namespace BB
         private void PlayerPage(String player, object payload)
         {
             string serverIp = GetServerIp();
+            player = player.Replace("%20", " ");
 
             // The start of the HTML page.
             string page = "HTTP/1.1 200 OK\r\n" +
