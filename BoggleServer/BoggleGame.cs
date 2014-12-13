@@ -330,10 +330,13 @@ namespace BB
         } // end private method End
 
 
-
+        /// <summary>
+        /// Records information about this BoggleGame
+        /// after the game has completed in the database
+        /// specified in connectionString.
+        /// </summary>
         private void UpdateDatabase()
         {
-
             // Get this game's unique ID.
             int gameId = ++BoggleServer.GameId;
 
@@ -369,7 +372,7 @@ namespace BB
                 }
                 catch (MySqlException e) { }
 
-                // Create command to select the rows of player one and player two.
+                // Create command to select the rows of player 1 and player 2.
                 command.CommandText = "SELECT * FROM Players WHERE player_name='" + one.Name +
                     "' OR player_name='" + two.Name + "'";
 

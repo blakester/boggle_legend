@@ -43,6 +43,7 @@
     <Content Include="Libraries\StringSocket.dll" />
     <Content Include="Libraries\StringSocketOfficial.dll" />
     <Content Include="Resources\dictionary.txt" />
+    <Content Include="README.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -295,12 +295,12 @@ namespace BB
                 conn.Open();
 
                 MySqlCommand command = conn.CreateCommand();
-                command.CommandText = "SELECT * FROM Players";
+                command.CommandText = "SELECT * FROM Players"; 
 
                 // Adds all the players id and names into the dictionary
                 using (MySqlDataReader reader = command.ExecuteReader())
                 {
-                    while (reader.Read())
+                    while (reader.Read()) 
                     {
                         players.Add((int)reader["player_id"], (string)reader["player_name"]);
                     }
