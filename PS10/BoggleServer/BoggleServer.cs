@@ -60,6 +60,7 @@ namespace BB
         public static string CustomBoard
         { get; private set; }
 
+
         /// <summary>
         /// Holds the unique number to identify specific games.
         /// </summary>
@@ -193,6 +194,7 @@ namespace BB
             server.BeginAcceptSocket(ConnectionRequested, null);
         }
 
+
         /// <summary>
         /// Called when a connection has been recieved on port 2500.
         /// </summary>
@@ -206,6 +208,7 @@ namespace BB
             // Event loop.
             webServer.BeginAcceptSocket(WebRequested, null);
         }
+
 
         /// <summary>
         /// This method will parse out the request and direct the infomration
@@ -261,6 +264,7 @@ namespace BB
             }
         }
 
+
         /// <summary>
         /// Sends an HTML page to the requesting socket that lists
         /// all the players and their pertinent information.
@@ -288,19 +292,19 @@ namespace BB
             "<tr><th>Player Name</th><th>Wins</th><th>Losses</th><th>Ties</th></tr>";
 
             StringSocket ss = (StringSocket)payload;
-            Dictionary<int ,string> players = new Dictionary<int,string>();
-            
+            Dictionary<int, string> players = new Dictionary<int, string>();
+
             using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
                 conn.Open();
 
                 MySqlCommand command = conn.CreateCommand();
-                command.CommandText = "SELECT * FROM Players"; 
+                command.CommandText = "SELECT * FROM Players";
 
                 // Adds all the players id and names into the dictionary
                 using (MySqlDataReader reader = command.ExecuteReader())
                 {
-                    while (reader.Read()) 
+                    while (reader.Read())
                     {
                         players.Add((int)reader["player_id"], (string)reader["player_name"]);
                     }
@@ -308,7 +312,7 @@ namespace BB
 
                 // Counts all the wins, losses, and ties for each player.
                 // Concats each result to HTML page.
-                foreach(KeyValuePair<int, string> player in players)
+                foreach (KeyValuePair<int, string> player in players)
                 {
                     int win = 0;
                     int loss = 0;
@@ -342,7 +346,7 @@ namespace BB
                         }// end while
                     }// end using reader
 
-                    page += "<tr><td>" + "<a href='http://" + serverIp + ":2500/games?player=" + player.Value + "'>" + player.Value + "</a>" + 
+                    page += "<tr><td>" + "<a href='http://" + serverIp + ":2500/games?player=" + player.Value + "'>" + player.Value + "</a>" +
                         "</td><td>" + win + "</td><td>" + loss + "</td><td>" + tie + "</td></tr>";
 
                 }// end foreach
@@ -352,8 +356,9 @@ namespace BB
             page += "</p></body></html>";
 
             // Send HTML page and close socket.
-            ss.BeginSend(page, (e, x) => { ss.Close(); }, null); 
+            ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
         }
+
 
         /// <summary>
         /// Sends an HTML page to the requesting socket that lists
@@ -383,7 +388,7 @@ namespace BB
             "<tr><th>Game Number</th><th>Date</th><th>Player's Score</th><th>Opponent's Name</th><th> Opponent's Score</th></tr>";
 
             StringSocket ss = (StringSocket)payload;
-            List<GamePlayed> gamesPlayed= new List<GamePlayed>();
+            List<GamePlayed> gamesPlayed = new List<GamePlayed>();
 
             // Pulls all the Games from the specific player and saves the game information into a list.
             using (MySqlConnection conn = new MySqlConnection(connectionString))
@@ -409,14 +414,14 @@ namespace BB
                         temp.Board = (string)reader["board_config"];
                         temp.Time = (int)reader["time_limit"];
 
-                        if((int)reader["player_id"] == (int)reader["player_1_id"])
+                        if ((int)reader["player_id"] == (int)reader["player_1_id"])
                         {
-                            
+
                             temp.Id = (int)reader["player_id"];
                             temp.PScore = (int)reader["player_1_score"];
                             temp.OpponId = (int)reader["player_2_id"];
                             temp.OpponScore = (int)reader["player_2_score"];
-                            
+
                         }
                         else
                         {
@@ -427,12 +432,12 @@ namespace BB
                         }
 
                         gamesPlayed.Add(temp);
-                        
+
                     }// end while
                 } // end using reader
-           
+
                 // Obtains the opponents name and concates info into HTML page.
-                foreach(GamePlayed game in gamesPlayed)
+                foreach (GamePlayed game in gamesPlayed)
                 {
                     command.Parameters.Clear();
                     command.CommandText = "SELECT player_name FROM Players WHERE player_id = @id";
@@ -441,11 +446,9 @@ namespace BB
 
                     game.OpponName = (string)(command.ExecuteScalar());
 
-                    
-
-                    page += "<tr><td>" + "<a href='http://" + serverIp + ":2500/game?id=" + game.GameId + "'>" + game.GameId + "</a>" + 
+                    page += "<tr><td>" + "<a href='http://" + serverIp + ":2500/game?id=" + game.GameId + "'>" + game.GameId + "</a>" +
                         "</td><td>" + game.Date + "</td><td>" + game.PScore + "</td><td>" +
-                        "<a href='http://" + serverIp + ":2500/games?player=" + game.OpponName + "'>" + game.OpponName + "</a>" + 
+                        "<a href='http://" + serverIp + ":2500/games?player=" + game.OpponName + "'>" + game.OpponName + "</a>" +
                         "</td><td>" + game.OpponScore + "</td></tr>";
                 }
 
@@ -453,6 +456,7 @@ namespace BB
                 ss.BeginSend(page, (e, x) => { ss.Close(); }, null);
             }// end using conn
         }// end method
+
 
         /// <summary>
         /// Sends an HTML page to the requesting socket that lists
@@ -462,7 +466,7 @@ namespace BB
         /// <param name="payload">StringSocket that requested page.</param>
         private void GamePage(int gameId, object payload)
         {
-            string serverIp = GetServerIp();
+            string serverIp = GetServerIp(); // Get's server IP.
 
             // Start of HTML page.
             string page = "HTTP/1.1 200 OK\r\n" +
@@ -486,7 +490,6 @@ namespace BB
             StringSocket ss = (StringSocket)payload;
             List<GamePlayed> gamesPlayed = new List<GamePlayed>();
 
-            // retrieves game info and saves it into GamePlayed
             using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
                 conn.Open();
@@ -494,6 +497,7 @@ namespace BB
                 MySqlCommand command = conn.CreateCommand();
                 GamePlayed temp = new GamePlayed();
 
+                // Retrieves game info and saves it into a GamePlayed object.
                 command.Parameters.Clear();
                 command.CommandText = "SELECT * FROM Games WHERE game_id = @id";
                 command.Prepare();
@@ -513,7 +517,7 @@ namespace BB
                     }
                 }
 
-                // Finds Oponnents name and concates info into HTML page.
+                // Finds Player's names.
                 command.Parameters.Clear();
                 command.CommandText = "SELECT * FROM Players WHERE player_id = @p1 OR player_id = @p2";
                 command.Prepare();
@@ -530,23 +534,23 @@ namespace BB
                     }
                 }
 
-                char[] fakeBoard = (temp.Board).ToCharArray();
-            
                 page += "<tr><td>" + gameId + "</td><td>" + temp.Date + "</td><td>" + temp.Time + "</td></tr>";
 
-                
-                
+                // Player name and score table.
+                char[] fakeBoard = (temp.Board).ToCharArray();
                 page += "<table id='t01'><tr><th>" +
-                        "Score of <a href='http://" + serverIp + ":2500/games?player=" + temp.Name + "'>" + temp.Name + "</a>" + "</th><th>" +
-                        "Score of <a href='http://" + serverIp + ":2500/games?player=" + temp.OpponName + "'>" + temp.OpponName + "</a>" + "</th></tr>" +
-                        "<tr><td>" + temp.PScore + "</td><td>" + temp.OpponScore + "</td></tr></table>";
+                    "Score of <a href='http://" + serverIp + ":2500/games?player=" + temp.Name + "'>" + temp.Name + "</a>" + "</th><th>" +
+                    "Score of <a href='http://" + serverIp + ":2500/games?player=" + temp.OpponName + "'>" + temp.OpponName + "</a>" + "</th></tr>" +
+                    "<tr><td>" + temp.PScore + "</td><td>" + temp.OpponScore + "</td></tr></table>";
 
+                // Boggle board table.
                 page += "<br><table id='t02'><tr><th colspan='4'>The Boggle Board</tr></td>" +
                     "<tr><td><b>" + fakeBoard[0] + "</b></td><td><b>" + fakeBoard[1] + "</b></td><td><b>" + fakeBoard[2] + "</b></td><td><b>" + fakeBoard[3] + "</b></td></tr>" +
                     "<tr><td><b>" + fakeBoard[4] + "</b></td><td><b>" + fakeBoard[5] + "</b></td><td><b>" + fakeBoard[6] + "</b></td><td><b>" + fakeBoard[7] + "</b></td></tr>" +
                     "<tr><td><b>" + fakeBoard[8] + "</b></td><td><b>" + fakeBoard[9] + "</b></td><td><b>" + fakeBoard[10] + "</b></td><td><b>" + fakeBoard[11] + "</b></td></tr>" +
                     "<tr><td><b>" + fakeBoard[12] + "</b></td><td><b>" + fakeBoard[13] + "</b></td><td><b>" + fakeBoard[14] + "</b></td><td><b>" + fakeBoard[15] + "</b></td></tr></table>";
 
+                // Creates a table of the played words in the specified game.
                 List<string> p1Legal = new List<string>();
                 List<string> p2Legal = new List<string>();
                 List<string> shared = new List<string>();
@@ -560,7 +564,7 @@ namespace BB
                 {
                     while (reader.Read())
                     {
-                        if(temp.Id == (int)reader["player_id"])
+                        if (temp.Id == (int)reader["player_id"])
                         {
                             if ((int)(sbyte)reader["word_type"] == 0)
                                 p1Legal.Add((string)reader["word"]);
@@ -590,6 +594,7 @@ namespace BB
             page += "</table></body></html>"; // End of HTML page.
             ss.BeginSend(page, (e, x) => { ss.Close(); }, null); // Sends to socket and closes socket.
         } // end method
+
 
         /// <summary>
         /// If a page request was made but their was an error trying to 
@@ -707,6 +712,7 @@ namespace BB
             }
         }
 
+
         /// <summary>
         /// Stops Server.
         /// </summary>
@@ -715,6 +721,7 @@ namespace BB
             server.Stop();
             webServer.Stop();
         }
+
 
         /// <summary>
         /// Get the servers ip address.
@@ -732,11 +739,18 @@ namespace BB
             return "";
         }
 
+
+        /// <summary>
+        /// Creates a HTML vertical list of words with the
+        /// given list.
+        /// </summary>
+        /// <param name="words">The list of words.</param>
+        /// <returns>An HTML substring that contains the vertical list of words.</returns>
         private string WordList(List<string> words)
         {
             string temp = "";
 
-            foreach(string word in words)
+            foreach (string word in words)
             {
                 temp += word + "<br>";
             }
@@ -745,6 +759,7 @@ namespace BB
                 temp = "**NONE**";
             return temp;
         }
+
 
         /// <summary>
         /// Holds information temporarily about a game.
