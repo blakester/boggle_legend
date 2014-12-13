@@ -58,19 +58,6 @@ namespace BoggleClient
         }
 
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //public void Disconnect()
-        //{
-        //    socket.Close();
-        //    client.Close();
-
-        //    if (GameEndedEvent != null)
-        //        GameEndedEvent(true);
-        //}
-
-
         /// <summary>
         /// Handles all socket incoming messages from the server.
         /// </summary>
@@ -134,7 +121,7 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Pareses the TIME message into an array and activates an event for the controller to handle.
+        /// Parses the TIME message into an array and activates an event for the controller to handle.
         /// VARIENT: The string[] sent to event will contain TIME in index 0.
         /// </summary>
         /// <param name="message">Message to parse into array.</param>
@@ -147,7 +134,7 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Pareses the SCORE message into an array and activates an event for the controller to handle.
+        /// Parses the SCORE message into an array and activates an event for the controller to handle.
         /// VARIENT: The string[] sent to event will contain SCORE in index 0.
         /// </summary>
         /// <param name="message">Message to parse into array.</param>
@@ -160,7 +147,7 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Pareses the STOP message into an List of arrays 
+        /// Parses the STOP message into an List of arrays 
         /// and activates an event for the controller to handle.
         /// Each array contains the list in order
         /// player legal

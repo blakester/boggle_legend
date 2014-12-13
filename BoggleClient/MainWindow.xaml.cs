@@ -26,8 +26,7 @@ namespace BoggleClient
     public partial class MainWindow : Window
     {
 
-        Model model; // The model to handle socket and computation.
-
+        private Model model; // The model to handle socket and computation.
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -58,10 +57,10 @@ namespace BoggleClient
         {
             if (((string)connectButton.Content) == "Connect")
             { 
-                // If player has a an empty name.
-                if (playerTextBox.Text == "")
+                // If player has a an empty name or server IP.
+                if (playerTextBox.Text == "" || serverTextBox.Text == "")
                 {
-                    infoBox.Text = "Name cannot be empty...\n\n"
+                    infoBox.Text = "Name and/or server IP cannot be empty...\n\n"
                         + "Enter your name and server IP Address then press Connect to play."; 
                     return;
                 }
@@ -70,12 +69,12 @@ namespace BoggleClient
                 playerTextBox.IsEnabled = false;
                 serverTextBox.IsEnabled = false;
                 infoBox.Text = "Searching for Opponent...";
-                model.Connect(playerTextBox.Text, serverTextBox.Text);
                 connectButton.Content = "Disconnect";
+                model.Connect(playerTextBox.Text, serverTextBox.Text);
             }
             else if (((string)connectButton.Content) == "Disconnect")
             {
-                // Gets GUI elemtents ready for connection
+                // Gets GUI elemtents ready for connection.
                 infoBox.Visibility = System.Windows.Visibility.Visible;
                 infoBox.Text = "You have quit the game...\n\n"
                     + "Enter your name and server IP Address then press Connect to play.";
@@ -165,6 +164,9 @@ namespace BoggleClient
         /// <param name="s">String Tokens containing start game variables from server.</param>
         private void GameStartMessageHelper(string[] s)
         {
+            // Allow user to quit game.
+            connectButton.Content = "Disconnect";
+            
             // Clear the word entry box.
             wordEntryBox.Text = "";
 
@@ -342,6 +344,11 @@ namespace BoggleClient
             infoBox.Text = infoBox.Text = "Unable to connect to server.  Ensure you have"
                 + " entered the IP Address correctly.\n\n"
                 + "Enter your name and server IP Address then press Connect to play.";
+
+            // Allow player to re-enter info.
+            connectButton.Content = "Connect";
+            playerTextBox.IsEnabled = true;
+            serverTextBox.IsEnabled = true;            
         }
     }
 }
