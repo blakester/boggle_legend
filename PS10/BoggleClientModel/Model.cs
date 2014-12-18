@@ -21,9 +21,9 @@ namespace BoggleClient
     public class Model
     {
         // Class Variables
-        TcpClient client; // Allows us to connect to server.
-        StringSocket socket; // Wrapper that takes care of sending strings over socket.
-        const int port = 2000; // The port the server is using.
+        private TcpClient client; // Allows us to connect to server.
+        private StringSocket socket; // Wrapper that takes care of sending strings over socket.
+        private const int port = 2000; // The port the server is using.
 
 
         // These activate events for the controller to execute.
