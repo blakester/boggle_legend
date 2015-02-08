@@ -263,7 +263,7 @@ namespace BB
                                  // StringSocket is closed when
                                  // when "Disconnect" is clicked.
                                 firstPlayer = currentPlayer;
-                                return;dd
+                                return;
                             }
 
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
