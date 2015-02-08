@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Boggle Legend" Height="674" Width="450" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" BorderThickness="1">
     <Grid Margin="0,0,0,0" Background="#FF498181">
-        <TextBox x:Name="infoBox" HorizontalAlignment="Left" Height="330" Margin="61,149,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="315" VerticalScrollBarVisibility="Auto" FontWeight="Bold" TextAlignment="Center" FontSize="16" Visibility="Visible" Background="White" Panel.ZIndex="1" ScrollViewer.CanContentScroll="True" IsReadOnly="True" Text="Welcome!&#xD;&#xA;&#xD;&#xA;Enter you Name and IP Address then press Connect to play."/>
+        <TextBox x:Name="infoBox" HorizontalAlignment="Left" Height="330" Margin="61,149,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="315" VerticalScrollBarVisibility="Auto" FontWeight="Bold" TextAlignment="Center" FontSize="16" Visibility="Visible" Background="White" Panel.ZIndex="1" ScrollViewer.CanContentScroll="True" IsReadOnly="True" Text="Welcome!&#xD;&#xA;&#xD;&#xA;Enter your Name and IP Address then press Connect to play."/>
 
         <Button x:Name="connectButton" Content="Connect" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="305,65,0,0" Click="connectButton_Click" Height="23"/>
         <Label x:Name="wordEntryLabel" Content="Enter Words" HorizontalAlignment="Left" Margin="32,579,0,0" VerticalAlignment="Top"/>
@@ -17,7 +17,7 @@
             <TextBlock x:Name="opponentLabel" HorizontalAlignment="Left" Margin="4,-9,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="207" Text="Opponent" RenderTransformOrigin="-0.216,0.678" FontSize="14" FontWeight="Bold" TextDecorations="Underline" IsEnabled="False"/>
             <TextBlock x:Name="opponentBox" HorizontalAlignment="Left" Margin="4,10,0,0" VerticalAlignment="Top" Width="293" Height="31" Padding="0" FontSize="16"/>
             <TextBlock x:Name="timeLeftBox" Margin="302,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="65" RenderTransformOrigin="-0.216,0.678" HorizontalAlignment="Left" Padding="0" UseLayoutRounding="True" FontSize="24" TextAlignment="Center"/>
-            <TextBlock x:Name="pScoreLabel" HorizontalAlignment="Left" Margin="26,389,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="89" Text="Player Score" RenderTransformOrigin="-0.216,0.678" FontSize="14" FontWeight="Bold" TextDecorations="Underline"/>
+            <TextBlock x:Name="pScoreLabel" HorizontalAlignment="Left" Margin="26,389,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="89" Text="Your Score" RenderTransformOrigin="-0.216,0.678" FontSize="14" FontWeight="Bold" TextDecorations="Underline"/>
             <TextBlock x:Name="timeLeftLabel" HorizontalAlignment="Left" Margin="302,-9,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="66" Text="Time Left" RenderTransformOrigin="-0.216,0.678" FontSize="14" FontWeight="Bold" TextDecorations="Underline"/>
             <TextBlock x:Name="pScoreBox" HorizontalAlignment="Left" Margin="26,408,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="89" RenderTransformOrigin="-0.216,0.678" Padding="0" FontSize="16" IsEnabled="False"/>
             <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="26,298,0,0" Stroke="Black" VerticalAlignment="Top" Width="75"/>

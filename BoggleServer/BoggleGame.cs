@@ -326,173 +326,177 @@ namespace BB
             one.Ss.BeginSend(playerOneStats, CloseSocket, one);
             two.Ss.BeginSend(playerTwoStats, CloseSocket, two);
 
-            UpdateDatabase();
+            // THE BELOW WAS USED FOR THE DATABASE
+            //UpdateDatabase();
+
         } // end private method End
 
 
-        /// <summary>
-        /// Records information about this BoggleGame
-        /// after the game has completed in the database
-        /// specified in connectionString.
-        /// </summary>
-        private void UpdateDatabase()
-        {
-            // Get this game's unique ID.
-            int gameId = ++BoggleServer.GameId;
+        // THE BELOW WAS USED FOR THE DATABASE
+        ///// <summary>
+        ///// Records information about this BoggleGame
+        ///// after the game has completed in the database
+        ///// specified in connectionString.
+        ///// </summary>
+        //private void UpdateDatabase()
+        //{
+            
+        //    // Get this game's unique ID.
+        //    int gameId = ++BoggleServer.GameId;
 
-            // Create a connection to the database specified in connectionString.
-            using (MySqlConnection conn = new MySqlConnection(BoggleServer.connectionString))
-            {
-                conn.Open();
-                MySqlCommand command = conn.CreateCommand();
+        //    // Create a connection to the database specified in connectionString.
+        //    using (MySqlConnection conn = new MySqlConnection(BoggleServer.connectionString))
+        //    {
+        //        conn.Open();
+        //        MySqlCommand command = conn.CreateCommand();
 
-                // Create command to insert player 1's name into the Players table.
-                command.CommandText = "INSERT INTO Players(player_name) " +
-                    "VALUES (@player1_name)";
-                command.Prepare();               
-                command.Parameters.AddWithValue("player1_name", one.Name);
+        //        // Create command to insert player 1's name into the Players table.
+        //        command.CommandText = "INSERT INTO Players(player_name) " +
+        //            "VALUES (@player1_name)";
+        //        command.Prepare();               
+        //        command.Parameters.AddWithValue("player1_name", one.Name);
                  
-                // Execute the above command.
-                try
-                {
-                    command.ExecuteNonQuery();
-                }
-                catch (MySqlException e) { }
+        //        // Execute the above command.
+        //        try
+        //        {
+        //            command.ExecuteNonQuery();
+        //        }
+        //        catch (MySqlException e) { }
 
-                // Create command to insert player 2's name into the Players table.
-                command.CommandText = "INSERT INTO Players(player_name) " +
-                    "VALUES (@player2_name)";
-                command.Prepare();
-                command.Parameters.AddWithValue("player2_name", two.Name);
+        //        // Create command to insert player 2's name into the Players table.
+        //        command.CommandText = "INSERT INTO Players(player_name) " +
+        //            "VALUES (@player2_name)";
+        //        command.Prepare();
+        //        command.Parameters.AddWithValue("player2_name", two.Name);
 
-                // Execute the above command.
-                try
-                {
-                    command.ExecuteNonQuery();
-                }
-                catch (MySqlException e) { }
+        //        // Execute the above command.
+        //        try
+        //        {
+        //            command.ExecuteNonQuery();
+        //        }
+        //        catch (MySqlException e) { }
 
-                // Create command to select the rows of player 1 and player 2.
-                command.CommandText = "SELECT * FROM Players WHERE player_name='" + one.Name +
-                    "' OR player_name='" + two.Name + "'";
+        //        // Create command to select the rows of player 1 and player 2.
+        //        command.CommandText = "SELECT * FROM Players WHERE player_name='" + one.Name +
+        //            "' OR player_name='" + two.Name + "'";
 
-                // Execute above command and get the IDs of player 1 and player 2.
-                using (MySqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        if ((string)reader["player_name"] == one.Name)
-                            one.Id = (int)reader["player_id"];
-                        else
-                            two.Id = (int)reader["player_id"];
-                    }
-                }
+        //        // Execute above command and get the IDs of player 1 and player 2.
+        //        using (MySqlDataReader reader = command.ExecuteReader())
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                if ((string)reader["player_name"] == one.Name)
+        //                    one.Id = (int)reader["player_id"];
+        //                else
+        //                    two.Id = (int)reader["player_id"];
+        //            }
+        //        }
 
-                // Create command to insert game information into the Games table.
-                command.CommandText = "INSERT INTO Games(player_1_id, player_1_score, player_2_id, " +
-                    "player_2_score, board_config, time_limit) VALUES (@p1id, @p1s, @p2id, @p2s, @board, @time)";
-                command.Prepare();
-                command.Parameters.AddWithValue("p1id", one.Id);
-                command.Parameters.AddWithValue("p1s", one.Score);
-                command.Parameters.AddWithValue("p2id", two.Id);
-                command.Parameters.AddWithValue("p2s", two.Score);
-                command.Parameters.AddWithValue("board", board.ToString());
-                command.Parameters.AddWithValue("time", BoggleServer.GameLength.ToString());
+        //        // Create command to insert game information into the Games table.
+        //        command.CommandText = "INSERT INTO Games(player_1_id, player_1_score, player_2_id, " +
+        //            "player_2_score, board_config, time_limit) VALUES (@p1id, @p1s, @p2id, @p2s, @board, @time)";
+        //        command.Prepare();
+        //        command.Parameters.AddWithValue("p1id", one.Id);
+        //        command.Parameters.AddWithValue("p1s", one.Score);
+        //        command.Parameters.AddWithValue("p2id", two.Id);
+        //        command.Parameters.AddWithValue("p2s", two.Score);
+        //        command.Parameters.AddWithValue("board", board.ToString());
+        //        command.Parameters.AddWithValue("time", BoggleServer.GameLength.ToString());
 
-                // Execute the above command.
-                command.ExecuteNonQuery();
+        //        // Execute the above command.
+        //        command.ExecuteNonQuery();
 
-                // Insert each legal word from player 1 into the Words table.
-                foreach (string word in one.LegalWords)
-                {
-                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word, @gameid, @playerid, @type)";
-                    command.Prepare();
-                    command.Parameters.AddWithValue("word", word);
-                    command.Parameters.AddWithValue("gameid", gameId);
-                    command.Parameters.AddWithValue("playerid", one.Id);
-                    command.Parameters.AddWithValue("type", 0);
-                    command.ExecuteNonQuery();
-                    command.Parameters.Clear();
+        //        // Insert each legal word from player 1 into the Words table.
+        //        foreach (string word in one.LegalWords)
+        //        {
+        //            command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+        //                "VALUES (@word, @gameid, @playerid, @type)";
+        //            command.Prepare();
+        //            command.Parameters.AddWithValue("word", word);
+        //            command.Parameters.AddWithValue("gameid", gameId);
+        //            command.Parameters.AddWithValue("playerid", one.Id);
+        //            command.Parameters.AddWithValue("type", 0);
+        //            command.ExecuteNonQuery();
+        //            command.Parameters.Clear();
 
-                }
+        //        }
 
-                // Insert each legal word from player 2 into the Words table.
-                foreach (string word in two.LegalWords)
-                {
-                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word, @gameid, @playerid, @type)";
-                    command.Prepare();
-                    command.Parameters.AddWithValue("word", word);
-                    command.Parameters.AddWithValue("gameid", gameId);
-                    command.Parameters.AddWithValue("playerid", two.Id);
-                    command.Parameters.AddWithValue("type", 0);
-                    command.ExecuteNonQuery();
-                    command.Parameters.Clear();
+        //        // Insert each legal word from player 2 into the Words table.
+        //        foreach (string word in two.LegalWords)
+        //        {
+        //            command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+        //                "VALUES (@word, @gameid, @playerid, @type)";
+        //            command.Prepare();
+        //            command.Parameters.AddWithValue("word", word);
+        //            command.Parameters.AddWithValue("gameid", gameId);
+        //            command.Parameters.AddWithValue("playerid", two.Id);
+        //            command.Parameters.AddWithValue("type", 0);
+        //            command.ExecuteNonQuery();
+        //            command.Parameters.Clear();
 
-                }
+        //        }
 
-                // Insert each illegal word from player 1 into the Words table.
-                foreach (string word in one.IllegalWords)
-                {
-                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word, @gameid, @playerid, @type)";
-                    command.Prepare();
-                    command.Parameters.AddWithValue("word", word);
-                    command.Parameters.AddWithValue("gameid", gameId);
-                    command.Parameters.AddWithValue("playerid", one.Id);
-                    command.Parameters.AddWithValue("type", 1);
-                    command.ExecuteNonQuery();
-                    command.Parameters.Clear();
+        //        // Insert each illegal word from player 1 into the Words table.
+        //        foreach (string word in one.IllegalWords)
+        //        {
+        //            command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+        //                "VALUES (@word, @gameid, @playerid, @type)";
+        //            command.Prepare();
+        //            command.Parameters.AddWithValue("word", word);
+        //            command.Parameters.AddWithValue("gameid", gameId);
+        //            command.Parameters.AddWithValue("playerid", one.Id);
+        //            command.Parameters.AddWithValue("type", 1);
+        //            command.ExecuteNonQuery();
+        //            command.Parameters.Clear();
 
-                }
+        //        }
 
-                // Insert each illegal word from player 2 into the Words table.
-                foreach (string word in two.IllegalWords)
-                {
-                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word, @gameid, @playerid, @type)";
-                    command.Prepare();
-                    command.Parameters.AddWithValue("word", word);
-                    command.Parameters.AddWithValue("gameid", gameId);
-                    command.Parameters.AddWithValue("playerid", two.Id);
-                    command.Parameters.AddWithValue("type", 1);
-                    command.ExecuteNonQuery();
-                    command.Parameters.Clear();
+        //        // Insert each illegal word from player 2 into the Words table.
+        //        foreach (string word in two.IllegalWords)
+        //        {
+        //            command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+        //                "VALUES (@word, @gameid, @playerid, @type)";
+        //            command.Prepare();
+        //            command.Parameters.AddWithValue("word", word);
+        //            command.Parameters.AddWithValue("gameid", gameId);
+        //            command.Parameters.AddWithValue("playerid", two.Id);
+        //            command.Parameters.AddWithValue("type", 1);
+        //            command.ExecuteNonQuery();
+        //            command.Parameters.Clear();
 
-                }
+        //        }
 
-                // Insert each shared word from player 1 into the Words table.
-                foreach (string word in one.SharedLegalWords)
-                {
-                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word, @gameid, @playerid, @type)";
-                    command.Prepare();
-                    command.Parameters.AddWithValue("word", word);
-                    command.Parameters.AddWithValue("gameid", gameId);
-                    command.Parameters.AddWithValue("playerid", one.Id);
-                    command.Parameters.AddWithValue("type", 2);
-                    command.ExecuteNonQuery();
-                    command.Parameters.Clear();
+        //        // Insert each shared word from player 1 into the Words table.
+        //        foreach (string word in one.SharedLegalWords)
+        //        {
+        //            command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+        //                "VALUES (@word, @gameid, @playerid, @type)";
+        //            command.Prepare();
+        //            command.Parameters.AddWithValue("word", word);
+        //            command.Parameters.AddWithValue("gameid", gameId);
+        //            command.Parameters.AddWithValue("playerid", one.Id);
+        //            command.Parameters.AddWithValue("type", 2);
+        //            command.ExecuteNonQuery();
+        //            command.Parameters.Clear();
 
-                }
+        //        }
 
-                // Insert each shared word from player 2 into the Words table.
-                foreach (string word in one.SharedLegalWords)
-                {
-                    command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
-                        "VALUES (@word, @gameid, @playerid, @type)";
-                    command.Prepare();
-                    command.Parameters.AddWithValue("word", word);
-                    command.Parameters.AddWithValue("gameid", gameId);
-                    command.Parameters.AddWithValue("playerid", two.Id);
-                    command.Parameters.AddWithValue("type", 2);
-                    command.ExecuteNonQuery();
-                    command.Parameters.Clear();
+        //        // Insert each shared word from player 2 into the Words table.
+        //        foreach (string word in one.SharedLegalWords)
+        //        {
+        //            command.CommandText = "INSERT INTO Words(word, game_id, player_id, word_type) " +
+        //                "VALUES (@word, @gameid, @playerid, @type)";
+        //            command.Prepare();
+        //            command.Parameters.AddWithValue("word", word);
+        //            command.Parameters.AddWithValue("gameid", gameId);
+        //            command.Parameters.AddWithValue("playerid", two.Id);
+        //            command.Parameters.AddWithValue("type", 2);
+        //            command.ExecuteNonQuery();
+        //            command.Parameters.Clear();
 
-                }
-            }
-        } // end private UpdateDatabase
+        //        }
+        //    }
+        //} // end private UpdateDatabase
 
 
         /// <summary>

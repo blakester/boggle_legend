@@ -7,24 +7,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CustomNetworking;
+using System.Net;
 
 namespace BB
 {
     /// <summary>
     /// Represents a player in a Boggle game.
-    /// A Player has: a name, opponent, StringSocket
-    /// connection with the server, score, and
-    /// sets of played legal words, played illegal
+    /// A Player has: a name, IP address, opponent, 
+    /// StringSocket connection with the server, score, 
+    /// and sets of played legal words, played illegal
     /// words, and shared legal words played by both
     /// the player and opponent.
     /// </summary>
     internal class Player
     {
-
         /// <summary>
         /// Players name.
         /// </summary>
         public string Name
+        { get; private set; }
+
+        /// <summary>
+        /// Players IP address.
+        /// </summary>
+        public EndPoint IP
         { get; private set; }
 
         /// <summary>
@@ -63,20 +69,23 @@ namespace BB
         public HashSet<string> IllegalWords
         { get; set; }
 
-        /// <summary>
-        /// The player's database ID.
-        /// </summary>
-        public int Id
-        { get; set; }
+        // THE BELOW WAS USED FOR THE DATABASE
+        ///// <summary>
+        ///// The player's database ID.
+        ///// </summary>
+        //public int Id
+        //{ get; set; }
 
         /// <summary>
         /// Constructer to create player.
         /// </summary>
         /// <param name="s">players name</param>
-        /// <param name="ss">Stringsocket that's connected to server.</param>
-        public Player(string s, StringSocket ss)
+        /// <param name="ip">players IP address</param>
+        /// <param name="ss">Stringsocket that's connected to server</param>
+        public Player(string s, EndPoint ip, StringSocket ss)
         {
-            Name = s;
+            Name = s;            
+            IP = ip;
             Ss = ss;
             Score = 0;
             Opponent = null;
