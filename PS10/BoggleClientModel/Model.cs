@@ -25,7 +25,6 @@ namespace BoggleClient
         private StringSocket socket; // Wrapper that takes care of sending strings over socket.
         private const int port = 2000; // The port the server is using.
 
-
         // These activate events for the controller to execute.
         public event Action<bool> GameEndedEvent; // Event when game is done, resets GUI
         public event Action<string[]> StartMessageEvent; // Event when START is recieved.
