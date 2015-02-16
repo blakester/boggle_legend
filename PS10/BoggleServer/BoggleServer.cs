@@ -40,7 +40,7 @@ namespace BB
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
         // THE BELOW WAS USED FOR THE DATABASE
         //public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
-            //"uid=cs3500_blakeb;password=249827684"; // Used to connect to database.
+        //"uid=cs3500_blakeb;password=249827684"; // Used to connect to database.
 
         /// <summary>
         /// The length of a game in seconds.
@@ -84,7 +84,7 @@ namespace BB
         public static void Main(string[] args)
         {
             // Initilize server
-            BoggleServer BS = new BoggleServer(args);            
+            BoggleServer BS = new BoggleServer(args);
             Console.Read(); //Keep Console window open.
 
             // Closes TCPListener.
@@ -195,18 +195,28 @@ namespace BB
         /// <param name="result">Result of BeginAcceptSocket</param>
         private void ConnectionRequested(IAsyncResult result)
         {
-            // Create a StringSocket with the client.   
-            Socket s = server.EndAcceptSocket(result);
-            StringSocket ss = new StringSocket(s, Encoding.UTF8);
+            // This handles exception that is is sometimes thrown
+            // when the server is closed down. This may not be a
+            // good solution, but it apparently works.
+            try
+            {
+                // Create a StringSocket with the client.
+                Socket s = server.EndAcceptSocket(result);
+                StringSocket ss = new StringSocket(s, Encoding.UTF8);
 
-            // Create an IPAndStringSocket object and pass it
-            // as the payload to BeginReceive. Begin listening
-            // for the "PLAY" command from the client.
-            IPAndStringSocket ipss = new IPAndStringSocket(s.LocalEndPoint, ss);
-            ss.BeginReceive(Play, ipss); // Send StringSocket to be paired up.
+                // Create an IPAndStringSocket object and pass it
+                // as the payload to BeginReceive. Begin listening
+                // for the "PLAY" command from the client.
+                IPAndStringSocket ipss = new IPAndStringSocket(s.LocalEndPoint, ss);
+                ss.BeginReceive(Play, ipss); // Send StringSocket to be paired up.
 
-            // Begin listening for another connection.
-            server.BeginAcceptSocket(ConnectionRequested, server);
+                // Begin listening for another connection.
+                server.BeginAcceptSocket(ConnectionRequested, server);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
         }
 
 
@@ -257,11 +267,11 @@ namespace BB
                             // from the same IP is wanted.)
                             if (firstPlayer.IP.Equals(currentPlayer.IP))
                             {
-                                 // Update firstPlayer to the 
-                                 // latest Player from the
-                                 // same IP because firstPlayer's
-                                 // StringSocket is closed when
-                                 // when "Disconnect" is clicked.
+                                // Update firstPlayer to the 
+                                // latest Player from the
+                                // same IP because firstPlayer's
+                                // StringSocket is closed when
+                                // when "Disconnect" is clicked.
                                 firstPlayer = currentPlayer;
                                 return;
                             }
