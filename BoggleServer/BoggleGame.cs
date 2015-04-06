@@ -139,7 +139,7 @@ namespace BB
             string word;
             if (Regex.IsMatch(s.ToUpper(), @"^(WORD\s)"))
             {
-                word = s.Substring(5).ToUpper();
+                word = s.Substring(5).Trim().ToUpper();
             }
             else
             {
