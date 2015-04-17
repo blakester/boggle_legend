@@ -65,21 +65,20 @@ namespace BoggleClient
         /// <param name="payload">NOT USED.</param>
         private void ReceivedInfo(string message, Exception e, object payload)
         {
-            // An error occured with the socket
-            if (message == null)
-                Terminate(false);
-            else if (Regex.IsMatch(message, @"^(START\s)")) // Starts Game
-                StartMessage(message);
-            else if (Regex.IsMatch(message, @"^(TIME\s)")) // Time Update
+            if (Regex.IsMatch(message, @"^(TIME\s)")) // Time Update
                 TimeUpdate(message);
             else if (Regex.IsMatch(message, @"^(SCORE\s)")) // Update Score
-                ScoreUpdate(message);
+                ScoreUpdate(message);              
             else if (Regex.IsMatch(message, @"^(STOP\s)")) // End Game
                 SummaryMessage(message);
+            else if (Regex.IsMatch(message, @"^(START\s)")) // Starts Game
+                StartMessage(message);
+            else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnect
+                Terminate(true);            
             else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
                 IgnoreMessage(message);
-            else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnect
-                Terminate(true);
+            else if (message == null) // An error occured with the socket
+                Terminate(false);            
 
             socket.BeginReceive(ReceivedInfo, null); // Receiving Loop
         }
