@@ -1,3 +1,5 @@
-﻿-Is gameStarted needed in Model.cs? Does it work just being confined to MainWindow.xaml.cs
+﻿-Is gameStarted needed in Model.cs? Does it work just being confined to MainWindow.xaml.cs?
+  -Perhaps not related to gameStarted, but server sometimes only displays one disconnect 
+   message when a player disconnects during a game. Some kinda race condition?
 -Send message to client when server closes but before game starts
 -create chat boxes
