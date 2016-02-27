@@ -204,13 +204,10 @@ namespace BB
                 Socket s = server.EndAcceptSocket(result);
                 StringSocket ss = new StringSocket(s, Encoding.UTF8);
                 
-                // Print client info
-                Console.WriteLine(string.Format("RECEIVED CONNECTION: {0} {1}", s.RemoteEndPoint.ToString(), System.DateTime.Now));
-                
                 // Create an IPAndStringSocket object and pass it
                 // as the payload to BeginReceive. Begin listening
                 // for messages from the client.
-                IPAndStringSocket ipss = new IPAndStringSocket((IPEndPoint)s.LocalEndPoint, ss);
+                IPAndStringSocket ipss = new IPAndStringSocket(s.LocalEndPoint, ss);
                 ss.BeginReceive(ReceivedMessage, ipss); // Send StringSocket to be paired up.
 
                 // Begin listening for another connection.
@@ -269,16 +266,16 @@ namespace BB
                             // but then reconnects. However, comment out
                             // if the ability to run a game with 2 players
                             // from the same IP is wanted.)
-                            //if (firstPlayer.IP.Equals(currentPlayer.IP))
-                            //{
-                            //    // Update firstPlayer to the 
-                            //    // latest Player from the
-                            //    // same IP because firstPlayer's
-                            //    // StringSocket is closed when
-                            //    // when "Disconnect" is clicked.
-                            //    firstPlayer = currentPlayer;
-                            //    return;
-                            //}
+                            if (firstPlayer.IP.Equals(currentPlayer.IP))
+                            {
+                                // Update firstPlayer to the 
+                                // latest Player from the
+                                // same IP because firstPlayer's
+                                // StringSocket is closed when
+                                // when "Disconnect" is clicked.
+                                firstPlayer = currentPlayer;
+                                return;
+                            }
 
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
                             currentPlayer.Opponent = firstPlayer;
@@ -289,11 +286,6 @@ namespace BB
                         }// end else
                     }// end Lock
                 }// end if
-                else if (Regex.IsMatch(s.ToUpper(), @"^(DISCONNECT)"))
-                {
-                    // Print info on disconnected client
-                    Console.WriteLine(string.Format("LOST CONNECTION:     {0} {1}", ipss.IP.ToString(), System.DateTime.Now));
-                }
                 else
                 {
                     IPAndStringSocket temp = (IPAndStringSocket)payload;
@@ -321,7 +313,7 @@ namespace BB
             /// <summary>
             /// This will be the Player's IP address.
             /// </summary>
-            public IPEndPoint IP
+            public EndPoint IP
             { get; private set; }
 
             /// <summary>
@@ -338,7 +330,7 @@ namespace BB
             /// </summary>
             /// <param name="ip">the EndPoint</param>
             /// <param name="ss">the StringSocket</param>
-            public IPAndStringSocket(IPEndPoint ip, StringSocket ss)
+            public IPAndStringSocket(EndPoint ip, StringSocket ss)
             {
                 IP = ip;
                 Ss = ss;
