@@ -24,6 +24,7 @@ namespace BoggleClient
         private TcpClient client; // Allows us to connect to server.
         private StringSocket socket; // Wrapper that takes care of sending strings over socket.
         private const int port = 2000; // The port the server is using.
+        public bool gameStarted = false;
 
         // These activate events for the controller to execute.
         public event Action<bool> GameEndedEvent; // Event when game is done, resets GUI
@@ -66,19 +67,19 @@ namespace BoggleClient
         private void ReceivedMessage(string message, Exception e, object payload)
         {
             if (message == null) // An error occured with the socket
-                Terminate(false);   
+                Terminate(false); // NULL RECEIVED WHEN SERVER CLOSES SOCKET ON OTHER END
             else if (Regex.IsMatch(message, @"^(TIME\s)")) // Time Update
                 TimeUpdate(message);
             else if (Regex.IsMatch(message, @"^(SCORE\s)")) // Update Score
-                ScoreUpdate(message);              
+                ScoreUpdate(message);
             else if (Regex.IsMatch(message, @"^(STOP\s)")) // End Game
                 SummaryMessage(message);
             else if (Regex.IsMatch(message, @"^(START\s)")) // Starts Game
                 StartMessage(message);
             else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnected
-                Terminate(true);            
+                Terminate(true);
             else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
-                IgnoreMessage(message);         
+                IgnoreMessage(message);
 
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
@@ -99,7 +100,7 @@ namespace BoggleClient
             }
             finally
             {
-                if (GameEndedEvent != null)
+                if (GameEndedEvent != null && gameStarted)
                     GameEndedEvent(opponentDisconnected);
             }
         }
@@ -114,7 +115,7 @@ namespace BoggleClient
         {
             char[] spaces = { ' ' }; // Ensures that empty entries are not created.
             string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
-            StartMessageEvent(tokens);          
+            StartMessageEvent(tokens);
         }
 
 
@@ -216,6 +217,12 @@ namespace BoggleClient
         }
 
 
+        public void TerminateBeforeStart()
+        {
+            socket.BeginSend("DISCONNECT\n", DisconnectCallback, null);//WHEN NEITHER THIS NOR SERVER CLOSES ANYTHING, SECOND DISCONNECT ISN'T SENT: THE SOCKET ISN'T CONNECTED
+        }
+
+
         /// <summary>
         /// Callback to the sockets BeginSend function. Checks to
         /// see if any errors have occured. Terminates if so, nothing if
@@ -228,5 +235,13 @@ namespace BoggleClient
             if (e != null)
                 Terminate(false);
         }
+
+
+        private void DisconnectCallback(Exception e, object payload)
+        {
+            socket.Close();
+            client.Close();
+        }
+
     }// end Class
 } // end Namespace

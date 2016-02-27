@@ -26,7 +26,7 @@ namespace BoggleClient
     public partial class MainWindow : Window
     {
 
-        private Model model; // The model to handle socket and computation.
+        private Model model; // The model to handle socket and computation.        
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -93,7 +93,10 @@ namespace BoggleClient
                 connectButton.Content = "Connect";
 
                 // Let model handle disconnecting from server.
-                model.Terminate(false);                            
+                if (model.gameStarted)
+                    model.Terminate(false);
+                else
+                    model.TerminateBeforeStart();
             }
         }
 
@@ -131,6 +134,7 @@ namespace BoggleClient
         /// <param name="opponentDisconnect">Used to determine if opponent disconnected from server.</param>
         private void GameEndResetEverythingHelper(bool opponentDisconnect)
         {
+            model.gameStarted = false;
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
             wordEntryBox.IsEnabled = false;            
@@ -180,6 +184,8 @@ namespace BoggleClient
         /// <param name="s">String Tokens containing start game variables from server.</param>
         private void GameStartMessageHelper(string[] s)
         {
+            model.gameStarted = true;
+            
             // Allow user to quit game.
             connectButton.Content = "Disconnect";            
 
