@@ -65,7 +65,9 @@ namespace BoggleClient
         /// <param name="payload">NOT USED.</param>
         private void ReceivedMessage(string message, Exception e, object payload)
         {
-            if (Regex.IsMatch(message, @"^(TIME\s)")) // Time Update
+            if (message == null) // An error occured with the socket
+                Terminate(false);   
+            else if (Regex.IsMatch(message, @"^(TIME\s)")) // Time Update
                 TimeUpdate(message);
             else if (Regex.IsMatch(message, @"^(SCORE\s)")) // Update Score
                 ScoreUpdate(message);              
@@ -76,9 +78,7 @@ namespace BoggleClient
             else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);            
             else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
-                IgnoreMessage(message);
-            else if (message == null) // An error occured with the socket
-                Terminate(false);            
+                IgnoreMessage(message);         
 
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
