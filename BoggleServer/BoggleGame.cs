@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using CustomNetworking;
 using System.Threading;
 using System.Text.RegularExpressions;
-using MySql.Data.MySqlClient;
+// THE BELOW WAS USED FOR THE DATABASE
+//using MySql.Data.MySqlClient;
+using System.Net;
 
 namespace BB
 {
@@ -114,14 +116,14 @@ namespace BB
         private void WordReceived(string s, Exception e, object payload)
         {
 
-            // If e and s are null, end game.
+            // If s is null, end game.
             if (s == null)
             {
                 Terminate(e, payload);
                 return;
             }
 
-            // Saves player for clarity purposes.
+            // Save player for code readability.
             Player player = (Player)payload;
 
             // Only listen for more words if game is still going.
@@ -295,7 +297,11 @@ namespace BB
         private void CloseSocket(Exception e, object payload)
         {
             // Close the StringSocket to the Player.
-            ((Player)payload).Ss.Close();
+            if (((Player)payload).Ss.Connected)
+            {
+                ((Player)payload).Ss.Close();
+                Console.WriteLine(string.Format("CONNECTION LOST:     {0} {1}", ((Player)payload).IP, DateTime.Now));
+            }            
         }
 
 
@@ -324,7 +330,7 @@ namespace BB
             string playerTwoStats = "STOP" + playerTwoLegal + playerOneLegal
                 + shareLegal + playerTwoIllegal + playerOneIllegal + "\n";
 
-            // Send the messages
+            // Send the messages then close the sockets
             one.Ss.BeginSend(playerOneStats, CloseSocket, one);
             two.Ss.BeginSend(playerTwoStats, CloseSocket, two);
 
