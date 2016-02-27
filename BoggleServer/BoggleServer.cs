@@ -370,6 +370,8 @@ namespace BB
         /// </summary>
         public void CloseServer()
         {
+            if (firstPlayer != null)
+                firstPlayer.Ss.Close();
             server.Stop();
 
             // THE BELOW WAS USED FOR THE DATABASE
