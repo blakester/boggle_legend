@@ -203,11 +203,15 @@ namespace BB
                 // Create a StringSocket with the client.
                 Socket s = server.EndAcceptSocket(result);
                 StringSocket ss = new StringSocket(s, Encoding.UTF8);
+
+                // Print client connection info
+                IPAddress clientIP = ((IPEndPoint)s.RemoteEndPoint).Address;
+                Console.WriteLine(string.Format("CONNECTION RECEIVED: {0} {1}", clientIP, System.DateTime.Now));
                 
                 // Create an IPAndStringSocket object and pass it
                 // as the payload to BeginReceive. Begin listening
                 // for messages from the client.
-                IPAndStringSocket ipss = new IPAndStringSocket(s.LocalEndPoint, ss);
+                IPAndStringSocket ipss = new IPAndStringSocket(clientIP, ss);
                 ss.BeginReceive(ReceivedMessage, ipss); // Send StringSocket to be paired up.
 
                 // Begin listening for another connection.
@@ -313,7 +317,7 @@ namespace BB
             /// <summary>
             /// This will be the Player's IP address.
             /// </summary>
-            public EndPoint IP
+            public IPAddress IP
             { get; private set; }
 
             /// <summary>
@@ -330,7 +334,7 @@ namespace BB
             /// </summary>
             /// <param name="ip">the EndPoint</param>
             /// <param name="ss">the StringSocket</param>
-            public IPAndStringSocket(EndPoint ip, StringSocket ss)
+            public IPAndStringSocket(IPAddress ip, StringSocket ss)
             {
                 IP = ip;
                 Ss = ss;
