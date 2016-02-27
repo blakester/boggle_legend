@@ -1,2 +1,3 @@
-﻿-Send message to clients when server closes
+﻿-Is gameStarted needed in Model.cs? Does it work just being confined to MainWindow.xaml.cs
+-Send message to client when server closes but before game starts
 -create chat boxes
