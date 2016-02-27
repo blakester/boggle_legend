@@ -156,7 +156,7 @@ namespace BB
             }
             else
                 CustomBoard = null;
-            Console.WriteLine("Boggle Server is running. Press enter to close.");
+            Console.WriteLine("Boggle Server is running. Press enter to close.\n");
 
             // THE BELOW WAS USED FOR THE DATABASE
             // Updates server gameId to match the count in database.
@@ -203,12 +203,15 @@ namespace BB
                 // Create a StringSocket with the client.
                 Socket s = server.EndAcceptSocket(result);
                 StringSocket ss = new StringSocket(s, Encoding.UTF8);
-
+                
+                // Print client info
+                Console.WriteLine(string.Format("RECEIVED CONNECTION: {0} {1}", s.RemoteEndPoint.ToString(), System.DateTime.Now));
+                
                 // Create an IPAndStringSocket object and pass it
                 // as the payload to BeginReceive. Begin listening
-                // for the "PLAY" command from the client.
-                IPAndStringSocket ipss = new IPAndStringSocket(s.LocalEndPoint, ss);
-                ss.BeginReceive(Play, ipss); // Send StringSocket to be paired up.
+                // for messages from the client.
+                IPAndStringSocket ipss = new IPAndStringSocket((IPEndPoint)s.LocalEndPoint, ss);
+                ss.BeginReceive(ReceivedMessage, ipss); // Send StringSocket to be paired up.
 
                 // Begin listening for another connection.
                 server.BeginAcceptSocket(ConnectionRequested, server);
@@ -232,12 +235,13 @@ namespace BB
         /// <param name="e">an Exception, if any</param>
         /// <param name="payload">the StringSocket connecting
         /// the server and client</param>
-        private void Play(String s, Exception e, object payload)
+        private void ReceivedMessage(String s, Exception e, object payload)
         {
-            // If e is non null, set up game.  Otherwise close
-            // socket.
+            // If e is non null, determine the message.  Otherwise close socket.
             if (e == null && s != null)
             {
+                IPAndStringSocket ipss = (IPAndStringSocket)payload;
+
                 // To begin play, the command must start
                 // exactly with "PLAY ". Ignore otherwise.
                 if (Regex.IsMatch(s.ToUpper(), @"^(PLAY\s)"))
@@ -245,7 +249,7 @@ namespace BB
                     // Create a new Player using the player's name,
                     // IP, and StringSocket connection with the server.
                     string name = s.Substring(5);
-                    IPAndStringSocket ipss = (IPAndStringSocket)payload;
+                    //IPAndStringSocket ipss = (IPAndStringSocket)payload;
                     Player currentPlayer = new Player(name.Trim(), ipss.IP, ipss.Ss);
 
                     // Keep firstPlayer threadsafe.
@@ -265,16 +269,16 @@ namespace BB
                             // but then reconnects. However, comment out
                             // if the ability to run a game with 2 players
                             // from the same IP is wanted.)
-                            if (firstPlayer.IP.Equals(currentPlayer.IP))
-                            {
-                                // Update firstPlayer to the 
-                                // latest Player from the
-                                // same IP because firstPlayer's
-                                // StringSocket is closed when
-                                // when "Disconnect" is clicked.
-                                firstPlayer = currentPlayer;
-                                return;
-                            }
+                            //if (firstPlayer.IP.Equals(currentPlayer.IP))
+                            //{
+                            //    // Update firstPlayer to the 
+                            //    // latest Player from the
+                            //    // same IP because firstPlayer's
+                            //    // StringSocket is closed when
+                            //    // when "Disconnect" is clicked.
+                            //    firstPlayer = currentPlayer;
+                            //    return;
+                            //}
 
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
                             currentPlayer.Opponent = firstPlayer;
@@ -285,11 +289,16 @@ namespace BB
                         }// end else
                     }// end Lock
                 }// end if
+                else if (Regex.IsMatch(s.ToUpper(), @"^(DISCONNECT)"))
+                {
+                    // Print info on disconnected client
+                    Console.WriteLine(string.Format("LOST CONNECTION:     {0} {1}", ipss.IP.ToString(), System.DateTime.Now));
+                }
                 else
                 {
                     IPAndStringSocket temp = (IPAndStringSocket)payload;
-                    temp.Ss.BeginSend("IGNORING " + s + "\n", MessageSent, temp.Ss);
-                    temp.Ss.BeginReceive(Play, temp);
+                    temp.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, temp.Ss);
+                    temp.Ss.BeginReceive(ReceivedMessage, temp);
 
                 }// end else
             }// end if
@@ -297,7 +306,6 @@ namespace BB
             {
                 // If offending socket is firstPlayer, remove firstPlayer
                 ((IPAndStringSocket)payload).Ss.Close(); //Close offending socket
-
             }// end else
         } // end method Play
 
@@ -313,7 +321,7 @@ namespace BB
             /// <summary>
             /// This will be the Player's IP address.
             /// </summary>
-            public EndPoint IP
+            public IPEndPoint IP
             { get; private set; }
 
             /// <summary>
@@ -330,7 +338,7 @@ namespace BB
             /// </summary>
             /// <param name="ip">the EndPoint</param>
             /// <param name="ss">the StringSocket</param>
-            public IPAndStringSocket(EndPoint ip, StringSocket ss)
+            public IPAndStringSocket(IPEndPoint ip, StringSocket ss)
             {
                 IP = ip;
                 Ss = ss;
@@ -346,7 +354,7 @@ namespace BB
         /// <param name="e">an Exception, if any</param>
         /// <param name="payload">the StringSocket connecting
         /// the server and client</param>
-        private void MessageSent(Exception e, object payload)
+        private void SendCallback(Exception e, object payload)
         {
             if (e != null)
             {

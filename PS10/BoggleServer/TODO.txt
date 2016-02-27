@@ -1,0 +1,2 @@
+﻿-Send message to clients when server closes
+-create chat boxes
