@@ -47,7 +47,7 @@ namespace BoggleClient
                 client = new TcpClient(ip, port);
                 socket = new StringSocket(client.Client, UTF8Encoding.Default);
                 socket.BeginSend("PLAY " + player + "\n", SendCallback, null);
-                socket.BeginReceive(ReceivedInfo, null);
+                socket.BeginReceive(ReceivedMessage, null);
             }
             catch (SocketException)
             {
@@ -63,7 +63,7 @@ namespace BoggleClient
         /// <param name="message">Message that was received.</param>
         /// <param name="e">Exeption, if there was one.</param>
         /// <param name="payload">NOT USED.</param>
-        private void ReceivedInfo(string message, Exception e, object payload)
+        private void ReceivedMessage(string message, Exception e, object payload)
         {
             if (Regex.IsMatch(message, @"^(TIME\s)")) // Time Update
                 TimeUpdate(message);
@@ -73,14 +73,14 @@ namespace BoggleClient
                 SummaryMessage(message);
             else if (Regex.IsMatch(message, @"^(START\s)")) // Starts Game
                 StartMessage(message);
-            else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnect
+            else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);            
             else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
                 IgnoreMessage(message);
             else if (message == null) // An error occured with the socket
                 Terminate(false);            
 
-            socket.BeginReceive(ReceivedInfo, null); // Receiving Loop
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 

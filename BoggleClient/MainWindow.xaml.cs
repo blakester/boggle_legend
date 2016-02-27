@@ -115,7 +115,7 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Invokes the event that responsible for reseting the GUI to it's orginal state.
+        /// Invokes the event thats responsible for resetting the GUI to it's orginal state.
         /// </summary>
         /// <param name="opponentDisconnect">Lets event know if opponent disconnect from server.</param>
         private void GameEndResetEverything(bool opponentDisconnect)
@@ -147,7 +147,7 @@ namespace BoggleClient
                 oScoreBox.Text = "";
                 wordEntryBox.Text = "";
                 
-                // If player disconnected from server.
+                // If opponent disconnected from server.
                 if(opponentDisconnect)
                     infoBox.Text = "Your opponent has fled...\n\n"
                         + "Enter your name and server IP Address then press Connect to play.";

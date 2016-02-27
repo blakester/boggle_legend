@@ -73,9 +73,9 @@ namespace BB
         {
             // Let the Players know the game has started.
             one.Ss.BeginSend("START " + board.ToString() + " "
-                + timeLeft + " " + two.Name + "\n", WordSent, one);
+                + timeLeft + " " + two.Name + "\n", SendCallback, one);
             two.Ss.BeginSend("START " + board.ToString() + " "
-                + timeLeft + " " + one.Name + "\n", WordSent, two);
+                + timeLeft + " " + one.Name + "\n", SendCallback, two);
 
             // Starts the timer. The method TimeUpdate will
             // be called every second. Start delayed by 250ms.
@@ -91,7 +91,7 @@ namespace BB
         /// <param name="e">an Exception, if any</param>
         /// <param name="payload">the StringSocket connecting
         /// the server and Player</param>
-        private void WordSent(Exception e, object payload)
+        private void SendCallback(Exception e, object payload)
         {
             if (e != null)
             {
@@ -130,7 +130,7 @@ namespace BB
 
             if (!gameStart)
             {
-                player.Ss.BeginSend("IGNORING " + s + "\n", WordSent, player);
+                player.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, player);
                 return;
             }
 
@@ -143,7 +143,7 @@ namespace BB
             }
             else
             {
-                player.Ss.BeginSend("IGNORING " + s + "\n", WordSent, player);
+                player.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, player);
                 return;
             }
 
@@ -198,9 +198,9 @@ namespace BB
         private void UpdateScore()
         {
             one.Ss.BeginSend("SCORE " + one.Score + " " + two.Score + "\n",
-                WordSent, one);
+                SendCallback, one);
             two.Ss.BeginSend("SCORE " + two.Score + " " + one.Score + "\n",
-                WordSent, two);
+                SendCallback, two);
         }
 
 
@@ -253,8 +253,8 @@ namespace BB
         {
             // Send both Players the remaining time.
             timeLeft--;
-            one.Ss.BeginSend("TIME " + timeLeft + "\n", WordSent, one);
-            two.Ss.BeginSend("TIME " + timeLeft + "\n", WordSent, two);
+            one.Ss.BeginSend("TIME " + timeLeft + "\n", SendCallback, one);
+            two.Ss.BeginSend("TIME " + timeLeft + "\n", SendCallback, two);
 
             // End the game if time is out.
             if (timeLeft == 0)
@@ -276,9 +276,11 @@ namespace BB
         /// exception occured</param>
         private void Terminate(Exception e, object payload)
         {
-            // Notify the remaining Player.
+            // Close socket to offending player
             Player dead = (Player)payload;
             CloseSocket(null, payload);
+
+            // Notify then close socket to remaining Player
             if (dead.Opponent.Ss.Connected)
                 dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent);
 
