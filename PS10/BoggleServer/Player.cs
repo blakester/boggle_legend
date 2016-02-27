@@ -30,7 +30,7 @@ namespace BB
         /// <summary>
         /// Players IP address.
         /// </summary>
-        public EndPoint IP
+        public IPAddress IP
         { get; private set; }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace BB
         /// <param name="s">players name</param>
         /// <param name="ip">players IP address</param>
         /// <param name="ss">Stringsocket that's connected to server</param>
-        public Player(string s, EndPoint ip, StringSocket ss)
+        public Player(string s, IPAddress ip, StringSocket ss)
         {
             Name = s;            
             IP = ip;
