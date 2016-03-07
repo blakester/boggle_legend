@@ -115,7 +115,6 @@ namespace BB
         /// was received</param>
         private void WordReceived(string s, Exception e, object payload)
         {
-
             // If s is null, end game.
             if (s == null)
             {
@@ -142,6 +141,12 @@ namespace BB
             if (Regex.IsMatch(s.ToUpper(), @"^(WORD\s)"))
             {
                 word = s.Substring(5).Trim().ToUpper();
+            }
+            else if (Regex.IsMatch(s.ToUpper(), @"^(IN_GAME_DISCONNECT)"))
+            {
+                //Console.WriteLine(string.Format("CONNECTION LOST:     {0} {1}", player.IP, DateTime.Now));
+                Terminate(e,payload);
+                return;
             }
             else
             {
@@ -192,6 +197,50 @@ namespace BB
                 }
             } // end lock
         } // end private method WordReceived
+
+
+        /// <summary>
+        /// Called when an Exception occurs during communication
+        /// with a Player. This BoggleGame will terminate and the
+        /// remaining Player will be notified.
+        /// </summary>
+        /// <param name="e">the Exception that occured</param>
+        /// <param name="payload">the Player with which the
+        /// exception occured</param>
+        private void Terminate(Exception e, object payload)
+        {
+            // Close socket to offending player
+            Player dead = (Player)payload;
+            CloseSocket(null, payload);
+
+            // Notify then close socket to remaining Player
+            if (dead.Opponent.Ss.Connected)
+                dead.Opponent.Ss.BeginSend("TERMINATED\n", Deleteme, dead.Opponent);//DELETEME IS DUMMY METHOD, CLOSESOCKET WAS CALLED SO CLIENT
+                                                                                    //WAS UNABLE TO SEND "IN_GAME_DISCONNECT"
+        }
+
+
+        /// <summary>
+        /// Closes the socket if not already done so.
+        /// </summary>
+        /// <param name="e">NOT USED</param>
+        /// <param name="payload">Player Stringsocket to close.</param>
+        private void CloseSocket(Exception e, object payload)
+        {
+            Player player = (Player)payload;
+
+            // Close the StringSocket to the Player.
+            if (player.Ss.Connected)
+            {
+                player.Ss.Close();
+                Console.WriteLine(string.Format("CONNECTION LOST:     {0} {1}", player.IP, DateTime.Now));
+            }
+        }
+
+        private void Deleteme(Exception e, object payload)
+        {
+            
+        }
 
 
         /// <summary>
@@ -265,44 +314,7 @@ namespace BB
                 timer.Dispose();
                 End();
             }
-        }
-
-
-        /// <summary>
-        /// Called when an Exception occurs during communication
-        /// with a Player. This BoggleGame will terminate and the
-        /// remaining Player will be notified.
-        /// </summary>
-        /// <param name="e">the Exception that occured</param>
-        /// <param name="payload">the Player with which the
-        /// exception occured</param>
-        private void Terminate(Exception e, object payload)
-        {
-            // Close socket to offending player
-            Player dead = (Player)payload;
-            CloseSocket(null, payload);
-
-            // Notify then close socket to remaining Player
-            if (dead.Opponent.Ss.Connected)
-                dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent);
-
-        }
-
-
-        /// <summary>
-        /// Closes the socket if not already done so.
-        /// </summary>
-        /// <param name="e">NOT USED</param>
-        /// <param name="payload">Player Stringsocket to close.</param>
-        private void CloseSocket(Exception e, object payload)
-        {
-            // Close the StringSocket to the Player.
-            if (((Player)payload).Ss.Connected)
-            {
-                ((Player)payload).Ss.Close();
-                Console.WriteLine(string.Format("CONNECTION LOST:     {0} {1}", ((Player)payload).IP, DateTime.Now));
-            }            
-        }
+        }        
 
 
         /// <summary>
