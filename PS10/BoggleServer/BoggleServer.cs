@@ -238,11 +238,12 @@ namespace BB
         /// the server and client</param>
         private void ReceivedMessage(String s, Exception e, object payload)
         {
+            // Store the IPAndStringSocket from the payload
+            IPAndStringSocket ipss = (IPAndStringSocket)payload;
+
             // If e is non null, determine the message.  Otherwise close socket.
             if (e == null && s != null)
             {
-                IPAndStringSocket ipss = (IPAndStringSocket)payload;
-
                 // To begin play, the command must start
                 // exactly with "PLAY ". Ignore otherwise.
                 if (Regex.IsMatch(s.ToUpper(), @"^(PLAY\s)"))
@@ -292,7 +293,7 @@ namespace BB
     
                     ipss.Ss.BeginReceive(ReceivedMessage, ipss);
                 }// end if
-                else if (Regex.IsMatch(s.ToUpper(), @"^(DISCONNECT)"))
+                else if (Regex.IsMatch(s.ToUpper(), @"^(PRE_GAME_DISCONNECT)"))
                 {                    
                     Console.WriteLine(string.Format("CONNECTION LOST:     {0} {1}", ipss.IP, DateTime.Now));
                     ipss.Ss.Close();
@@ -306,8 +307,12 @@ namespace BB
             }// end if
             else
             {
-                // If offending socket is firstPlayer, remove firstPlayer
-                ((IPAndStringSocket)payload).Ss.Close(); //Close offending socket
+                if (ipss.Ss.Connected)
+                {
+                    // If offending socket is firstPlayer, remove firstPlayer
+                    //Console.WriteLine(string.Format("CONNECTION LOST:     {0} {1}", ipss.IP, DateTime.Now));
+                    ipss.Ss.Close(); //Close offending socket
+                }                
             }// end else
         } // end method Play
 

@@ -1,5 +1,8 @@
 ﻿-Is gameStarted needed in Model.cs? Does it work just being confined to MainWindow.xaml.cs?
-  -Perhaps not related to gameStarted, but server sometimes only displays one disconnect 
-   message when a player disconnects during a game. Some kinda race condition?
+-Disconnections appear to be displaying properly, but look at Terminate in BoggleServer.cs; when the terminate message is sent,
+ it is necessary that the callback doesn't close the socket because the client still needs to send back the IN_GAME_DISCONNECT
+ and then the server closes the socket and prints the message. I should look into this setup, but I think it might be the best I
+ can do. Maybe just have the call back (Deleteme) close the socket if there is an exception?
+   
 -Send message to client when server closes but before game starts
 -create chat boxes
