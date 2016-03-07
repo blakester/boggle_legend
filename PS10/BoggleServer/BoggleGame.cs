@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 using CustomNetworking;
 using System.Threading;
 using System.Text.RegularExpressions;
-using MySql.Data.MySqlClient;
+// THE BELOW WAS USED FOR THE DATABASE
+//using MySql.Data.MySqlClient;
 
 namespace BB
 {
