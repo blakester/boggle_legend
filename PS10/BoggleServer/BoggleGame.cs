@@ -39,7 +39,7 @@ namespace BB
         /// </summary>
         /// <param name="one">Player one</param>
         /// <param name="two">Player two</param>
-        public BoggleGame(Player one, Player two, long gameID)
+        public BoggleGame(Player one, Player two, int gameID)
         {
             // Store the players.
             this.one = one;
@@ -74,6 +74,8 @@ namespace BB
         /// </summary>
         public void Start()
         {
+            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "START", gameID, one.IP, two.IP, DateTime.Now));
+            
             // Let the Players know the game has started.
             one.Ss.BeginSend("START " + board.ToString() + " "
                 + timeLeft + " " + two.Name + "\n", SendCallback, one);
@@ -116,7 +118,6 @@ namespace BB
         /// was received</param>
         private void WordReceived(string s, Exception e, object payload)
         {
-
             // If e and s are null, end game.
             if (s == null)
             {
@@ -204,45 +205,7 @@ namespace BB
                 SendCallback, one);
             two.Ss.BeginSend("SCORE " + two.Score + " " + one.Score + "\n",
                 SendCallback, two);
-        }
-
-
-        /// <summary>
-        /// Returns the score value of the specified word.
-        /// 3 or 4 length is worth 1 point.
-        /// 5 is worth 2 points.
-        /// 6 is worth 3 points.
-        /// 7 is worth 5 points.
-        /// 8+ is worth 11 points.
-        /// </summary>
-        /// <param name="word">the word</param>
-        /// <returns>the word's value</returns>
-        private int WordValue(string word)
-        {
-            int points = 0;
-
-            switch (word.Length)
-            {
-                case 3:
-                case 4:
-                    points = 1;
-                    break;
-                case 5:
-                    points = 2;
-                    break;
-                case 6:
-                    points = 3;
-                    break;
-                case 7:
-                    points = 5;
-                    break;
-                default:
-                    points = 11;
-                    break;
-            }
-
-            return points;
-        }
+        }        
 
 
         /// <summary>
@@ -287,10 +250,9 @@ namespace BB
             if (dead.Opponent.Ss.Connected)
             {
                 dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent);
-                Console.WriteLine(string.Format("{0, 22} {1, -15} {2, -15} {3}", "GAME ENDED PREMATURELY", dead.IP, dead.Opponent.IP, DateTime.Now));
-                timer.Dispose();
+                Console.WriteLine(string.Format("{0, 13} GAME {1, 4} {2, -15} {3, -15} {4}", "PREMATURE END", gameID, dead.IP, dead.Opponent.IP, DateTime.Now));
+                timer.Dispose(); // game is over, stop sending time updates
             }
-            //Console.WriteLine(string.Format("{0, -20} {1, -15} {2, -15} {3}", "GAME ENDED:", dead.IP, dead.Opponent.IP, DateTime.Now));
         }
 
 
@@ -335,12 +297,68 @@ namespace BB
             one.Ss.BeginSend(playerOneStats, CloseSocket, one);
             two.Ss.BeginSend(playerTwoStats, CloseSocket, two);
 
-            Console.WriteLine(string.Format("{0, -22} {1, -15} {2, -15} {3}", "GAME ENDED", one.IP, two.IP, DateTime.Now));
+            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "END", gameID, one.IP, two.IP, DateTime.Now));
 
             // THE BELOW WAS USED FOR THE DATABASE
             //UpdateDatabase();
 
         } // end private method End
+
+
+        /// <summary>
+        /// Returns the score value of the specified word.
+        /// 3 or 4 length is worth 1 point.
+        /// 5 is worth 2 points.
+        /// 6 is worth 3 points.
+        /// 7 is worth 5 points.
+        /// 8+ is worth 11 points.
+        /// </summary>
+        /// <param name="word">the word</param>
+        /// <returns>the word's value</returns>
+        private int WordValue(string word)
+        {
+            int points = 0;
+
+            switch (word.Length)
+            {
+                case 3:
+                case 4:
+                    points = 1;
+                    break;
+                case 5:
+                    points = 2;
+                    break;
+                case 6:
+                    points = 3;
+                    break;
+                case 7:
+                    points = 5;
+                    break;
+                default:
+                    points = 11;
+                    break;
+            }
+
+            return points;
+        }
+
+
+        /// <summary>
+        /// Uses the specified HashSet of words to
+        /// create a summary string for those words
+        /// starting with the size of the Hashset.
+        /// </summary>
+        /// <param name="set">the set of words</param>
+        /// <returns>a summary string</returns>
+        private string SetToString(HashSet<string> set)
+        {
+            string temp = " " + set.Count;
+            foreach (string s in set)
+            {
+                temp += " " + s;
+            }
+            return temp;
+        }
 
 
         // THE BELOW WAS USED FOR THE DATABASE
@@ -507,25 +525,7 @@ namespace BB
 
         //        }
         //    }
-        //} // end private UpdateDatabase
-
-
-        /// <summary>
-        /// Uses the specified HashSet of words to
-        /// create a summary string for those words
-        /// starting with the size of the Hashset.
-        /// </summary>
-        /// <param name="set">the set of words</param>
-        /// <returns>a summary string</returns>
-        private string SetToString(HashSet<string> set)
-        {
-            string temp = " " + set.Count;
-            foreach (string s in set)
-            {
-                temp += " " + s;
-            }
-            return temp;
-        }
+        //} // end private UpdateDatabase       
 
     } // end class BoggleGame
 } // end namespace BB

@@ -38,7 +38,7 @@ namespace BB
         //private TcpListener webServer; // Used to listen for web page requests.
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
-        private long gameID = 1; // incremented for each game
+        private int gameID = 0; // incremented for each game
         // THE BELOW WAS USED FOR THE DATABASE
         //public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
         //"uid=cs3500_blakeb;password=249827684"; // Used to connect to database.
@@ -207,7 +207,7 @@ namespace BB
 
                 // Print client connection info
                 IPAddress clientIP = ((IPEndPoint)s.RemoteEndPoint).Address;
-                //Console.WriteLine(string.Format("{0, -22} {1, -31} {2}", "CONNECTION RECEIVED", clientIP, DateTime.Now));
+                Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION RECEIVED", clientIP, DateTime.Now));
 
                 // Create an IPAndStringSocket object and pass it
                 // as the payload to BeginReceive. Begin listening
@@ -284,27 +284,24 @@ namespace BB
 
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
                             currentPlayer.Opponent = firstPlayer;
-                            BoggleGame game = new BoggleGame(firstPlayer, currentPlayer, gameID++);
-                            game.Start();
-                            Console.WriteLine(string.Format("{0, -22} {1, -15} {2, -15} {3}", "GAME STARTED", firstPlayer.IP, currentPlayer.IP, DateTime.Now));
+                            BoggleGame game = new BoggleGame(firstPlayer, currentPlayer, ++gameID);
+                            game.Start();                            
                             firstPlayer = null; // gets firstPlayer ready for next pair up.
-
-                        }// end else
-                    }// end Lock
-                }// end if
+                        }
+                    } // end Lock
+                }
                 else
                 {
                     IPAndStringSocket temp = (IPAndStringSocket)payload;
                     temp.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, temp.Ss);
                     temp.Ss.BeginReceive(ReceivedMessage, temp);
-
-                }// end else
-            }// end if
+                }
+            }
             else
             {
                 // If offending socket is firstPlayer, remove firstPlayer
                 ((IPAndStringSocket)payload).Ss.Close(); //Close offending socket
-            }// end else
+            }
         } // end method Play
 
 
