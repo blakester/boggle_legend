@@ -206,7 +206,7 @@ namespace BB
 
                 // Print client connection info
                 IPAddress clientIP = ((IPEndPoint)s.RemoteEndPoint).Address;
-                Console.WriteLine(string.Format("CONNECTION RECEIVED: {0} {1}", clientIP, DateTime.Now));
+                Console.WriteLine(string.Format("{0, 20} {1, -31} {2}", "CONNECTION RECEIVED:", clientIP, DateTime.Now));
 
                 // Create an IPAndStringSocket object and pass it
                 // as the payload to BeginReceive. Begin listening
@@ -270,21 +270,22 @@ namespace BB
                             // but then reconnects. However, comment out
                             // if the ability to run a game with 2 players
                             // from the same IP is wanted.)
-                            if (firstPlayer.IP.Equals(currentPlayer.IP))
-                            {
-                                // Update firstPlayer to the 
-                                // latest Player from the
-                                // same IP because firstPlayer's
-                                // StringSocket is closed when
-                                // when "Disconnect" is clicked.
-                                firstPlayer = currentPlayer;
-                                return;
-                            }
+                            //if (firstPlayer.IP.Equals(currentPlayer.IP))
+                            //{
+                            //    // Update firstPlayer to the 
+                            //    // latest Player from the
+                            //    // same IP because firstPlayer's
+                            //    // StringSocket is closed when
+                            //    // when "Disconnect" is clicked.
+                            //    firstPlayer = currentPlayer;
+                            //    return;
+                            //}
 
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
                             currentPlayer.Opponent = firstPlayer;
                             BoggleGame game = new BoggleGame(firstPlayer, currentPlayer);
                             game.Start();
+                            Console.WriteLine(string.Format("{0, -20} {1, -15} {2, -15} {3}", "GAME STARTED:", firstPlayer.IP, currentPlayer.IP, DateTime.Now));
                             firstPlayer = null; // gets firstPlayer ready for next pair up.
 
                         }// end else
