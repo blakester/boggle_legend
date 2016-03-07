@@ -25,6 +25,7 @@ namespace BB
     {
         private Player one;
         private Player two;
+        private long gameID;
         private Timer timer; // Game Timer
         private BoggleBoard board; // The board layout of the current game.
         private int timeLeft;
@@ -38,11 +39,12 @@ namespace BB
         /// </summary>
         /// <param name="one">Player one</param>
         /// <param name="two">Player two</param>
-        public BoggleGame(Player one, Player two)
+        public BoggleGame(Player one, Player two, long gameID)
         {
             // Store the players.
             this.one = one;
             this.two = two;
+            this.gameID = gameID;
 
             gameStart = false;
 
@@ -283,8 +285,12 @@ namespace BB
 
             // Notify then close socket to remaining Player
             if (dead.Opponent.Ss.Connected)
+            {
                 dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent);
-
+                Console.WriteLine(string.Format("{0, 22} {1, -15} {2, -15} {3}", "GAME ENDED PREMATURELY", dead.IP, dead.Opponent.IP, DateTime.Now));
+                timer.Dispose();
+            }
+            //Console.WriteLine(string.Format("{0, -20} {1, -15} {2, -15} {3}", "GAME ENDED:", dead.IP, dead.Opponent.IP, DateTime.Now));
         }
 
 
@@ -328,6 +334,8 @@ namespace BB
             // Send the messages
             one.Ss.BeginSend(playerOneStats, CloseSocket, one);
             two.Ss.BeginSend(playerTwoStats, CloseSocket, two);
+
+            Console.WriteLine(string.Format("{0, -22} {1, -15} {2, -15} {3}", "GAME ENDED", one.IP, two.IP, DateTime.Now));
 
             // THE BELOW WAS USED FOR THE DATABASE
             //UpdateDatabase();
