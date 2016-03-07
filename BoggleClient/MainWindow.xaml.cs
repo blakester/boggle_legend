@@ -26,7 +26,7 @@ namespace BoggleClient
     public partial class MainWindow : Window
     {
 
-        private Model model; // The model to handle socket and computation.        
+        private Model model; // The model to handle socket and computation.
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -62,20 +62,20 @@ namespace BoggleClient
             pScoreBox.Text = "";
             oScoreBox.Text = "";
             wordEntryBox.Text = "";
-            
+
             if (((string)connectButton.Content) == "Connect")
-            { 
+            {
                 // If player has a an empty name or server IP.
                 if (playerTextBox.Text == "" || serverTextBox.Text == "")
                 {
                     infoBox.Text = "Name and/or server IP cannot be empty...\n\n"
-                        + "Enter your name and server IP Address then press Connect to play."; 
+                        + "Enter your name and server IP Address then press Connect to play.";
                     return;
                 }
 
                 // Gets GUI elements ready for play.
                 playerTextBox.IsEnabled = false;
-                serverTextBox.IsEnabled = false;                
+                serverTextBox.IsEnabled = false;
                 infoBox.Text = "Searching for Opponent...";
                 connectButton.Content = "Disconnect";
 
@@ -87,16 +87,13 @@ namespace BoggleClient
                 // Gets GUI elemtents ready for connection.
                 infoBox.Visibility = System.Windows.Visibility.Visible;
                 playerTextBox.IsEnabled = true;
-                serverTextBox.IsEnabled = true;  
+                serverTextBox.IsEnabled = true;
                 infoBox.Text = "You have quit the game...\n\n"
                     + "Enter your name and server IP Address then press Connect to play.";
                 connectButton.Content = "Connect";
 
                 // Let model handle disconnecting from server.
-                if (model.gameStarted)
-                    model.Terminate(false);
-                else
-                    model.TerminateBeforeStart();
+                model.Terminate(false);
             }
         }
 
@@ -134,14 +131,13 @@ namespace BoggleClient
         /// <param name="opponentDisconnect">Used to determine if opponent disconnected from server.</param>
         private void GameEndResetEverythingHelper(bool opponentDisconnect)
         {
-            model.gameStarted = false;
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
-            wordEntryBox.IsEnabled = false;            
+            wordEntryBox.IsEnabled = false;
             connectButton.Content = "Connect";
 
             // Will only be hidden if Game did not finish normally.
-            if(infoBox.Visibility == System.Windows.Visibility.Hidden)
+            if (infoBox.Visibility == System.Windows.Visibility.Hidden)
             {
                 // Clear game data and
                 // word entry box.
@@ -150,9 +146,9 @@ namespace BoggleClient
                 pScoreBox.Text = "";
                 oScoreBox.Text = "";
                 wordEntryBox.Text = "";
-                
+
                 // If opponent disconnected from server.
-                if(opponentDisconnect)
+                if (opponentDisconnect)
                     infoBox.Text = "Your opponent has fled...\n\n"
                         + "Enter your name and server IP Address then press Connect to play.";
                 // If connection with server was lost unwillingly.
@@ -184,10 +180,8 @@ namespace BoggleClient
         /// <param name="s">String Tokens containing start game variables from server.</param>
         private void GameStartMessageHelper(string[] s)
         {
-            model.gameStarted = true;
-            
             // Allow user to quit game.
-            connectButton.Content = "Disconnect";            
+            connectButton.Content = "Disconnect";
 
             // Puts board string onto GUI.
             char[] boggleLetters = s[1].ToCharArray();
@@ -323,7 +317,7 @@ namespace BoggleClient
             infoBox.Text += "Opponent Illegal Words\n";
             SummaryPrinter(oIllegalWords);
 
-            infoBox.Visibility = System.Windows.Visibility.Visible;        
+            infoBox.Visibility = System.Windows.Visibility.Visible;
         }
 
 
@@ -368,7 +362,7 @@ namespace BoggleClient
             // Allow player to re-enter info.
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
-            serverTextBox.IsEnabled = true;            
+            serverTextBox.IsEnabled = true;
         }
     }
 }

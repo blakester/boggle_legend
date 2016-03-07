@@ -206,8 +206,8 @@ namespace BB
 
                 // Print client connection info
                 IPAddress clientIP = ((IPEndPoint)s.RemoteEndPoint).Address;
-                Console.WriteLine(string.Format("CONNECTION RECEIVED: {0} {1}", clientIP, DateTime.Now));
-                
+                Console.WriteLine(string.Format("CONNECTION RECEIVED: {0} {1}", clientIP, System.DateTime.Now));
+
                 // Create an IPAndStringSocket object and pass it
                 // as the payload to BeginReceive. Begin listening
                 // for messages from the client.
@@ -238,12 +238,11 @@ namespace BB
         /// the server and client</param>
         private void ReceivedMessage(String s, Exception e, object payload)
         {
-            // Store the IPAndStringSocket from the payload
-            IPAndStringSocket ipss = (IPAndStringSocket)payload;
-
             // If e is non null, determine the message.  Otherwise close socket.
             if (e == null && s != null)
             {
+                IPAndStringSocket ipss = (IPAndStringSocket)payload;
+
                 // To begin play, the command must start
                 // exactly with "PLAY ". Ignore otherwise.
                 if (Regex.IsMatch(s.ToUpper(), @"^(PLAY\s)"))
@@ -271,16 +270,16 @@ namespace BB
                             // but then reconnects. However, comment out
                             // if the ability to run a game with 2 players
                             // from the same IP is wanted.)
-                            //if (firstPlayer.IP.Equals(currentPlayer.IP))
-                            //{
-                            //    // Update firstPlayer to the 
-                            //    // latest Player from the
-                            //    // same IP because firstPlayer's
-                            //    // StringSocket is closed when
-                            //    // when "Disconnect" is clicked.
-                            //    firstPlayer = currentPlayer;
-                            //    return;
-                            //}
+                            if (firstPlayer.IP.Equals(currentPlayer.IP))
+                            {
+                                // Update firstPlayer to the 
+                                // latest Player from the
+                                // same IP because firstPlayer's
+                                // StringSocket is closed when
+                                // when "Disconnect" is clicked.
+                                firstPlayer = currentPlayer;
+                                return;
+                            }
 
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
                             currentPlayer.Opponent = firstPlayer;
@@ -290,29 +289,19 @@ namespace BB
 
                         }// end else
                     }// end Lock
-    
-                    ipss.Ss.BeginReceive(ReceivedMessage, ipss);
                 }// end if
-                else if (Regex.IsMatch(s.ToUpper(), @"^(PRE_GAME_DISCONNECT)"))
-                {                    
-                    Console.WriteLine(string.Format("CONNECTION LOST:     {0} {1}", ipss.IP, DateTime.Now));
-                    ipss.Ss.Close();
-                    firstPlayer = null; // THIS LINE AS WELL AS COMMENTING OUT IF P1.IP == P2.IP ABOVE SEEMS TO HAVE FIXED PROBLEM!! TEST THIS.
-                }
                 else
                 {
-                    ipss.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, ipss.Ss);
-                    ipss.Ss.BeginReceive(ReceivedMessage, ipss);
+                    IPAndStringSocket temp = (IPAndStringSocket)payload;
+                    temp.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, temp.Ss);
+                    temp.Ss.BeginReceive(ReceivedMessage, temp);
+
                 }// end else
             }// end if
             else
             {
-                if (ipss.Ss.Connected)
-                {
-                    // If offending socket is firstPlayer, remove firstPlayer
-                    //Console.WriteLine(string.Format("CONNECTION LOST:     {0} {1}", ipss.IP, DateTime.Now));
-                    ipss.Ss.Close(); //Close offending socket
-                }                
+                // If offending socket is firstPlayer, remove firstPlayer
+                ((IPAndStringSocket)payload).Ss.Close(); //Close offending socket
             }// end else
         } // end method Play
 
@@ -375,8 +364,6 @@ namespace BB
         /// </summary>
         public void CloseServer()
         {
-            if (firstPlayer != null)
-                firstPlayer.Ss.Close();
             server.Stop();
 
             // THE BELOW WAS USED FOR THE DATABASE
