@@ -50,7 +50,7 @@ namespace BB
         /// </summary>
         public int Score
         { get; set; }
-        
+
         /// <summary>
         /// Legit words that player and opponent have both played.
         /// </summary>
@@ -84,7 +84,7 @@ namespace BB
         /// <param name="ss">Stringsocket that's connected to server</param>
         public Player(string s, IPAddress ip, StringSocket ss)
         {
-            Name = s;            
+            Name = s;
             IP = ip;
             Ss = ss;
             Score = 0;
@@ -92,6 +92,6 @@ namespace BB
             SharedLegalWords = new HashSet<string>();
             LegalWords = new HashSet<string>();
             IllegalWords = new HashSet<string>();
-        }   
+        }
     }
 }
