@@ -206,7 +206,7 @@ namespace BB
 
                 // Print client connection info
                 IPAddress clientIP = ((IPEndPoint)s.RemoteEndPoint).Address;
-                Console.WriteLine(string.Format("CONNECTION RECEIVED: {0} {1}", clientIP, System.DateTime.Now));
+                Console.WriteLine(string.Format("CONNECTION RECEIVED: {0} {1}", clientIP, DateTime.Now));
 
                 // Create an IPAndStringSocket object and pass it
                 // as the payload to BeginReceive. Begin listening
