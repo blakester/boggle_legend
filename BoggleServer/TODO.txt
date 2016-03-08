@@ -1,4 +1,5 @@
-﻿-Send message to client when server closes but before game starts
+﻿-check ReceivedMessage in Model.cs. BeginReceive is called by default when in fact communication with the server should
+ be ended.
 -create chat boxes
 
 NOTES:
