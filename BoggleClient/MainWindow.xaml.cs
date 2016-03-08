@@ -41,7 +41,7 @@ namespace BoggleClient
             model.ScoreMessageEvent += GameScoreMessage;
             model.SummaryMessageEvent += GameSummaryMessage;
             model.SocketExceptionEvent += GameSocketFail;
-
+            model.ServerClosedEvent += ServerClosed;
         }
 
 
@@ -158,6 +158,19 @@ namespace BoggleClient
 
                 infoBox.Visibility = System.Windows.Visibility.Visible;
             }
+        }
+
+
+        private void ServerClosed()
+        {
+            Dispatcher.Invoke(new Action(() => { ServerClosedHelper(); }));
+        }
+
+
+        private void ServerClosedHelper()
+        {
+            infoBox.Text = "The server closed.\n\n"
+                        + "Enter your name and server IP Address then press Connect to play.";
         }
 
 
