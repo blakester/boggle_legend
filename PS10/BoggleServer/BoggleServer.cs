@@ -361,12 +361,21 @@ namespace BB
         /// <summary>
         /// Stops Server.
         /// </summary>
-        public void CloseServer()
+        private void CloseServer()
         {
+            // notify lone client
+            if (firstPlayer != null)
+                firstPlayer.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, firstPlayer.Ss);
             server.Stop();
 
             // THE BELOW WAS USED FOR THE DATABASE
             //webServer.Stop();
+        }
+
+
+        private void CloseSocket(Exception e, object payload)
+        {
+            ((StringSocket)payload).Close();
         }
 
 

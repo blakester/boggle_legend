@@ -32,6 +32,7 @@ namespace BoggleClient
         public event Action<string[]> ScoreMessageEvent; // Event when SCORE is recieved.
         public event Action<List<string[]>> SummaryMessageEvent; // Event when STOP is recieved.
         public event Action SocketExceptionEvent; // Event when socket failed to connect.
+        public event Action ServerClosedEvent; // Event when server closes before game starts.
 
 
         /// <summary>
@@ -77,6 +78,8 @@ namespace BoggleClient
                 StartMessage(message);
             else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);
+            else if (Regex.IsMatch(message, @"^(SERVER_CLOSED)")) // 
+                ServerClosedEvent();
             else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
                 IgnoreMessage(message);
 
