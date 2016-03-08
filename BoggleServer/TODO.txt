@@ -1,6 +1,4 @@
-﻿-check ReceivedMessage in Model.cs. BeginReceive is called by default when in fact communication with the server should
- be ended.
--create chat boxes
+﻿-create chat boxes
 
 NOTES:
 -in BoggleGame.cs Start(), after messing around with Connect/Disconnect on two clients from same IP,

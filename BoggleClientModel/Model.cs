@@ -69,21 +69,37 @@ namespace BoggleClient
             if (message == null) // An error occured with the socket
                 Terminate(false);
             else if (Regex.IsMatch(message, @"^(TIME\s)")) // Time Update
+            {
                 TimeUpdate(message);
+                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+            }
             else if (Regex.IsMatch(message, @"^(SCORE\s)")) // Update Score
+            {
                 ScoreUpdate(message);
-            else if (Regex.IsMatch(message, @"^(STOP\s)")) // End Game
-                SummaryMessage(message);
+                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+            }
             else if (Regex.IsMatch(message, @"^(START\s)")) // Starts Game
+            {
                 StartMessage(message);
+                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+            }
+            else if (Regex.IsMatch(message, @"^(STOP\s)")) // End Game
+            {
+                SummaryMessage(message);
+                Terminate(false); // game is over, close communications
+            }           
             else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);
             else if (Regex.IsMatch(message, @"^(SERVER_CLOSED)")) // 
+            {
                 ServerClosedEvent();
+                Terminate(false); // game is over, close communications
+            }
             else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
+            {
                 IgnoreMessage(message);
-
-            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+            }            
         }
 
 
@@ -193,7 +209,7 @@ namespace BoggleClient
                     index = 0;
                 }
             }
-
+            
             SummaryMessageEvent(results);
         }
 
