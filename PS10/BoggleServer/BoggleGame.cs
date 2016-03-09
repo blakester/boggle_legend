@@ -49,8 +49,8 @@ namespace BB
             gameStart = false;
 
             // Begin waiting for messages from the Players.
-            one.Ss.BeginReceive(WordReceived, one);
-            two.Ss.BeginReceive(WordReceived, two);
+            one.Ss.BeginReceive(MessageReceived, one);
+            two.Ss.BeginReceive(MessageReceived, two);
 
             // Get a Timer ready for the gameplay countdown. It will be started later.
             timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
@@ -116,7 +116,7 @@ namespace BB
         /// <param name="e">an Exception, if any</param>
         /// <param name="payload">the Player from which the message
         /// was received</param>
-        private void WordReceived(string s, Exception e, object payload)
+        private void MessageReceived(string s, Exception e, object payload)
         {
             // If e and s are null, end game.
             if (s == null)
@@ -130,7 +130,7 @@ namespace BB
 
             // Only listen for more words if game is still going.
             if (!gameDone)
-                player.Ss.BeginReceive(WordReceived, player);
+                player.Ss.BeginReceive(MessageReceived, player);
 
             if (!gameStart)
             {
@@ -138,19 +138,26 @@ namespace BB
                 return;
             }
 
-            // If the word was received with the required preceeding
-            // text, store it. Otherwise ignore what was received.
-            string word;
+            // Handle a received word or chat message.
+            // Otherwise ignore what was received.
             if (Regex.IsMatch(s.ToUpper(), @"^(WORD\s)"))
             {
-                word = s.Substring(5).Trim().ToUpper();
+                ProcessWord(player, s.Substring(5).Trim().ToUpper());
+            }
+            else if (Regex.IsMatch(s.ToUpper(), @"^(CHAT\s)"))
+            {
+                RelayChatMessage(player.Opponent, s.Substring(5));
             }
             else
             {
                 player.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, player);
                 return;
-            }
+            }            
+        }
 
+
+        private void ProcessWord(Player player, string word)
+        {
             // Words must be atleast 3 characters long.
             if (word.Length < 3)
                 return;
@@ -193,7 +200,13 @@ namespace BB
                     UpdateScore();
                 }
             } // end lock
-        } // end private method WordReceived
+        }
+
+
+        private void RelayChatMessage(Player opponent, string message)
+        {
+
+        }
 
 
         /// <summary>
