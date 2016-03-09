@@ -1,8 +1,12 @@
 ﻿-create chat boxes
 
 NOTES:
+-A game ended normally once but then immediately printed also that it ended prematurely.
+
 -in BoggleGame.cs Start(), after messing around with Connect/Disconnect on two clients from same IP,
  I got an object disposed exception on the timer.Change() method. I'm not sure why. I couldn't recreate
  the problem.
 
 -Is lock in BoggleGame.cs WordReceived() necessary?
+
+-Is gameStart needed in BoggleGame.cs?
