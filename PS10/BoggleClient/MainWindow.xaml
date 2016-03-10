@@ -55,7 +55,7 @@
             <TextBlock x:Name="oScoreLabel" HorizontalAlignment="Left" Margin="230,389,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="111" Text="Opponent  Score" RenderTransformOrigin="-0.216,0.678" FontSize="14" FontWeight="Bold" TextDecorations="Underline"/>
             <TextBlock x:Name="oScoreBox" HorizontalAlignment="Left" Margin="230,408,0,-2" TextWrapping="Wrap" VerticalAlignment="Top" Width="111" RenderTransformOrigin="-0.216,0.678" Padding="0" FontSize="16"><Run/><LineBreak/><Run/></TextBlock>
         </Grid>
-        <TextBox x:Name="chatBox" HorizontalAlignment="Left" Height="513" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="253" Margin="49,68,0,0" BorderThickness="1"/>
+        <TextBox x:Name="chatBox" HorizontalAlignment="Left" Height="513" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="253" Margin="49,68,0,0" BorderThickness="1" KeyDown="chatBox_Enter"/>
         <Rectangle x:Name="chatRectangle" Fill="#FF26DEDE" HorizontalAlignment="Left" Height="580" Stroke="Black" VerticalAlignment="Top" Width="300" Margin="26,28,0,0" Panel.ZIndex="-1"/>
         <Label Content="Chat" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="150,37,0,0" Width="50" FontSize="16" FontWeight="Bold" Panel.ZIndex="1" RenderTransformOrigin="3.32,0.677"/>
 

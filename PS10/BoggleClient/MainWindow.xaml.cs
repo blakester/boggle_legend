@@ -42,6 +42,7 @@ namespace BoggleClient
             model.SummaryMessageEvent += GameSummaryMessage;
             model.SocketExceptionEvent += GameSocketFail;
             model.ServerClosedEvent += ServerClosed;
+            model.ChatMessageEvent += ChatMessage;
         }
 
 
@@ -376,6 +377,31 @@ namespace BoggleClient
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
+        }
+
+
+        /// <summary>
+        /// Handler for enter key in the chatbox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void chatBox_Enter(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                 model.SendMessage(chatBox.Text);
+            }
+        }
+
+
+        private void ChatMessage(string message)
+        {
+            Dispatcher.Invoke(() => { ChatMessageHelper(message); });
+        }
+
+        private void ChatMessageHelper(string message)
+        {
+            chatBox.AppendText(message);
         }
     }
 }
