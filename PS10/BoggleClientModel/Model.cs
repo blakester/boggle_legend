@@ -33,6 +33,7 @@ namespace BoggleClient
         public event Action<List<string[]>> SummaryMessageEvent; // Event when STOP is recieved.
         public event Action SocketExceptionEvent; // Event when socket failed to connect.
         public event Action ServerClosedEvent; // Event when server closes before game starts.
+        public event Action<string> ChatMessageEvent; // Event when chat message received from opponent.
 
 
         /// <summary>
@@ -87,7 +88,12 @@ namespace BoggleClient
             {
                 SummaryMessage(message);
                 Terminate(false); // game is over, close communications
-            }           
+            }
+            else if (Regex.IsMatch(message, @"^(CHAT\s)")) // Received chat message
+            {
+                ChatMessageEvent(message.Substring(5) + "\n\n");
+                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+            }  
             else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);
             else if (Regex.IsMatch(message, @"^(SERVER_CLOSED)")) // 
@@ -232,6 +238,16 @@ namespace BoggleClient
         public void SendWord(string word)
         {
             socket.BeginSend("WORD " + word + "\n", SendCallback, null);
+        }
+
+
+        /// <summary>
+        /// Sends the message to be relayed to the opponent
+        /// </summary>
+        /// <param name="word"></param>
+        public void SendMessage(string message)
+        {
+            socket.BeginSend("CHAT " + message + "\n", SendCallback, null);
         }
 
 
