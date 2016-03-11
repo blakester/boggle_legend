@@ -25,7 +25,7 @@ namespace BB
     {
         private Player one;
         private Player two;
-        private long gameID;
+        private int gameID;
         private Timer timer; // Game Timer
         private BoggleBoard board; // The board layout of the current game.
         private int timeLeft;
@@ -39,70 +39,21 @@ namespace BB
         /// </summary>
         /// <param name="one">Player one</param>
         /// <param name="two">Player two</param>
-        public BoggleGame(Player one, Player two, int gameID)
+        public BoggleGame(Player one, Player two)
         {
             // Store the players.
             this.one = one;
             this.two = two;
-            this.gameID = gameID;
+
+            // Lock
+            playerlock = new object();
 
             gameStart = false;
 
             // Begin waiting for messages from the Players.
             one.Ss.BeginReceive(MessageReceived, one);
-            two.Ss.BeginReceive(MessageReceived, two);
-
-            // Get a Timer ready for the gameplay countdown. It will be started later.
-            timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
-            timeLeft = BoggleServer.GameLength;
-            gameDone = false;
-
-            // Create a BoggleBoard with the specified
-            // string of letters.  Random otherwise.
-            if (BoggleServer.CustomBoard == null)
-                board = new BoggleBoard();
-            else
-                board = new BoggleBoard(BoggleServer.CustomBoard);
-
-            // Lock
-            playerlock = new object();
-        }
-
-
-        /// <summary>
-        /// Starts this BoggleGame.
-        /// </summary>
-        public void Start()
-        {
-            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "START", gameID, one.IP, two.IP, DateTime.Now));
-            
-            // Let the Players know the game has started.
-            one.Ss.BeginSend("START " + board.ToString() + " "
-                + timeLeft + " " + two.Name + "\n", SendCallback, one);
-            two.Ss.BeginSend("START " + board.ToString() + " "
-                + timeLeft + " " + one.Name + "\n", SendCallback, two);
-
-            // Starts the timer. The method TimeUpdate will
-            // be called every second. Start delayed by 250ms.
-            timer.Change(250, 1000);
-            gameStart = true;
-        }
-
-
-        /// <summary>
-        /// Called when a message has been sent through the StringSocket
-        /// to a Player. Exceptions will end this BoggleGame.
-        /// </summary>
-        /// <param name="e">an Exception, if any</param>
-        /// <param name="payload">the StringSocket connecting
-        /// the server and Player</param>
-        private void SendCallback(Exception e, object payload)
-        {
-            if (e != null)
-            {
-                Terminate(e, payload);
-            }
-        }
+            two.Ss.BeginReceive(MessageReceived, two);            
+        }       
 
 
         /// <summary>
@@ -134,7 +85,7 @@ namespace BB
 
             if (!gameStart)
             {
-                player.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, player);
+                player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
                 return;
             }
 
@@ -150,9 +101,47 @@ namespace BB
             }
             else
             {
-                player.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, player);
+                player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
                 return;
             }            
+        }
+
+
+        /// <summary>
+        /// Starts this BoggleGame.
+        /// </summary>
+        private void Start()
+        {
+            // Get a Timer ready for the gameplay countdown.
+            timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
+            timeLeft = BoggleServer.GameLength;
+            gameDone = false;
+
+            // Create a BoggleBoard with the specified
+            // string of letters.  Random otherwise.
+            if (BoggleServer.CustomBoard == null)
+                board = new BoggleBoard();
+            else
+                board = new BoggleBoard(BoggleServer.CustomBoard);
+
+            // Let the Players know the game has started.
+            one.Ss.BeginSend("START " + board.ToString() + " "
+                + timeLeft + " " + two.Name + "\n", ExceptionCheck, one);
+            two.Ss.BeginSend("START " + board.ToString() + " "
+                + timeLeft + " " + one.Name + "\n", ExceptionCheck, two);
+
+            // Starts the timer. The method TimeUpdate will
+            // be called every second. Start delayed by 250ms.
+            timer.Change(250, 1000);
+            gameStart = true;
+
+            // Print game info
+            lock (playerlock)
+            {
+                gameID = BoggleServer.gameCount++;
+                Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}",
+                    "START", gameID, one.IP, two.IP, DateTime.Now));
+            }
         }
 
 
@@ -206,7 +195,7 @@ namespace BB
         private void RelayChatMessage(Player player, string message)
         {
             // Relay the chat message to the opponent
-            player.Opponent.Ss.BeginSend("CHAT " + player.Name + ": " + message + "\n", SendCallback, null);
+            player.Opponent.Ss.BeginSend("CHAT " + player.Name + ": " + message + "\n", ExceptionCheck, null);
         }
 
 
@@ -216,9 +205,9 @@ namespace BB
         private void UpdateScore()
         {
             one.Ss.BeginSend("SCORE " + one.Score + " " + two.Score + "\n",
-                SendCallback, one);
+                ExceptionCheck, one);
             two.Ss.BeginSend("SCORE " + two.Score + " " + one.Score + "\n",
-                SendCallback, two);
+                ExceptionCheck, two);
         }        
 
 
@@ -233,8 +222,8 @@ namespace BB
         {
             // Send both Players the remaining time.
             timeLeft--;
-            one.Ss.BeginSend("TIME " + timeLeft + "\n", SendCallback, one);
-            two.Ss.BeginSend("TIME " + timeLeft + "\n", SendCallback, two);
+            one.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, one);
+            two.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, two);
 
             // End the game if time is out.
             if (timeLeft == 0)
@@ -372,6 +361,22 @@ namespace BB
                 temp += " " + s;
             }
             return temp;
+        }
+
+
+        /// <summary>
+        /// Called when a message has been sent through the StringSocket
+        /// to a Player. Exceptions will end this BoggleGame.
+        /// </summary>
+        /// <param name="e">an Exception, if any</param>
+        /// <param name="payload">the StringSocket connecting
+        /// the server and Player</param>
+        private void ExceptionCheck(Exception e, object payload)
+        {
+            if (e != null)
+            {
+                Terminate(e, payload);
+            }
         }
 
 
