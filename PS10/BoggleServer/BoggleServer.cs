@@ -38,7 +38,7 @@ namespace BB
         //private TcpListener webServer; // Used to listen for web page requests.
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
-        private int gameID = 0; // incremented for each game
+        public static int gameCount = 1;
         // THE BELOW WAS USED FOR THE DATABASE
         //public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
         //"uid=cs3500_blakeb;password=249827684"; // Used to connect to database.
@@ -284,8 +284,8 @@ namespace BB
 
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
                             currentPlayer.Opponent = firstPlayer;
-                            BoggleGame game = new BoggleGame(firstPlayer, currentPlayer, ++gameID);
-                            game.Start();                            
+                            BoggleGame game = new BoggleGame(firstPlayer, currentPlayer);
+                            //game.Start();                            
                             firstPlayer = null; // gets firstPlayer ready for next pair up.
                         }
                     } // end Lock
