@@ -33,13 +33,12 @@ namespace BB
     /// </summary>
     public class BoggleServer
     {
-        private TcpListener server; // Used to listen for player connections.
-        // THE BELOW WAS USED FOR THE DATABASE
-        //private TcpListener webServer; // Used to listen for web page requests.
+        private TcpListener server; // Used to listen for player connections.        
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
         public static int gameCount = 1;
         // THE BELOW WAS USED FOR THE DATABASE
+        //private TcpListener webServer; // Used to listen for web page requests.
         //public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
         //"uid=cs3500_blakeb;password=249827684"; // Used to connect to database.
 
@@ -213,7 +212,7 @@ namespace BB
                 // as the payload to BeginReceive. Begin listening
                 // for messages from the client.
                 IPAndStringSocket ipss = new IPAndStringSocket(clientIP, ss);
-                ss.BeginReceive(ReceivedMessage, ipss); // Send StringSocket to be paired up.
+                ss.BeginReceive(ReceivedMessage, ipss); 
 
                 // Begin listening for another connection.
                 server.BeginAcceptSocket(ConnectionRequested, server);
@@ -227,11 +226,11 @@ namespace BB
 
         /// <summary>
         /// Called when a message has been received through
-        /// the StringSocket from a client. A new game will begin
-        /// when two players have sent the command "PLAY ". Will 
-        /// ignore if string does not start as such. If 'e' is 
-        /// non-null, then we assume that the connection has been 
-        /// lost.
+        /// the StringSocket from a client. A new game will be
+        /// initialized when two players have sent the "NEW_PLAYER"
+        /// command. Will ignore if string does not start as such. 
+        /// If 'e' is non-null, then we assume that the connection
+        /// has been lost.
         /// </summary>
         /// <param name="s">the received string</param>
         /// <param name="e">an Exception, if any</param>
@@ -239,19 +238,16 @@ namespace BB
         /// the server and client</param>
         private void ReceivedMessage(String s, Exception e, object payload)
         {
-            // If e is non null, determine the message.  Otherwise close socket.
-            if (e == null && s != null)
+            if (s != null && e == null)
             {
                 IPAndStringSocket ipss = (IPAndStringSocket)payload;
 
-                // To begin play, the command must start
-                // exactly with "PLAY ". Ignore otherwise.
-                if (Regex.IsMatch(s.ToUpper(), @"^(PLAY\s)"))
+                // when client clicks Connect
+                if (Regex.IsMatch(s.ToUpper(), @"^(NEW_PLAYER\s)"))
                 {
                     // Create a new Player using the player's name,
                     // IP, and StringSocket connection with the server.
                     string name = s.Substring(5);
-                    //IPAndStringSocket ipss = (IPAndStringSocket)payload;
                     Player currentPlayer = new Player(name.Trim(), ipss.IP, ipss.Ss);
 
                     // Keep firstPlayer threadsafe.
@@ -261,11 +257,17 @@ namespace BB
                         if (firstPlayer == null)
                             firstPlayer = currentPlayer;
 
-                        // We have two players, so start a game between them.
+                        // We have two players, so initialize a game between them.
                         else
                         {
+                            // SHOULDN'T NEED THIS ANYMORE: firstPlayer IS SET TO NULL
+                            // WHEN A LONE CLIENT DISCONNECTS, SO THERE'S NO ISSUE OF
+                            // INITIIALIZING A GAME WITH WITH A CLIENT WHOSE SOCKET HAS
+                            // BEEN CLOSED. ALSO, THIS WILL ALLOW TWO CLIENTS FROM THE SAME
+                            // IP TO PLAY EACH OTHER.
+
                             // Ensure players from the same IP address
-                            // do not start game with each other.
+                            // do not initialize a game with each other.
                             // (This handles the small gui error that
                             // occurs when a single player disconnects
                             // but then reconnects. However, comment out
@@ -284,25 +286,81 @@ namespace BB
 
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
                             currentPlayer.Opponent = firstPlayer;
+                            Console.WriteLine("INITIALIZE A BOGGLE GAME");//*******************************************************************
                             BoggleGame game = new BoggleGame(firstPlayer, currentPlayer);
-                            //game.Start();                            
+                            //game.Start();                              
                             firstPlayer = null; // gets firstPlayer ready for next pair up.
                         }
                     } // end Lock
                 }
+
+                // when client disconnects before starting game
+                else if (Regex.IsMatch(s.ToUpper(), @"^(PRE_GAME_DISCONNECT)"))
+                {
+                    // Print lone client connection lost info and close the socket
+                    Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", ipss.IP, DateTime.Now));
+                    ipss.Ss.Close();
+
+                    // lone client is gone
+                    firstPlayer = null;
+                }
+                
+                // for debugging
                 else
                 {
-                    IPAndStringSocket temp = (IPAndStringSocket)payload;
-                    temp.Ss.BeginSend("IGNORING " + s + "\n", SendCallback, temp.Ss);
-                    temp.Ss.BeginReceive(ReceivedMessage, temp);
+                    ipss.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, ipss.Ss);
+                    ipss.Ss.BeginReceive(ReceivedMessage, ipss);
                 }
             }
             else
             {
-                // If offending socket is firstPlayer, remove firstPlayer
-                ((IPAndStringSocket)payload).Ss.Close(); //Close offending socket
+                // Print lone client connection lost info and close the socket
+                IPAndStringSocket ipss = (IPAndStringSocket)payload;
+                Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", ipss.IP, DateTime.Now));
+                ipss.Ss.Close();
+
+                // lone client is gone
+                firstPlayer = null;
             }
-        } // end method Play
+        }        
+
+
+        /// <summary>
+        /// Callback for when a message has been sent through
+        /// the StringSocket to a client. Non-null Exceptions 
+        /// will close the connection with the client.
+        /// </summary>
+        /// <param name="e">an Exception, if any</param>
+        /// <param name="payload">the StringSocket connecting
+        /// the server and client</param>
+        private void ExceptionCheck(Exception e, object payload)
+        {
+            if (e != null)
+            {
+                ((StringSocket)payload).Close();
+            }
+        }
+
+
+        /// <summary>
+        /// Stops Server.
+        /// </summary>
+        private void CloseServer()
+        {
+            // notify lone client
+            if (firstPlayer != null)
+                firstPlayer.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, firstPlayer.Ss);
+            server.Stop();
+
+            // THE BELOW WAS USED FOR THE DATABASE
+            //webServer.Stop();
+        }
+
+
+        private void CloseSocket(Exception e, object payload)
+        {
+            ((StringSocket)payload).Close();
+        }
 
 
         /// <summary>
@@ -339,44 +397,6 @@ namespace BB
                 Ss = ss;
             }
         } // end class IPAndStringSocket
-
-
-        /// <summary>
-        /// Callback for when a message has been sent through
-        /// the StringSocket to a client. Non-null Exceptions 
-        /// will close the connection with the client.
-        /// </summary>
-        /// <param name="e">an Exception, if any</param>
-        /// <param name="payload">the StringSocket connecting
-        /// the server and client</param>
-        private void SendCallback(Exception e, object payload)
-        {
-            if (e != null)
-            {
-                ((StringSocket)payload).Close();
-            }
-        }
-
-
-        /// <summary>
-        /// Stops Server.
-        /// </summary>
-        private void CloseServer()
-        {
-            // notify lone client
-            if (firstPlayer != null)
-                firstPlayer.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, firstPlayer.Ss);
-            server.Stop();
-
-            // THE BELOW WAS USED FOR THE DATABASE
-            //webServer.Stop();
-        }
-
-
-        private void CloseSocket(Exception e, object payload)
-        {
-            ((StringSocket)payload).Close();
-        }
 
 
         // THE BELOW WAS USED FOR THE DATABASE

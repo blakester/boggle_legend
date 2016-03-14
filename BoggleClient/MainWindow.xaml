@@ -5,13 +5,13 @@
     <Grid Margin="0,0,0,0" Background="#FF498181">
         <TextBox x:Name="infoBox" HorizontalAlignment="Left" Height="330" Margin="380,155,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="315" VerticalScrollBarVisibility="Auto" FontWeight="Bold" TextAlignment="Center" FontSize="16" Visibility="Visible" Background="White" Panel.ZIndex="1" ScrollViewer.CanContentScroll="True" IsReadOnly="True" Text="Welcome!&#xD;&#xA;&#xD;&#xA;Enter your Name and IP Address then press Connect to play."/>
 
-        <Button x:Name="connectButton" Content="Connect" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="624,71,0,0" Click="connectButton_Click" Height="23"/>
+        <Button x:Name="connectButton" Content="Connect" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="623,28,0,0" Click="connectButton_Click" Height="23"/>
         <Label x:Name="wordEntryLabel" Content="Enter Words" HorizontalAlignment="Left" Margin="351,585,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="wordEntryBox" HorizontalAlignment="Left" Height="26" Margin="429,585,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="293" IsEnabled="False" KeyDown="wordEntryBox_Enter"/>
-        <Label x:Name="serverLabel" Content="Boggle Server IP Address" HorizontalAlignment="Left" Margin="351,68,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="playerLabel" Content="Player Name" HorizontalAlignment="Left" Margin="351,28,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="playerTextBox" HorizontalAlignment="Left" Height="23" Margin="428,31,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="293" Text="d"/>
-        <TextBox x:Name="serverTextBox" HorizontalAlignment="Left" Height="23" Margin="499,71,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Text="localhost"/>
+        <Label x:Name="serverLabel" Content="Boggle Server IP Address" HorizontalAlignment="Left" Margin="350,25,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="playerLabel" Content="Player Name" HorizontalAlignment="Left" Margin="352,65,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="playerTextBox" HorizontalAlignment="Left" Height="23" Margin="429,68,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="189" Text="d"/>
+        <TextBox x:Name="serverTextBox" HorizontalAlignment="Left" Height="23" Margin="498,28,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Text="localhost"/>
         <Grid x:Name="gameGrid" HorizontalAlignment="Left" Height="449" Margin="354,111,0,0" VerticalAlignment="Top" Width="368" RenderTransformOrigin="0.497,0.509" Visibility="Visible" Panel.ZIndex="-1">
             <Rectangle Fill="#FF26DEDE" HorizontalAlignment="Left" Height="448" Margin="0,-9,0,0" Stroke="Black" VerticalAlignment="Top" Width="368" RenderTransformOrigin="0.489,0.533"/>
             <TextBlock x:Name="opponentLabel" HorizontalAlignment="Left" Margin="4,-9,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="207" Text="Opponent" RenderTransformOrigin="-0.216,0.678" FontSize="14" FontWeight="Bold" TextDecorations="Underline" IsEnabled="False"/>
@@ -55,9 +55,11 @@
             <TextBlock x:Name="oScoreLabel" HorizontalAlignment="Left" Margin="230,389,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="111" Text="Opponent  Score" RenderTransformOrigin="-0.216,0.678" FontSize="14" FontWeight="Bold" TextDecorations="Underline"/>
             <TextBlock x:Name="oScoreBox" HorizontalAlignment="Left" Margin="230,408,0,-2" TextWrapping="Wrap" VerticalAlignment="Top" Width="111" RenderTransformOrigin="-0.216,0.678" Padding="0" FontSize="16"><Run/><LineBreak/><Run/></TextBlock>
         </Grid>
-        <TextBox x:Name="chatBox" HorizontalAlignment="Left" Height="513" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="253" Margin="49,68,0,0" BorderThickness="1" KeyDown="chatBox_Enter"/>
+        <TextBox x:Name="chatEntryBox" HorizontalAlignment="Left" Height="91" TextWrapping="Wrap" Text="Enter messages here" VerticalAlignment="Top" Width="253" Margin="49,68,0,0" BorderThickness="1" KeyDown="chatBox_Enter" IsEnabled="False" GotFocus="chatEntryBox_GotFocus"/>
         <Rectangle x:Name="chatRectangle" Fill="#FF26DEDE" HorizontalAlignment="Left" Height="580" Stroke="Black" VerticalAlignment="Top" Width="300" Margin="26,28,0,0" Panel.ZIndex="-1"/>
         <Label Content="Chat" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="150,37,0,0" Width="50" FontSize="16" FontWeight="Bold" Panel.ZIndex="1" RenderTransformOrigin="3.32,0.677"/>
+        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" Margin="49,0,0,63" Width="253" Height="401" Foreground="#FF000031" Background="White" IsEnabled="False"/>
+        <Button x:Name="playButton" Content="Play" HorizontalAlignment="Left" VerticalAlignment="Top" Width="99" Margin="623,69,0,0" IsEnabled="False"/>
 
     </Grid>
 </Window>

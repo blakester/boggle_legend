@@ -70,15 +70,17 @@ namespace BoggleClient
                 if (playerTextBox.Text == "" || serverTextBox.Text == "")
                 {
                     infoBox.Text = "Name and/or server IP cannot be empty...\n\n"
-                        + "Enter your name and server IP Address then press Connect to play.";
+                        + "Enter your name and server IP Address then press Connect.";
                     return;
                 }
 
                 // Gets GUI elements ready for play.
+                connectButton.Content = "Disconnect";
                 playerTextBox.IsEnabled = false;
                 serverTextBox.IsEnabled = false;
-                infoBox.Text = "Searching for Opponent...";
-                connectButton.Content = "Disconnect";
+                playButton.IsEnabled = true;
+                infoBox.Text = "You have connected to the server.\n\n"
+                    + "Click Play to start a game with the next available player.";                
 
                 // Let model handle connecting to server.
                 model.Connect(playerTextBox.Text, serverTextBox.Text);
@@ -86,16 +88,79 @@ namespace BoggleClient
             else if (((string)connectButton.Content) == "Disconnect")
             {
                 // Gets GUI elemtents ready for connection.
+                connectButton.Content = "Connect";
                 infoBox.Visibility = System.Windows.Visibility.Visible;
                 playerTextBox.IsEnabled = true;
                 serverTextBox.IsEnabled = true;
-                infoBox.Text = "You have quit the game...\n\n"
-                    + "Enter your name and server IP Address then press Connect to play.";
-                connectButton.Content = "Connect";
+                playButton.IsEnabled = false;
+                infoBox.Text = "You have disconnected from the server.\n\n"
+                    + "Enter your name and server IP Address then click Connect.";                
 
                 // Let model handle disconnecting from server.
                 model.Terminate(false);
             }
+        }
+
+
+        /// <summary>
+        /// Invokes the event that handles the start of the game.
+        /// </summary>
+        /// <param name="s">String Tokens containing start game variables from server.</param>
+        private void GameStartMessage(string[] s)
+        {
+            Dispatcher.Invoke(new Action(() => { GameStartMessageHelper(s); }));
+        }
+
+
+        /// <summary>
+        /// Invokes the event that handles the start of the game.
+        /// Set's up the boggle board letters.
+        /// Saves opponents name.
+        /// Sets up initial time.
+        /// </summary>
+        /// <param name="s">String Tokens containing start game variables from server.</param>
+        private void GameStartMessageHelper(string[] s)
+        {
+            // Allow user to quit game.
+            connectButton.Content = "Disconnect";
+
+            // Puts board string onto GUI.
+            char[] boggleLetters = s[1].ToCharArray();
+            BSpot1.Text = boggleLetters[0] + "";
+            BSpot2.Text = boggleLetters[1] + "";
+            BSpot3.Text = boggleLetters[2] + "";
+            BSpot4.Text = boggleLetters[3] + "";
+            BSpot5.Text = boggleLetters[4] + "";
+            BSpot6.Text = boggleLetters[5] + "";
+            BSpot7.Text = boggleLetters[6] + "";
+            BSpot8.Text = boggleLetters[7] + "";
+            BSpot9.Text = boggleLetters[8] + "";
+            BSpot10.Text = boggleLetters[9] + "";
+            BSpot11.Text = boggleLetters[10] + "";
+            BSpot12.Text = boggleLetters[11] + "";
+            BSpot13.Text = boggleLetters[12] + "";
+            BSpot14.Text = boggleLetters[13] + "";
+            BSpot15.Text = boggleLetters[14] + "";
+            BSpot16.Text = boggleLetters[15] + "";
+
+            // Assigns game time to GUI.
+            timeLeftBox.Text = s[2];
+
+            // Assigns opponent name to GUI.
+            string opponentName = "";
+            for (int i = 3; i < s.Length; i++)
+            {
+                opponentName += s[i] + " ";
+            }
+            opponentBox.Text = opponentName;
+
+            // Sets GUI up for when game has begun.
+            infoBox.Visibility = System.Windows.Visibility.Hidden;
+            pScoreBox.Text = "0";
+            oScoreBox.Text = "0";
+            wordEntryBox.IsEnabled = true;
+            chatEntryBox.IsEnabled = true;
+            wordEntryBox.Focus();
         }
 
 
@@ -171,69 +236,8 @@ namespace BoggleClient
         private void ServerClosedHelper()
         {
             infoBox.Text = "The server closed.\n\n"
-                        + "Enter your name and server IP Address then press Connect to play.";
-        }
-
-
-        /// <summary>
-        /// Invokes the event that handles the start of the game.
-        /// </summary>
-        /// <param name="s">String Tokens containing start game variables from server.</param>
-        private void GameStartMessage(string[] s)
-        {
-            Dispatcher.Invoke(new Action(() => { GameStartMessageHelper(s); }));
-        }
-
-
-        /// <summary>
-        /// Invokes the event that handles the start of the game.
-        /// Set's up the boggle board letters.
-        /// Saves opponents name.
-        /// Sets up initial time.
-        /// </summary>
-        /// <param name="s">String Tokens containing start game variables from server.</param>
-        private void GameStartMessageHelper(string[] s)
-        {
-            // Allow user to quit game.
-            connectButton.Content = "Disconnect";
-
-            // Puts board string onto GUI.
-            char[] boggleLetters = s[1].ToCharArray();
-            BSpot1.Text = boggleLetters[0] + "";
-            BSpot2.Text = boggleLetters[1] + "";
-            BSpot3.Text = boggleLetters[2] + "";
-            BSpot4.Text = boggleLetters[3] + "";
-            BSpot5.Text = boggleLetters[4] + "";
-            BSpot6.Text = boggleLetters[5] + "";
-            BSpot7.Text = boggleLetters[6] + "";
-            BSpot8.Text = boggleLetters[7] + "";
-            BSpot9.Text = boggleLetters[8] + "";
-            BSpot10.Text = boggleLetters[9] + "";
-            BSpot11.Text = boggleLetters[10] + "";
-            BSpot12.Text = boggleLetters[11] + "";
-            BSpot13.Text = boggleLetters[12] + "";
-            BSpot14.Text = boggleLetters[13] + "";
-            BSpot15.Text = boggleLetters[14] + "";
-            BSpot16.Text = boggleLetters[15] + "";
-
-            // Assigns game time to GUI.
-            timeLeftBox.Text = s[2];
-
-            // Assigns opponent name to GUI.
-            string opponentName = "";
-            for (int i = 3; i < s.Length; i++)
-            {
-                opponentName += s[i] + " ";
-            }
-            opponentBox.Text = opponentName;
-
-            // Sets GUI up for when game has begun.
-            infoBox.Visibility = System.Windows.Visibility.Hidden;
-            pScoreBox.Text = "0";
-            oScoreBox.Text = "0";
-            wordEntryBox.IsEnabled = true;
-            wordEntryBox.Focus();
-        }
+                        + "Enter your name and server IP Address then click Connect.";
+        }        
 
 
         /// <summary>
@@ -369,14 +373,14 @@ namespace BoggleClient
         private void GameSocketFailHelper()
         {
             infoBox.Text = infoBox.Text = "Unable to connect to server. Server may not be "
-                + "running or you have entered an invalid IP. Ensure you have entered the "
-                + "IP Address correctly.\n\n"
-                + "Enter your name and server IP Address then press Connect to play.";
+                + "running or you have entered an invalid IP.\n\n"
+                + "Enter your name and server IP Address then click Connect.";
 
             // Allow player to re-enter info.
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
+            playButton.IsEnabled = false;
         }
 
 
@@ -389,7 +393,7 @@ namespace BoggleClient
         {
             if (e.Key == Key.Enter)
             {
-                 model.SendMessage(chatBox.Text);
+                 //model.SendMessage(chatBox.selection);
             }
         }
 
@@ -401,7 +405,13 @@ namespace BoggleClient
 
         private void ChatMessageHelper(string message)
         {
-            chatBox.AppendText(message);
+            //chatBox.AppendText(message);
         }
+
+        private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            chatEntryBox.Clear();
+        }
+
     }
 }
