@@ -252,7 +252,7 @@ namespace BB
             // Notify then close socket to remaining Player
             if (dead.Opponent.Ss.Connected)
             {
-                timer.Dispose(); // game is over, stop sending time updates
+                //timer.Dispose(); // game is over, stop sending time updates
                 dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent);               
                 Console.WriteLine(string.Format("{0, 13} GAME {1, 4} {2, -15} {3, -15} {4}", "PREMATURE END", gameID, dead.IP, dead.Opponent.IP, DateTime.Now));                
             }

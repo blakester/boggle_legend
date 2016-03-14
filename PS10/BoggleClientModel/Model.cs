@@ -48,7 +48,7 @@ namespace BoggleClient
             {
                 client = new TcpClient(ip, port);
                 socket = new StringSocket(client.Client, UTF8Encoding.Default);
-                socket.BeginSend("PLAY " + player + "\n", SendCallback, null);
+                socket.BeginSend("NEW_PLAYER " + player + "\n", SendCallback, null);
                 socket.BeginReceive(ReceivedMessage, null);
             }
             catch (SocketException)
