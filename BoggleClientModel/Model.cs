@@ -34,6 +34,7 @@ namespace BoggleClient
         public event Action SocketExceptionEvent; // Event when socket failed to connect.
         public event Action ServerClosedEvent; // Event when server closes before game starts.
         public event Action<string> ChatMessageEvent; // Event when chat message received from opponent.
+        public event Action<string> ReadyMessageEvent; // Event when chat message received from opponent.
 
 
         /// <summary>
@@ -48,7 +49,7 @@ namespace BoggleClient
             {
                 client = new TcpClient(ip, port);
                 socket = new StringSocket(client.Client, UTF8Encoding.Default);
-                socket.BeginSend("NEW_PLAYER " + player + "\n", SendCallback, null);
+                socket.BeginSend("NEW_PLAYER " + player + "\n", ExceptionCheck, null);
                 socket.BeginReceive(ReceivedMessage, null);
             }
             catch (SocketException)
@@ -79,6 +80,11 @@ namespace BoggleClient
                 ScoreUpdate(message);
                 socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
             }
+            else if (Regex.IsMatch(message, @"^(READY\s)")) // Starts Game
+            {
+                ReadyMessage(message);
+                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+            }
             else if (Regex.IsMatch(message, @"^(START\s)")) // Starts Game
             {
                 StartMessage(message);
@@ -87,7 +93,7 @@ namespace BoggleClient
             else if (Regex.IsMatch(message, @"^(STOP\s)")) // End Game
             {
                 SummaryMessage(message);
-                Terminate(false); // game is over, close communications
+                //Terminate(false); // game is over, close communications
             }
             else if (Regex.IsMatch(message, @"^(CHAT\s)")) // Received chat message
             {
@@ -127,6 +133,13 @@ namespace BoggleClient
                 if (GameEndedEvent != null)
                     GameEndedEvent(opponentDisconnected);
             }
+        }
+
+
+        private void ReadyMessage(string message)
+        {
+            // send the opponent's name
+            ReadyMessageEvent(message.Substring(6));
         }
 
 
@@ -237,7 +250,7 @@ namespace BoggleClient
         /// <param name="word">Word to be sent.</param>
         public void SendWord(string word)
         {
-            socket.BeginSend("WORD " + word + "\n", SendCallback, null);
+            socket.BeginSend("WORD " + word + "\n", ExceptionCheck, null);
         }
 
 
@@ -247,7 +260,13 @@ namespace BoggleClient
         /// <param name="word"></param>
         public void SendMessage(string message)
         {
-            socket.BeginSend("CHAT " + message + "\n", SendCallback, null);
+            socket.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
+        }
+
+
+        public void ClickedPlay()
+        {
+            socket.BeginSend("PLAY\n", ExceptionCheck, null);
         }
 
 
@@ -258,7 +277,7 @@ namespace BoggleClient
         /// </summary>
         /// <param name="e">Exception thrown, if not null.</param>
         /// <param name="payload">NOT USED.</param>
-        private void SendCallback(Exception e, object payload)
+        private void ExceptionCheck(Exception e, object payload)
         {
             if (e != null)
                 Terminate(false);

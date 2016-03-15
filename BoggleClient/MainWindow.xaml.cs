@@ -36,13 +36,14 @@ namespace BoggleClient
             InitializeComponent();
             model = new Model();
             model.GameEndedEvent += GameEndResetEverything;
-            model.StartMessageEvent += GameStartMessage;
-            model.TimeMessageEvent += GameTimeMessage;
-            model.ScoreMessageEvent += GameScoreMessage;
-            model.SummaryMessageEvent += GameSummaryMessage;
-            model.SocketExceptionEvent += GameSocketFail;
+            model.StartMessageEvent += GameStart;
+            model.TimeMessageEvent += GameTime;
+            model.ScoreMessageEvent += GameScore;
+            model.SummaryMessageEvent += GameSummary;
+            model.SocketExceptionEvent += SocketFail;
             model.ServerClosedEvent += ServerClosed;
             model.ChatMessageEvent += ChatMessage;
+            model.ReadyMessageEvent += GameReady;
         }
 
 
@@ -74,18 +75,19 @@ namespace BoggleClient
                     return;
                 }
 
+                // Let model handle connecting to server.
+                model.Connect(playerTextBox.Text, serverTextBox.Text);
+
                 // Gets GUI elements ready for play.
                 connectButton.Content = "Disconnect";
                 playerTextBox.IsEnabled = false;
                 serverTextBox.IsEnabled = false;
-                playButton.IsEnabled = true;
                 infoBox.Text = "You have connected to the server.\n\n"
-                    + "Click Play to start a game with the next available player.";                
-
-                // Let model handle connecting to server.
-                model.Connect(playerTextBox.Text, serverTextBox.Text);
-            }
-            else if (((string)connectButton.Content) == "Disconnect")
+                    + "Waiting for an opponent to connect...";
+                
+            }            
+            //else if (((string)connectButton.Content) == "Disconnect")
+            else
             {
                 // Gets GUI elemtents ready for connection.
                 connectButton.Content = "Connect";
@@ -101,12 +103,29 @@ namespace BoggleClient
             }
         }
 
+        private void GameReady(string s)
+        {
+            Dispatcher.Invoke(new Action(() => { GameReadyHelper(s); }));
+        }
+
+
+        private void GameReadyHelper(string s)
+        {
+            playerTextBox.IsEnabled = false;
+            serverTextBox.IsEnabled = false;
+            chatEntryBox.IsEnabled = true;
+            playButton.IsEnabled = true;
+            opponentBox.Text = s;
+            infoBox.Text = s + " is connected to the server.\n\n"
+                + "Chat or click Play to begin!";            
+        }
+
 
         /// <summary>
         /// Invokes the event that handles the start of the game.
         /// </summary>
         /// <param name="s">String Tokens containing start game variables from server.</param>
-        private void GameStartMessage(string[] s)
+        private void GameStart(string[] s)
         {
             Dispatcher.Invoke(new Action(() => { GameStartMessageHelper(s); }));
         }
@@ -201,6 +220,7 @@ namespace BoggleClient
             serverTextBox.IsEnabled = true;
             wordEntryBox.IsEnabled = false;
             connectButton.Content = "Connect";
+            playButton.Content = "Play";
 
             // Will only be hidden if Game did not finish normally.
             if (infoBox.Visibility == System.Windows.Visibility.Hidden)
@@ -244,7 +264,7 @@ namespace BoggleClient
         /// Invokes an event to update time on GUI.
         /// </summary>
         /// <param name="s">Array that contains TIME and actual time.</param>
-        private void GameTimeMessage(string[] s)
+        private void GameTime(string[] s)
         {
             Dispatcher.Invoke(new Action(() => { GameTimeMessageHelper(s); }));
         }
@@ -264,7 +284,7 @@ namespace BoggleClient
         /// Invokes an event to update score on GUI.
         /// </summary>
         /// <param name="s">Array that contains SCORE and actual scores.</param>
-        private void GameScoreMessage(string[] s)
+        private void GameScore(string[] s)
         {
             Dispatcher.Invoke(new Action(() => { GameScoreMessageHelper(s); }));
         }
@@ -285,7 +305,7 @@ namespace BoggleClient
         /// Invokes event that ends game and creates summary page.
         /// </summary>
         /// <param name="list">A list of String[] that contains lists of words.</param>
-        private void GameSummaryMessage(List<string[]> list)
+        private void GameSummary(List<string[]> list)
         {
             Dispatcher.Invoke(() => { GameSummaryMessageHelper(list); });
         }
@@ -336,6 +356,8 @@ namespace BoggleClient
             SummaryPrinter(oIllegalWords);
 
             infoBox.Visibility = System.Windows.Visibility.Visible;
+
+            playButton.Content = "Play";
         }
 
 
@@ -361,7 +383,7 @@ namespace BoggleClient
         /// <summary>
         /// Inovkes an event when socket fails to connect.
         /// </summary>
-        private void GameSocketFail()
+        private void SocketFail()
         {
             Dispatcher.Invoke(() => { GameSocketFailHelper(); });
         }
@@ -411,6 +433,20 @@ namespace BoggleClient
         private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
         {
             chatEntryBox.Clear();
+        }
+
+        private void playButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (((string)playButton.Content) == "Play")
+            {
+                playButton.Content = "Quit";
+                infoBox.Text = infoBox.Text = "Waiting for opponent to click Play...";
+                model.ClickedPlay();
+            }
+            else
+            {
+
+            }
         }
 
     }

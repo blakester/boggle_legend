@@ -247,7 +247,7 @@ namespace BB
                 {
                     // Create a new Player using the player's name,
                     // IP, and StringSocket connection with the server.
-                    string name = s.Substring(5);
+                    string name = s.Substring(10);
                     Player currentPlayer = new Player(name.Trim(), ipss.IP, ipss.Ss);
 
                     // Keep firstPlayer threadsafe.
@@ -295,15 +295,15 @@ namespace BB
                 }
 
                 // when client disconnects before starting game
-                else if (Regex.IsMatch(s.ToUpper(), @"^(PRE_GAME_DISCONNECT)"))
-                {
-                    // Print lone client connection lost info and close the socket
-                    Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", ipss.IP, DateTime.Now));
-                    ipss.Ss.Close();
+                //else if (Regex.IsMatch(s.ToUpper(), @"^(PRE_GAME_DISCONNECT)"))
+                //{
+                //    // Print lone client connection lost info and close the socket
+                //    Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", ipss.IP, DateTime.Now));
+                //    ipss.Ss.Close();
 
-                    // lone client is gone
-                    firstPlayer = null;
-                }
+                //    // lone client is gone
+                //    firstPlayer = null;
+                //}
                 
                 // for debugging
                 else
@@ -312,15 +312,18 @@ namespace BB
                     ipss.Ss.BeginReceive(ReceivedMessage, ipss);
                 }
             }
+
+            // This shouldn't ever execute, unless there is an exception when a client
+            // sends the new player command.
             else
             {
-                // Print lone client connection lost info and close the socket
+                // Print connection lost info and close the socket
                 IPAndStringSocket ipss = (IPAndStringSocket)payload;
-                Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", ipss.IP, DateTime.Now));
+                Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION FAILED", ipss.IP, DateTime.Now));
                 ipss.Ss.Close();
 
                 // lone client is gone
-                firstPlayer = null;
+                //firstPlayer = null;
             }
         }        
 

@@ -26,11 +26,12 @@ namespace BB
         private Player one;
         private Player two;
         private int gameID;
+        private int playCount = 0;
         private Timer timer; // Game Timer
         private BoggleBoard board; // The board layout of the current game.
         private int timeLeft;
         private bool gameDone; // Changes the state of the game when timeleft reaches zero.
-        private bool gameStart; // Is true when game starts, false otherwise.
+        //private bool gameStart; // Is true when game starts, false otherwise.
         private readonly object playerlock; // Lock that protects Player while calculating scores.
 
 
@@ -48,7 +49,11 @@ namespace BB
             // Lock
             playerlock = new object();
 
-            gameStart = false;
+            //gameStart = false;
+
+            // Let Players know game is ready to start
+            one.Ss.BeginSend("READY " + two.Name + "\n", ExceptionCheck, one.Ss);
+            two.Ss.BeginSend("READY " + one.Name + "\n", ExceptionCheck, two.Ss);
 
             // Begin waiting for messages from the Players.
             one.Ss.BeginReceive(MessageReceived, one);
@@ -70,40 +75,55 @@ namespace BB
         private void MessageReceived(string s, Exception e, object payload)
         {
             // If e and s are null, end game.
-            if (s == null)
+            if (s != null && e == null)
             {
-                Terminate(e, payload);
-                return;
-            }
+                // Saves player for clarity purposes.
+                Player player = (Player)payload;
 
-            // Saves player for clarity purposes.
-            Player player = (Player)payload;
+                // Only listen for more words if game is still going.
+                if (!gameDone)
+                    player.Ss.BeginReceive(MessageReceived, player);
 
-            // Only listen for more words if game is still going.
-            if (!gameDone)
-                player.Ss.BeginReceive(MessageReceived, player);
+                //if (!gameStart)
+                //{
+                //    player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
+                //    return;
+                //}
 
-            if (!gameStart)
-            {
-                player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
-                return;
-            }
-
-            // Handle a received word or chat message.
-            // Otherwise ignore what was received.
-            if (Regex.IsMatch(s.ToUpper(), @"^(WORD\s)"))
-            {
-                ProcessWord(player, s.Substring(5).Trim().ToUpper());
-            }
-            else if (Regex.IsMatch(s.ToUpper(), @"^(CHAT\s)"))
-            {
-                RelayChatMessage(player, s.Substring(5));
+                // Handle the message
+                if (Regex.IsMatch(s.ToUpper(), @"^(WORD\s)"))
+                {
+                    ProcessWord(player, s.Substring(5).Trim().ToUpper());
+                }
+                else if (Regex.IsMatch(s.ToUpper(), @"^(CHAT\s)"))
+                {
+                    RelayChatMessage(player, s.Substring(5));
+                }
+                else if (Regex.IsMatch(s.ToUpper(), @"^(PLAY)"))
+                {
+                    Play();
+                }
+                else
+                {
+                    player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
+                }               
             }
             else
+                Terminate(e, payload);                       
+        }
+
+
+        private void Play()
+        {
+            lock (playerlock)
             {
-                player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
-                return;
-            }            
+                playCount++;
+                if (playCount == 2)
+                {
+                    playCount = 0;
+                    Start();
+                }
+            }
         }
 
 
@@ -111,10 +131,7 @@ namespace BB
         /// Starts this BoggleGame.
         /// </summary>
         private void Start()
-        {
-            // Get a Timer ready for the gameplay countdown.
-            timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
-            timeLeft = BoggleServer.GameLength;
+        {            
             gameDone = false;
 
             // Create a BoggleBoard with the specified
@@ -130,11 +147,6 @@ namespace BB
             two.Ss.BeginSend("START " + board.ToString() + " "
                 + timeLeft + " " + one.Name + "\n", ExceptionCheck, two);
 
-            // Starts the timer. The method TimeUpdate will
-            // be called every second. Start delayed by 250ms.
-            timer.Change(250, 1000);
-            gameStart = true;
-
             // Print game info
             lock (playerlock)
             {
@@ -142,6 +154,13 @@ namespace BB
                 Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}",
                     "START", gameID, one.IP, two.IP, DateTime.Now));
             }
+
+            // Initialize and start the timer. The method TimeUpdate will
+            // be called every second. Start delayed by 250ms.
+            timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
+            timeLeft = BoggleServer.GameLength;
+            timer.Change(250, 1000);
+            //gameStart = true;           
         }
 
 
