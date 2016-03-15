@@ -26,7 +26,7 @@ namespace BoggleClient
         private const int port = 2000; // The port the server is using.
 
         // These activate events for the controller to execute.
-        public event Action<bool> GameEndedEvent; // Event when game is done, resets GUI
+        public event Action<bool> DisconnectEvent; // Event when game is done, resets GUI
         public event Action<string[]> StartMessageEvent; // Event when START is recieved.
         public event Action<string[]> TimeMessageEvent; // Event when TIME is recieved.
         public event Action<string[]> ScoreMessageEvent; // Event when SCORE is recieved.
@@ -73,33 +73,33 @@ namespace BoggleClient
             else if (Regex.IsMatch(message, @"^(TIME\s)")) // Time Update
             {
                 TimeUpdate(message);
-                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+                
             }
             else if (Regex.IsMatch(message, @"^(SCORE\s)")) // Update Score
             {
                 ScoreUpdate(message);
-                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+                
             }
             else if (Regex.IsMatch(message, @"^(READY\s)")) // Starts Game
             {
                 ReadyMessage(message);
-                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+                
             }
             else if (Regex.IsMatch(message, @"^(START\s)")) // Starts Game
             {
                 StartMessage(message);
-                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+                
             }
             else if (Regex.IsMatch(message, @"^(STOP\s)")) // End Game
             {
                 SummaryMessage(message);
                 //Terminate(false); // game is over, close communications
-                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+                
             }
             else if (Regex.IsMatch(message, @"^(CHAT\s)")) // Received chat message
             {
                 ChatMessageEvent(message.Substring(5) + "\n\n");
-                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+                
             }  
             else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);
@@ -108,11 +108,11 @@ namespace BoggleClient
                 ServerClosedEvent();
                 Terminate(false); // game is over, close communications
             }
-            else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
-            {
-                IgnoreMessage(message);
-                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
-            }            
+            //else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
+            //{
+            //    IgnoreMessage(message);
+            //    socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+            //}            
         }
 
 
@@ -131,8 +131,8 @@ namespace BoggleClient
             }
             finally
             {
-                if (GameEndedEvent != null)
-                    GameEndedEvent(opponentDisconnected);
+                if (DisconnectEvent != null)
+                    DisconnectEvent(opponentDisconnected);
             }
         }
 
@@ -141,6 +141,7 @@ namespace BoggleClient
         {
             // send the opponent's name
             ReadyMessageEvent(message.Substring(6));
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 
@@ -154,6 +155,7 @@ namespace BoggleClient
             char[] spaces = { ' ' }; // Ensures that empty entries are not created.
             string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
             StartMessageEvent(tokens);
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 
@@ -167,6 +169,7 @@ namespace BoggleClient
             char[] spaces = { ' ' };
             string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
             TimeMessageEvent(tokens);
+            socket.BeginReceive(ReceivedMessage, null);
         }
 
 
@@ -180,6 +183,7 @@ namespace BoggleClient
             char[] spaces = { ' ' };
             string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
             ScoreMessageEvent(tokens);
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 
@@ -231,6 +235,7 @@ namespace BoggleClient
             }
             
             SummaryMessageEvent(results);
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 
@@ -239,10 +244,10 @@ namespace BoggleClient
         /// We simply eat up the message to allow other messages to be recieved.
         /// </summary>
         /// <param name="message">NOT USED.</param>
-        private void IgnoreMessage(string message)
-        {
-            //IGNORING THE IGNORING!!!!
-        }
+        //private void IgnoreMessage(string message)
+        //{
+        //    //IGNORING THE IGNORING!!!!
+        //}
 
 
         /// <summary>
@@ -259,9 +264,10 @@ namespace BoggleClient
         /// Sends the message to be relayed to the opponent
         /// </summary>
         /// <param name="word"></param>
-        public void SendMessage(string message)
+        public void ChatMessage(string message)
         {
             socket.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 

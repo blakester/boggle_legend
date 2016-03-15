@@ -35,7 +35,7 @@ namespace BoggleClient
         {
             InitializeComponent();
             model = new Model();
-            model.GameEndedEvent += GameEndResetEverything;
+            model.DisconnectEvent += PlayerDisconnected;
             model.StartMessageEvent += GameStart;
             model.TimeMessageEvent += GameTime;
             model.ScoreMessageEvent += GameScore;
@@ -71,7 +71,7 @@ namespace BoggleClient
                 if (playerTextBox.Text == "" || serverTextBox.Text == "")
                 {
                     infoBox.Text = "Name and/or server IP cannot be empty...\n\n"
-                        + "Enter your name and server IP Address then press Connect.";
+                        + "Enter your name and server IP Address then click Connect.";
                     return;
                 }
 
@@ -203,9 +203,9 @@ namespace BoggleClient
         /// Invokes the event thats responsible for resetting the GUI to it's orginal state.
         /// </summary>
         /// <param name="opponentDisconnect">Lets event know if opponent disconnect from server.</param>
-        private void GameEndResetEverything(bool opponentDisconnect)
+        private void PlayerDisconnected(bool opponentDisconnect)
         {
-            Dispatcher.Invoke(new Action(() => { GameEndResetEverythingHelper(opponentDisconnect); }));
+            Dispatcher.Invoke(new Action(() => { PlayerDisconnectedHelper(opponentDisconnect); }));
         }
 
 
@@ -214,7 +214,7 @@ namespace BoggleClient
         /// disconnections.
         /// </summary>
         /// <param name="opponentDisconnect">Used to determine if opponent disconnected from server.</param>
-        private void GameEndResetEverythingHelper(bool opponentDisconnect)
+        private void PlayerDisconnectedHelper(bool opponentDisconnect)
         {
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
@@ -225,22 +225,22 @@ namespace BoggleClient
             // Will only be hidden if Game did not finish normally.
             if (infoBox.Visibility == System.Windows.Visibility.Hidden)
             {
+                // If opponent disconnected from server.
+                if (opponentDisconnect)
+                    infoBox.Text = opponentBox.Text + " disconnected from the server and ended your session.\n\n"
+                        + "Enter your name and server IP Address then click Connect to play.";
+                // If connection with server was lost unwillingly.
+                else
+                    infoBox.Text = "The connection to the server was lost.\n\n"
+                        + "Enter your name and server IP Address then click Connect to play.";
+                
                 // Clear game data and
                 // word entry box.
                 opponentBox.Text = "";
                 timeLeftBox.Text = "";
                 pScoreBox.Text = "";
                 oScoreBox.Text = "";
-                wordEntryBox.Text = "";
-
-                // If opponent disconnected from server.
-                if (opponentDisconnect)
-                    infoBox.Text = "Your opponent has fled...\n\n"
-                        + "Enter your name and server IP Address then press Connect to play.";
-                // If connection with server was lost unwillingly.
-                else
-                    infoBox.Text = "The connection to the server was lost.\n\n"
-                        + "Enter your name and server IP Address then press Connect to play.";
+                wordEntryBox.Text = "";               
 
                 infoBox.Visibility = System.Windows.Visibility.Visible;
             }
