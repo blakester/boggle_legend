@@ -59,7 +59,7 @@
         <Rectangle x:Name="chatRectangle" Fill="#FF26DEDE" HorizontalAlignment="Left" Height="580" Stroke="Black" VerticalAlignment="Top" Width="300" Margin="26,28,0,0" Panel.ZIndex="-1"/>
         <Label Content="Chat" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="150,37,0,0" Width="50" FontSize="16" FontWeight="Bold" Panel.ZIndex="1" RenderTransformOrigin="3.32,0.677"/>
         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" Margin="49,0,0,63" Width="253" Height="401" Foreground="#FF000031" Background="White" IsEnabled="False"/>
-        <Button x:Name="playButton" Content="Play" HorizontalAlignment="Left" VerticalAlignment="Top" Width="99" Margin="623,69,0,0" IsEnabled="False"/>
+        <Button x:Name="playButton" Content="Play" HorizontalAlignment="Left" VerticalAlignment="Top" Width="99" Margin="623,69,0,0" IsEnabled="False" Click="playButton_Click"/>
 
     </Grid>
 </Window>
