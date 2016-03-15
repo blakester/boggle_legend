@@ -81,7 +81,7 @@ namespace BB
                 Player player = (Player)payload;
 
                 // Only listen for more words if game is still going.
-                if (!gameDone)
+                //if (!gameDone)
                     player.Ss.BeginReceive(MessageReceived, player);
 
                 //if (!gameStart)
@@ -271,7 +271,7 @@ namespace BB
             // Notify then close socket to remaining Player
             if (dead.Opponent.Ss.Connected)
             {
-                //timer.Dispose(); // game is over, stop sending time updates
+                timer.Dispose(); // game is over, stop sending time updates
                 dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent);               
                 Console.WriteLine(string.Format("{0, 13} GAME {1, 4} {2, -15} {3, -15} {4}", "PREMATURE END", gameID, dead.IP, dead.Opponent.IP, DateTime.Now));                
             }
@@ -316,10 +316,14 @@ namespace BB
                 + shareLegal + playerTwoIllegal + playerOneIllegal + "\n";
 
             // Send the messages
-            one.Ss.BeginSend(playerOneStats, CloseSocket, one);
-            two.Ss.BeginSend(playerTwoStats, CloseSocket, two);
+            one.Ss.BeginSend(playerOneStats, ExceptionCheck, one);
+            two.Ss.BeginSend(playerTwoStats, ExceptionCheck, two);
 
             Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "END", gameID, one.IP, two.IP, DateTime.Now));
+
+            // Begin waiting for more messages from the Players.
+            //one.Ss.BeginReceive(MessageReceived, one);
+            //two.Ss.BeginReceive(MessageReceived, two);   
 
             // THE BELOW WAS USED FOR THE DATABASE
             //UpdateDatabase();

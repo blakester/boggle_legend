@@ -35,7 +35,7 @@ namespace BoggleClient
         {
             InitializeComponent();
             model = new Model();
-            model.DisconnectEvent += PlayerDisconnected;
+            model.DisconnectEvent += GameDisconnection;
             model.StartMessageEvent += GameStart;
             model.TimeMessageEvent += GameTime;
             model.ScoreMessageEvent += GameScore;
@@ -203,9 +203,9 @@ namespace BoggleClient
         /// Invokes the event thats responsible for resetting the GUI to it's orginal state.
         /// </summary>
         /// <param name="opponentDisconnect">Lets event know if opponent disconnect from server.</param>
-        private void PlayerDisconnected(bool opponentDisconnect)
+        private void GameDisconnection(bool opponentDisconnect)
         {
-            Dispatcher.Invoke(new Action(() => { PlayerDisconnectedHelper(opponentDisconnect); }));
+            Dispatcher.Invoke(new Action(() => { GameDisconnectionHelper(opponentDisconnect); }));
         }
 
 
@@ -214,7 +214,7 @@ namespace BoggleClient
         /// disconnections.
         /// </summary>
         /// <param name="opponentDisconnect">Used to determine if opponent disconnected from server.</param>
-        private void PlayerDisconnectedHelper(bool opponentDisconnect)
+        private void GameDisconnectionHelper(bool opponentDisconnect)
         {
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
