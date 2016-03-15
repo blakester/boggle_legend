@@ -286,7 +286,7 @@ namespace BB
 
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
                             currentPlayer.Opponent = firstPlayer;
-                            Console.WriteLine("INITIALIZE A BOGGLE GAME");//*******************************************************************
+                            //Console.WriteLine("INITIALIZE A BOGGLE GAME");//*******************************************************************
                             BoggleGame game = new BoggleGame(firstPlayer, currentPlayer);
                             //game.Start();                              
                             firstPlayer = null; // gets firstPlayer ready for next pair up.
