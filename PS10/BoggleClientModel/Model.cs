@@ -94,6 +94,7 @@ namespace BoggleClient
             {
                 SummaryMessage(message);
                 //Terminate(false); // game is over, close communications
+                socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
             }
             else if (Regex.IsMatch(message, @"^(CHAT\s)")) // Received chat message
             {
