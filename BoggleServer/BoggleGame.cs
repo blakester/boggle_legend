@@ -57,11 +57,11 @@ namespace BB
             two.Ss.BeginReceive(MessageReceived, two);            
         }       
 
-        public void ServerClosed()
-        {
-            one.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, one.Ss);
-            two.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, two.Ss);
-        }
+        //public void ServerClosed()
+        //{
+        //    one.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, one.Ss);
+        //    two.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, two.Ss);
+        //}
 
 
         /// <summary>
