@@ -273,7 +273,7 @@ namespace BB
             {
                 timer.Dispose(); // game is over, stop sending time updates
                 dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent);               
-                Console.WriteLine(string.Format("{0, 13} GAME {1, 4} {2, -15} {3, -15} {4}", "PREMATURE END", gameID, dead.IP, dead.Opponent.IP, DateTime.Now));                
+                //Console.WriteLine(string.Format("{0, 13} GAME {1, 4} {2, -15} {3, -15} {4}", "PREMATURE END", gameID, dead.IP, dead.Opponent.IP, DateTime.Now));                
             }
         }
 

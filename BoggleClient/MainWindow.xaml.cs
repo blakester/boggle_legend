@@ -222,7 +222,7 @@ namespace BoggleClient
             connectButton.Content = "Connect";
             playButton.Content = "Play";
 
-            // Will only be hidden if Game did not finish normally.
+            // The infoBox will be hidden during gameplay
             if (infoBox.Visibility == System.Windows.Visibility.Hidden)
             {
                 // If opponent disconnected from server.
@@ -236,13 +236,20 @@ namespace BoggleClient
                 
                 // Clear game data and
                 // word entry box.
-                opponentBox.Text = "";
-                timeLeftBox.Text = "";
-                pScoreBox.Text = "";
-                oScoreBox.Text = "";
-                wordEntryBox.Text = "";               
+                //opponentBox.Text = "";
+                //timeLeftBox.Text = "";
+                //pScoreBox.Text = "";
+                //oScoreBox.Text = "";
+                //wordEntryBox.Text = "";               
 
                 infoBox.Visibility = System.Windows.Visibility.Visible;
+            }
+            // the game is over
+            else
+            {
+                if (opponentDisconnect)
+                    infoBox.Text = opponentBox.Text + " disconnected from the server and ended your session.\n\n"
+                        + "Enter your name and server IP Address then click Connect to play.";
             }
         }
 

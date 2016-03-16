@@ -1,4 +1,5 @@
 ﻿-create chat boxes (if post game chatting is desired, SOCKETS HAVE TO REMAIN OPEN)
+-have countdown before game begins
 
 NOTES:
 -A game ended normally once but then immediately printed also that it ended prematurely.
