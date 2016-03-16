@@ -63,51 +63,44 @@ namespace BoggleClient
         /// <summary>
         /// Handles all socket incoming messages from the server.
         /// </summary>
-        /// <param name="message">Message that was received.</param>
+        /// <param name="s">Message that was received.</param>
         /// <param name="e">Exeption, if there was one.</param>
         /// <param name="payload">NOT USED.</param>
-        private void ReceivedMessage(string message, Exception e, object payload)
-        {
-            if (message == null) // An error occured with the socket
+        private void ReceivedMessage(string s, Exception e, object payload)
+        {            
+            if (s == null || e != null)
                 Terminate(false);
-            else if (Regex.IsMatch(message, @"^(TIME\s)")) // Time Update
+            else if (Regex.IsMatch(s, @"^(TIME\s)")) // Time Update
             {
-                TimeUpdate(message);
-                
+                TimeUpdate(s);                
             }
-            else if (Regex.IsMatch(message, @"^(SCORE\s)")) // Update Score
+            else if (Regex.IsMatch(s, @"^(SCORE\s)")) // Update Score
             {
-                ScoreUpdate(message);
-                
+                ScoreUpdate(s);                
             }
-            else if (Regex.IsMatch(message, @"^(READY\s)")) // Starts Game
+            else if (Regex.IsMatch(s, @"^(READY\s)")) // Starts Game
             {
-                ReadyMessage(message);
-                
+                ReadyMessage(s);                
             }
-            else if (Regex.IsMatch(message, @"^(START\s)")) // Starts Game
+            else if (Regex.IsMatch(s, @"^(START\s)")) // Starts Game
             {
-                StartMessage(message);
-                
+                StartMessage(s);                
             }
-            else if (Regex.IsMatch(message, @"^(STOP\s)")) // End Game
+            else if (Regex.IsMatch(s, @"^(STOP\s)")) // End Game
             {
-                SummaryMessage(message);
-                //Terminate(false); // game is over, close communications
-                
+                SummaryMessage(s);               
             }
-            else if (Regex.IsMatch(message, @"^(CHAT\s)")) // Received chat message
+            else if (Regex.IsMatch(s, @"^(CHAT\s)")) // Received chat message
             {
-                ChatMessageEvent(message.Substring(5) + "\n\n");
-                
+                ChatMessageEvent(s.Substring(5) + "\n\n");                
             }  
-            else if (Regex.IsMatch(message, @"^(TERMINATED)")) // Opponent Disconnected
+            else if (Regex.IsMatch(s, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);
-            else if (Regex.IsMatch(message, @"^(SERVER_CLOSED)")) // 
-            {
-                ServerClosedEvent();
-                Terminate(false); // game is over, close communications
-            }
+            //else if (Regex.IsMatch(s, @"^(SERVER_CLOSED)"))
+            //{
+            //    ServerClosedEvent();
+            //    Terminate(false); // game is over, close communications
+            //}
             //else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
             //{
             //    IgnoreMessage(message);
@@ -134,6 +127,12 @@ namespace BoggleClient
                 if (DisconnectEvent != null)
                     DisconnectEvent(opponentDisconnected);
             }
+        }
+
+        public void CloseSocket()
+        {
+            socket.Close();
+            client.Close();
         }
 
 

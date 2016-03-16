@@ -355,12 +355,12 @@ namespace BB
         private void CloseServer()
         {
             // notify lone client
-            if (firstPlayer != null)
-                firstPlayer.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, firstPlayer.Ss);
+            //if (firstPlayer != null)
+            //    firstPlayer.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, firstPlayer.Ss);
 
-            // notify all remaining clients
-            foreach (BoggleGame g in BoggleGames)
-                g.ServerClosed();
+            //// notify all remaining clients
+            //foreach (BoggleGame g in BoggleGames)
+            //    g.ServerClosed();
 
             server.Stop();
 
