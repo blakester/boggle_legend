@@ -30,8 +30,7 @@ namespace BB
         private Timer timer; // Game Timer
         private BoggleBoard board; // The board layout of the current game.
         private int timeLeft;
-        private bool gameDone; // Changes the state of the game when timeleft reaches zero.
-        //private bool gameStart; // Is true when game starts, false otherwise.
+        //private bool gameInProgress; // Changes the state of the game when timeleft reaches zero.
         private readonly object playerlock; // Lock that protects Player while calculating scores.
 
 
@@ -49,8 +48,6 @@ namespace BB
             // Lock
             playerlock = new object();
 
-            //gameStart = false;
-
             // Let Players know game is ready to start
             one.Ss.BeginSend("READY " + two.Name + "\n", ExceptionCheck, one.Ss);
             two.Ss.BeginSend("READY " + one.Name + "\n", ExceptionCheck, two.Ss);
@@ -59,6 +56,12 @@ namespace BB
             one.Ss.BeginReceive(MessageReceived, one);
             two.Ss.BeginReceive(MessageReceived, two);            
         }       
+
+        public void ServerClosed()
+        {
+            one.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, one.Ss);
+            two.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, two.Ss);
+        }
 
 
         /// <summary>
@@ -74,7 +77,6 @@ namespace BB
         /// was received</param>
         private void MessageReceived(string s, Exception e, object payload)
         {
-            // If e and s are null, end game.
             if (s != null && e == null)
             {
                 // Saves player for clarity purposes.
@@ -83,12 +85,6 @@ namespace BB
                 // Only listen for more words if game is still going.
                 //if (!gameDone)
                     player.Ss.BeginReceive(MessageReceived, player);
-
-                //if (!gameStart)
-                //{
-                //    player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
-                //    return;
-                //}
 
                 // Handle the message
                 if (Regex.IsMatch(s.ToUpper(), @"^(WORD\s)"))
@@ -132,7 +128,7 @@ namespace BB
         /// </summary>
         private void Start()
         {            
-            gameDone = false;
+            //gameInProgress = true;
 
             // Create a BoggleBoard with the specified
             // string of letters.  Random otherwise.
@@ -155,12 +151,11 @@ namespace BB
                     "START", gameID, one.IP, two.IP, DateTime.Now));
             }
 
-            // Initialize and start the timer. The method TimeUpdate will
+            // Initialize and start the timer. TimeUpdate will
             // be called every second. Start delayed by 250ms.
             timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
             timeLeft = BoggleServer.GameLength;
-            timer.Change(250, 1000);
-            //gameStart = true;           
+            timer.Change(250, 1000);         
         }
 
 
@@ -245,12 +240,8 @@ namespace BB
             two.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, two);
 
             // End the game if time is out.
-            if (timeLeft == 0)
-            {
-                gameDone = true;
-                timer.Dispose();
+            if (timeLeft == 0)                
                 End();
-            }
         }
 
 
@@ -264,15 +255,18 @@ namespace BB
         /// exception occured</param>
         private void Terminate(Exception e, object payload)
         {
+            //if (gameInProgress)
+            if (timer != null)
+                timer.Dispose(); // game is over, stop sending time updates
+            
             // Close socket to offending player
             Player dead = (Player)payload;
-            CloseSocket(null, payload);
+            CloseSocket(null, dead.Ss);
 
             // Notify then close socket to remaining Player
             if (dead.Opponent.Ss.Connected)
-            {
-                timer.Dispose(); // game is over, stop sending time updates
-                dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent);               
+            {                
+                dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent.Ss);               
                 //Console.WriteLine(string.Format("{0, 13} GAME {1, 4} {2, -15} {3, -15} {4}", "PREMATURE END", gameID, dead.IP, dead.Opponent.IP, DateTime.Now));                
             }
         }
@@ -286,7 +280,7 @@ namespace BB
         private void CloseSocket(Exception e, object payload)
         {
             // Close the StringSocket to the Player.
-            ((Player)payload).Ss.Close();
+            ((StringSocket)payload).Close();
         }
 
 
@@ -297,6 +291,9 @@ namespace BB
         /// </summary>
         private void End()
         {
+            //gameInProgress = false;
+            timer.Dispose();
+
             // Wait 1 second just to make sure everything is finished
             Thread.Sleep(1000);
 

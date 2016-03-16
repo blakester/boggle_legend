@@ -36,7 +36,9 @@ namespace BB
         private TcpListener server; // Used to listen for player connections.        
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
+        private List<BoggleGame> BoggleGames = new List<BoggleGame>();
         public static int gameCount = 1;
+
         // THE BELOW WAS USED FOR THE DATABASE
         //private TcpListener webServer; // Used to listen for web page requests.
         //public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
@@ -195,6 +197,7 @@ namespace BB
         /// <param name="result">Result of BeginAcceptSocket</param>
         private void ConnectionRequested(IAsyncResult result)
         {
+            // WHEN FINISHED, INVESTIGATE IF TRY IS STILL NEEDED
             // This handles exception that is is sometimes thrown
             // when the server is closed down. This may not be a
             // good solution, but it apparently works.
@@ -287,8 +290,9 @@ namespace BB
                             firstPlayer.Opponent = currentPlayer; // remembers opponent
                             currentPlayer.Opponent = firstPlayer;
                             //Console.WriteLine("INITIALIZE A BOGGLE GAME");//*******************************************************************
-                            BoggleGame game = new BoggleGame(firstPlayer, currentPlayer);
-                            //game.Start();                              
+                            //BoggleGame game = new BoggleGame(firstPlayer, currentPlayer);
+                            //game.Start(); 
+                            BoggleGames.Add(new BoggleGame(firstPlayer, currentPlayer));
                             firstPlayer = null; // gets firstPlayer ready for next pair up.
                         }
                     } // end Lock
@@ -353,6 +357,11 @@ namespace BB
             // notify lone client
             if (firstPlayer != null)
                 firstPlayer.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, firstPlayer.Ss);
+
+            // notify all remaining clients
+            foreach (BoggleGame g in BoggleGames)
+                g.ServerClosed();
+
             server.Stop();
 
             // THE BELOW WAS USED FOR THE DATABASE
