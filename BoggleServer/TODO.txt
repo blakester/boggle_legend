@@ -3,6 +3,8 @@
 -change countdown to begin on gamelength and end on zero?
 
 NOTES:
+-IF I GET EXCEPTIONS IN MODEL, REMEMBER THAT I'VE COMMENTED OUT A COUPLE THINGS IN TERMINATE
+
 -I think the try is needed in Model.Terminate because sockets can closed twice
  (once as a direct result of a player clicking Disconnect, and then because of
  the received null string). Only close sockets if still connected?

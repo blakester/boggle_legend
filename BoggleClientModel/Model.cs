@@ -24,9 +24,10 @@ namespace BoggleClient
         private TcpClient client; // Allows us to connect to server.
         private StringSocket socket; // Wrapper that takes care of sending strings over socket.
         private const int port = 2000; // The port the server is using.
-
+        public bool playerDisconnected;
+        //bool socketOpen, clientOpen;//*********************************************************************************************************
         // These activate events for the controller to execute.
-        public event Action<bool> DisconnectEvent; // Event when game is done, resets GUI
+        public event Action<bool> DisconnectOrErrorEvent; // Event when game is done, resets GUI
         public event Action<string[]> StartMessageEvent; // Event when START is recieved.
         public event Action<string[]> TimeMessageEvent; // Event when TIME is recieved.
         public event Action<string[]> ScoreMessageEvent; // Event when SCORE is recieved.
@@ -49,6 +50,7 @@ namespace BoggleClient
             {
                 client = new TcpClient(ip, port);
                 socket = new StringSocket(client.Client, UTF8Encoding.Default);
+                //socketOpen = clientOpen = true;//*****************************************************************************************
                 socket.BeginSend("NEW_PLAYER " + player + "\n", ExceptionCheck, null);
                 socket.BeginReceive(ReceivedMessage, null);
             }
@@ -117,16 +119,16 @@ namespace BoggleClient
         ///                                    disconnected or opponent disconnected.</param>
         public void Terminate(bool opponentDisconnected)
         {
-            try
-            {
+            //try
+            //{
                 socket.Close();
                 client.Close();
-            }
-            finally
-            {
-                if (DisconnectEvent != null)
-                    DisconnectEvent(opponentDisconnected);
-            }
+            //}
+            //finally
+            //{
+                if (!playerDisconnected /*&& (DisconnectOrErrorEvent != null)*/)
+                    DisconnectOrErrorEvent(opponentDisconnected);
+            //}
         }
 
         public void CloseSocket()
