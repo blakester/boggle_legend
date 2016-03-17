@@ -103,8 +103,8 @@ namespace BoggleClient
                     + "Enter your name and server IP Address then click Connect.";                
 
                 // Let model handle disconnecting from server.
-                //model.Terminate(false);
-                model.CloseSocket();                
+                model.Terminate(false);
+                //model.CloseSocket();                
             }
         }
 
