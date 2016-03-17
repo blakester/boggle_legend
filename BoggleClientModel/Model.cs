@@ -33,9 +33,10 @@ namespace BoggleClient
         public event Action<string[]> ScoreMessageEvent; // Event when SCORE is recieved.
         public event Action<List<string[]>> SummaryMessageEvent; // Event when STOP is recieved.
         public event Action SocketExceptionEvent; // Event when socket failed to connect.
-        public event Action ServerClosedEvent; // Event when server closes before game starts.
+        //public event Action ServerClosedEvent; // Event when server closes before game starts.
         public event Action<string> ChatMessageEvent; // Event when chat message received from opponent.
-        public event Action<string> ReadyMessageEvent; // Event when chat message received from opponent.
+        public event Action<string> ReadyMessageEvent;
+        public event Action OpponentStoppedEvent;
 
 
         /// <summary>
@@ -94,8 +95,12 @@ namespace BoggleClient
             }
             else if (Regex.IsMatch(s, @"^(CHAT\s)")) // Received chat message
             {
-                ChatMessageEvent(s.Substring(5) + "\n\n");                
-            }  
+                //ChatMessageEvent(s.Substring(5) + "\n\n");                
+            }
+            else if (Regex.IsMatch(s, @"^(OPPONENT_STOPPED)")) // Received chat message
+            {
+                OpponentStopped();
+            } 
             else if (Regex.IsMatch(s, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);
             //else if (Regex.IsMatch(s, @"^(SERVER_CLOSED)"))
@@ -240,6 +245,13 @@ namespace BoggleClient
         }
 
 
+        private void OpponentStopped()
+        {
+            OpponentStoppedEvent(); 
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        }
+
+
         /// <summary>
         /// Let's us know that the server recieved something from us.
         /// We simply eat up the message to allow other messages to be recieved.
@@ -268,13 +280,21 @@ namespace BoggleClient
         public void ChatMessage(string message)
         {
             socket.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
-            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+            //socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 
         public void ClickedPlay()
         {
             socket.BeginSend("PLAY\n", ExceptionCheck, null);
+            //socket.BeginReceive(ReceivedMessage, null); // Receiving Loop//*************************************************************
+        }
+
+
+        public void ClickedStop()
+        {
+            socket.BeginSend("STOP\n", ExceptionCheck, null);
+            //socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 

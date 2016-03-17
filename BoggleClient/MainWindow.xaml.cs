@@ -43,9 +43,10 @@ namespace BoggleClient
             model.ScoreMessageEvent += GameScore;
             model.SummaryMessageEvent += GameSummary;
             model.SocketExceptionEvent += SocketFail;
-            model.ServerClosedEvent += ServerClosed;
+            //model.ServerClosedEvent += ServerClosed;
             model.ChatMessageEvent += ChatMessage;
             model.ReadyMessageEvent += GameReady;
+            model.OpponentStoppedEvent += GameStopped;
         }
 
 
@@ -88,7 +89,7 @@ namespace BoggleClient
                 // Let model handle connecting to server.
                 model.Connect(playerTextBox.Text, serverTextBox.Text);                
             }            
-            //else if (((string)connectButton.Content) == "Disconnect")
+            // Disconnect was clicked
             else
             {
                 // Gets GUI elemtents ready for connection.
@@ -96,6 +97,7 @@ namespace BoggleClient
                 playerTextBox.IsEnabled = true;
                 serverTextBox.IsEnabled = true;
                 playButton.IsEnabled = false;
+                chatEntryBox.IsEnabled = false;
                 playButton.Content = "Play";
                 model.playerDisconnected = true;
                 infoBox.Visibility = System.Windows.Visibility.Visible;                
@@ -204,6 +206,21 @@ namespace BoggleClient
         }
 
 
+        private void GameStopped()
+        {
+            Dispatcher.Invoke(new Action(() => { GameStoppedHelper(); }));
+        }
+
+
+        private void GameStoppedHelper()
+        {
+            playButton.Content = "Play";
+            infoBox.Text = infoBox.Text = opponentName + " ended the game.\n\n" +
+                    "Chat or click Play to restart.";
+            infoBox.Visibility = System.Windows.Visibility.Visible;
+        }
+
+
         /// <summary>
         /// Invokes the event thats responsible for resetting the GUI to it's orginal state.
         /// </summary>
@@ -226,6 +243,7 @@ namespace BoggleClient
             serverTextBox.IsEnabled = true;
             wordEntryBox.IsEnabled = false;
             playButton.IsEnabled = false;
+            chatEntryBox.IsEnabled = false;
             playButton.Content = "Play";
 
             // The infoBox will be hidden during gameplay
@@ -261,17 +279,17 @@ namespace BoggleClient
         }
 
 
-        private void ServerClosed()
-        {
-            Dispatcher.Invoke(new Action(() => { ServerClosedHelper(); }));
-        }
+        //private void ServerClosed()
+        //{
+        //    Dispatcher.Invoke(new Action(() => { ServerClosedHelper(); }));
+        //}
 
 
-        private void ServerClosedHelper()
-        {
-            infoBox.Text = "The server closed.\n\n"
-                        + "Enter your name and server IP Address then click Connect.";
-        }        
+        //private void ServerClosedHelper()
+        //{
+        //    infoBox.Text = "The server closed.\n\n"
+        //                + "Enter your name and server IP Address then click Connect.";
+        //}        
 
 
         /// <summary>
@@ -381,13 +399,9 @@ namespace BoggleClient
         /// <param name="array">Array with list of words.</param>
         private void SummaryPrinter(string[] array)
         {
-            if (array.Length != 0)
-            {
-                foreach (string s in array)
-                {
-                    infoBox.Text += s + "\n";
-                }
-            }
+            if (array.Length != 0)    
+                foreach (string s in array)                
+                    infoBox.Text += s + "\n";            
             else
                 infoBox.Text += "**NONE**\n";
             infoBox.Text += "\n";
@@ -453,13 +467,18 @@ namespace BoggleClient
         {
             if (((string)playButton.Content) == "Play")
             {
-                playButton.Content = "Quit";
+                playButton.Content = "Stop";
                 infoBox.Text = infoBox.Text = "Waiting for " + opponentName + " to click Play...";
                 model.ClickedPlay();
             }
+            // Stop was clicked
             else
             {
-
+                playButton.Content = "Play";
+                infoBox.Text = infoBox.Text = "You ended the game.\n\n" +
+                    "Chat or click Play to restart.";
+                infoBox.Visibility = System.Windows.Visibility.Visible;
+                model.ClickedStop();
             }
         }
 
