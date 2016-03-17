@@ -99,6 +99,10 @@ namespace BB
                 {
                     Play();
                 }
+                else if (Regex.IsMatch(s.ToUpper(), @"^(STOP)"))
+                {
+                    Stop(payload);
+                }
                 else
                 {
                     player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
@@ -120,6 +124,13 @@ namespace BB
                     Start();
                 }
             }
+        }
+
+
+        private void Stop(object payload)
+        {
+            timer.Dispose(); // end the game
+            ((Player)payload).Opponent.Ss.BeginSend("OPPONENT_STOPPED\n", ExceptionCheck, payload);
         }
 
 
