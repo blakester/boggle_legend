@@ -131,11 +131,11 @@ namespace BoggleClient
             //}
         }
 
-        public void CloseSocket()
-        {
-            socket.Close();
-            client.Close();
-        }
+        //public void CloseSocket()
+        //{
+        //    socket.Close();
+        //    client.Close();
+        //}
 
 
         private void ReadyMessage(string message)
