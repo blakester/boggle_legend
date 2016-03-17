@@ -3,18 +3,21 @@
 -change countdown to begin on gamelength and end on zero?
 
 NOTES:
+-If player stops game, then opponent disconnects, player doesn't show that opponent disconnected.
+ (although it did show during stepping/debugging. Said player is getting both the terminated and
+ null strings, and apparently the null string is getting the final say on the gui). If worst
+ comes to worst, it might work to set a bool that TERMINATED was received and not to act on nulls.
+
 -IF I GET EXCEPTIONS IN MODEL, REMEMBER THAT I'VE COMMENTED OUT A COUPLE THINGS IN TERMINATE
 
--I think the try is needed in Model.Terminate because sockets can closed twice
- (once as a direct result of a player clicking Disconnect, and then because of
- the received null string). Only close sockets if still connected?
+-WHEN DONE, CHECK IF ANY CODE NEEDS A LOCK
 
 -A game ended normally once but then immediately printed also that it ended prematurely.
-
--in BoggleGame.cs Start(), after messing around with Connect/Disconnect on two clients from same IP,
- I got an object disposed exception on the timer.Change() method. I'm not sure why. I couldn't recreate
- the problem.
 
 -Is lock in BoggleGame.cs WordReceived() necessary?
 
 -Is gameStart needed in BoggleGame.cs?
+
+-I think the try is needed in Model.Terminate because sockets can closed twice
+ (once as a direct result of a player clicking Disconnect, and then because of
+ the received null string).
