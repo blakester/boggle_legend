@@ -28,7 +28,7 @@ namespace BoggleClient
 
         private Model model; // The model to handle socket and computation.
         private string opponentName;
-        private bool playerDisconnected;
+        //private bool playerDisconnected;
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -37,7 +37,7 @@ namespace BoggleClient
         {
             InitializeComponent();
             model = new Model();
-            model.DisconnectEvent += DisconnectOrError;
+            model.DisconnectOrErrorEvent += OppDisconnectOrErr;
             model.StartMessageEvent += GameStart;
             model.TimeMessageEvent += GameTime;
             model.ScoreMessageEvent += GameScore;
@@ -81,7 +81,7 @@ namespace BoggleClient
                 connectButton.Content = "Disconnect";
                 playerTextBox.IsEnabled = false;
                 serverTextBox.IsEnabled = false;
-                playerDisconnected = false;//**********************************************************************************************
+                model.playerDisconnected = false;//**********************************************************************************************
                 infoBox.Text = "You connected to the server.\n\n"
                     + "Waiting for an opponent to connect...";
 
@@ -97,7 +97,7 @@ namespace BoggleClient
                 serverTextBox.IsEnabled = true;
                 playButton.IsEnabled = false;
                 playButton.Content = "Play";
-                playerDisconnected = true;
+                model.playerDisconnected = true;
                 infoBox.Visibility = System.Windows.Visibility.Visible;                
                 infoBox.Text = "You disconnected from the server.\n\n"
                     + "Enter your name and server IP Address then click Connect.";                
@@ -208,9 +208,9 @@ namespace BoggleClient
         /// Invokes the event thats responsible for resetting the GUI to it's orginal state.
         /// </summary>
         /// <param name="opponentDisconnect">Lets event know if opponent disconnect from server.</param>
-        private void DisconnectOrError(bool opponentDisconnect)
+        private void OppDisconnectOrErr(bool opponentDisconnect)
         {
-            Dispatcher.Invoke(new Action(() => { DisconnectOrErrorHelper(opponentDisconnect); }));
+            Dispatcher.Invoke(new Action(() => { OppDisconnectOrErrHelper(opponentDisconnect); }));
         }
 
 
@@ -219,11 +219,8 @@ namespace BoggleClient
         /// disconnections.
         /// </summary>
         /// <param name="opponentDisconnected">Used to determine if opponent disconnected from server.</param>
-        private void DisconnectOrErrorHelper(bool opponentDisconnected)
-        {
-            if (playerDisconnected)
-                return;
-            
+        private void OppDisconnectOrErrHelper(bool opponentDisconnected)
+        {           
             connectButton.Content = "Connect";            
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
@@ -239,7 +236,7 @@ namespace BoggleClient
                     infoBox.Text = opponentName + " disconnected from the server and ended your session.\n\n"
                         + "Enter your name and server IP Address then click Connect to play.";
                 // If connection with server was lost unwillingly.
-                else if (!playerDisconnected)
+                else
                     infoBox.Text = "The server closed or there was a communication error.\n\n"
                         + "Enter your name and server IP Address then click Connect to play.";
                 
