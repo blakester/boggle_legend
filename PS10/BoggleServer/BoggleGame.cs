@@ -26,7 +26,7 @@ namespace BB
         private Player one;
         private Player two;
         private int gameID;
-        private int playCount = 0;
+        private byte playCount = 0;
         private Timer timer; // Game Timer
         private BoggleBoard board; // The board layout of the current game.
         private int timeLeft;
@@ -103,6 +103,10 @@ namespace BB
                 {
                     Stop(payload);
                 }
+                else if (Regex.IsMatch(s.ToUpper(), @"^(RETRACT_PLAY)"))
+                {
+                    RetractPlay();
+                }
                 else
                 {
                     player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
@@ -127,11 +131,20 @@ namespace BB
         }
 
 
+        private void RetractPlay()
+        {
+            playCount = 0;
+        }
+
+
         private void Stop(object payload)
         {
             // end the game if in progress
-            if (timer != null)
-                timer.Dispose(); 
+            //if (timer != null)
+                timer.Dispose();
+            // player retracted Play request
+            //else
+            //    playCount--;
             ((Player)payload).Opponent.Ss.BeginSend("OPPONENT_STOPPED\n", ExceptionCheck, payload);
         }
 
