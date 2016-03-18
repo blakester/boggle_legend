@@ -441,9 +441,22 @@ namespace BoggleClient
         /// <param name="e"></param>
         private void chatBox_Enter(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (e.Key == Key.Enter && (chatEntryBox.Text.Trim() != ""))
             {
-                 //model.SendMessage(chatBox.selection);
+                // Format and append a "Me:" header to the message box
+                TextRange tr = new TextRange(chatDisplayBox.Document.ContentEnd, chatDisplayBox.Document.ContentEnd);
+                tr.Text = "Me:\n";
+                tr.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 3);
+                tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
+                tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Green);
+
+                // Append the entered message to the message box
+                chatDisplayBox.AppendText(chatEntryBox.Text + "\n\n");
+                chatDisplayBox.ScrollToEnd();
+
+                // Send the entered message and clear the entry box
+                model.SendChat(chatEntryBox.Text);
+                chatEntryBox.Clear();            
             }
         }
 
@@ -455,7 +468,16 @@ namespace BoggleClient
 
         private void ChatMessageHelper(string message)
         {
-            //chatBox.AppendText(message);
+            // Format and append an oppononent name header to the message box
+            TextRange tr = new TextRange(chatDisplayBox.Document.ContentEnd, chatDisplayBox.Document.ContentEnd);
+            tr.Text = opponentName + ":\n";
+            tr.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 3);
+            tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
+            tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Red);
+
+            // Append the received message to the message box
+            chatDisplayBox.AppendText(message + "\n\n");
+            chatDisplayBox.ScrollToEnd();
         }
 
         private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
