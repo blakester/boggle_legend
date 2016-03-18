@@ -95,7 +95,7 @@ namespace BoggleClient
             }
             else if (Regex.IsMatch(s, @"^(CHAT\s)")) // Received chat message
             {
-                //ChatMessageEvent(s.Substring(5) + "\n\n");                
+                ReceiveChat(s.Substring(5));         
             }
             else if (Regex.IsMatch(s, @"^(OPPONENT_STOPPED)")) // Received chat message
             {
@@ -277,10 +277,17 @@ namespace BoggleClient
         /// Sends the message to be relayed to the opponent
         /// </summary>
         /// <param name="word"></param>
-        public void ChatMessage(string message)
+        public void SendChat(string message)
         {
             socket.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
             //socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        }
+
+
+        private void ReceiveChat(string message)
+        {
+            ChatMessageEvent(message);
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 

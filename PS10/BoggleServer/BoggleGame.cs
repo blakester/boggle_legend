@@ -129,7 +129,9 @@ namespace BB
 
         private void Stop(object payload)
         {
-            timer.Dispose(); // end the game
+            // end the game if in progress
+            if (timer != null)
+                timer.Dispose(); 
             ((Player)payload).Opponent.Ss.BeginSend("OPPONENT_STOPPED\n", ExceptionCheck, payload);
         }
 
@@ -220,7 +222,7 @@ namespace BB
         private void RelayChatMessage(Player player, string message)
         {
             // Relay the chat message to the opponent
-            player.Opponent.Ss.BeginSend("CHAT " + player.Name + ": " + message + "\n", ExceptionCheck, null);
+            player.Opponent.Ss.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
         }
 
 
