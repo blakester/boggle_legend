@@ -1,16 +1,7 @@
-﻿-create chat boxes (if post game chatting is desired, SOCKETS HAVE TO REMAIN OPEN)
--have countdown before game begins
+﻿-have countdown before game begins
 -change countdown to begin on gamelength and end on zero?
 
 NOTES:
--FIX: clicking stop before game starts needs to decrement playCount in BoggleGame, I think.
-      The gui also shouldn't display that the game ended or notify the opponent.
-
--If player stops game, then opponent disconnects, player doesn't show that opponent disconnected.
- (although it did show during stepping/debugging. Said player is getting both the terminated and
- null strings, and apparently the null string is getting the final say on the gui). If worst
- comes to worst, it might work to set a bool that TERMINATED was received and not to act on nulls.
-
 -IF I GET EXCEPTIONS IN MODEL, REMEMBER THAT I'VE COMMENTED OUT A COUPLE THINGS IN TERMINATE
 
 -WHEN DONE, CHECK IF ANY CODE NEEDS A LOCK
