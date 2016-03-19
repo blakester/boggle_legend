@@ -1,4 +1,5 @@
-﻿-have countdown before game begins
+﻿-decide exactly how to use gameID
+-have countdown before game begins
 -change countdown to begin on gamelength and end on zero?
 
 NOTES:

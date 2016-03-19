@@ -36,7 +36,6 @@ namespace BB
         private TcpListener server; // Used to listen for player connections.        
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
-        private List<BoggleGame> BoggleGames = new List<BoggleGame>();
         public static int gameCount = 1;
 
         // THE BELOW WAS USED FOR THE DATABASE
@@ -91,8 +90,11 @@ namespace BB
 
             // Closes TCPListener.
             if (BS.server != null)
-                BS.CloseServer();
-
+            {
+                BS.server.Stop();
+                // THE BELOW WAS USED FOR THE DATABASE
+                //BS.webServer.Stop();
+            }
         }
 
 
@@ -197,10 +199,11 @@ namespace BB
         /// <param name="result">Result of BeginAcceptSocket</param>
         private void ConnectionRequested(IAsyncResult result)
         {
-            // WHEN FINISHED, INVESTIGATE IF TRY IS STILL NEEDED
-            // This handles exception that is is sometimes thrown
-            // when the server is closed down. This may not be a
-            // good solution, but it apparently works.
+            // ConnectionRequested is invoked when the server is closed
+            // due to the BeginAcceptSocket loop, however the code below
+            // will throw an exception due to null values. This try/catch
+            // simply allows the server to close during debugging without
+            // being stopped by an exception.
             try
             {
                 // Create a StringSocket with the client.
@@ -241,138 +244,61 @@ namespace BB
         /// the server and client</param>
         private void ReceivedMessage(String s, Exception e, object payload)
         {
-            if (s != null && e == null)
+            IPAndStringSocket ipss = (IPAndStringSocket)payload;
+
+            // The server should never receive a null string because BeginReceive
+            // is only called once and should immediately receive NEW_PLAYER.
+            // However, there could be an excepton while receiving.
+            if (e != null || s == null)
             {
-                IPAndStringSocket ipss = (IPAndStringSocket)payload;
-
-                // when client clicks Connect
-                if (Regex.IsMatch(s.ToUpper(), @"^(NEW_PLAYER\s)"))
-                {
-                    // Create a new Player using the player's name,
-                    // IP, and StringSocket connection with the server.
-                    string name = s.Substring(10);
-                    Player currentPlayer = new Player(name.Trim(), ipss.IP, ipss.Ss);
-
-                    // Keep firstPlayer threadsafe.
-                    lock (playerMatch)
-                    {
-                        // Null if first player, non-null if second player.
-                        if (firstPlayer == null)
-                            firstPlayer = currentPlayer;
-
-                        // We have two players, so initialize a game between them.
-                        else
-                        {
-                            // SHOULDN'T NEED THIS ANYMORE: firstPlayer IS SET TO NULL
-                            // WHEN A LONE CLIENT DISCONNECTS, SO THERE'S NO ISSUE OF
-                            // INITIIALIZING A GAME WITH WITH A CLIENT WHOSE SOCKET HAS
-                            // BEEN CLOSED. ALSO, THIS WILL ALLOW TWO CLIENTS FROM THE SAME
-                            // IP TO PLAY EACH OTHER.
-
-                            // Ensure players from the same IP address
-                            // do not initialize a game with each other.
-                            // (This handles the small gui error that
-                            // occurs when a single player disconnects
-                            // but then reconnects. However, comment out
-                            // if the ability to run a game with 2 players
-                            // from the same IP is wanted.)
-                            //if (firstPlayer.IP.Equals(currentPlayer.IP))
-                            //{
-                            //    // Update firstPlayer to the 
-                            //    // latest Player from the
-                            //    // same IP because firstPlayer's
-                            //    // StringSocket is closed when
-                            //    // when "Disconnect" is clicked.
-                            //    firstPlayer = currentPlayer;
-                            //    return;
-                            //}
-
-                            firstPlayer.Opponent = currentPlayer; // remembers opponent
-                            currentPlayer.Opponent = firstPlayer;
-                            //Console.WriteLine("INITIALIZE A BOGGLE GAME");//*******************************************************************
-                            //BoggleGame game = new BoggleGame(firstPlayer, currentPlayer);
-                            //game.Start(); 
-                            BoggleGames.Add(new BoggleGame(firstPlayer, currentPlayer));
-                            firstPlayer = null; // gets firstPlayer ready for next pair up.
-                        }
-                    } // end Lock
-                }
-
-                // when client disconnects before starting game
-                //else if (Regex.IsMatch(s.ToUpper(), @"^(PRE_GAME_DISCONNECT)"))
-                //{
-                //    // Print lone client connection lost info and close the socket
-                //    Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", ipss.IP, DateTime.Now));
-                //    ipss.Ss.Close();
-
-                //    // lone client is gone
-                //    firstPlayer = null;
-                //}
-                
-                // for debugging
-                else
-                {
-                    ipss.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, ipss.Ss);
-                    ipss.Ss.BeginReceive(ReceivedMessage, ipss);
-                }
-            }
-
-            // This shouldn't ever execute, unless there is an exception when a client
-            // sends the new player command.
-            else
-            {
-                // Print connection lost info and close the socket
-                IPAndStringSocket ipss = (IPAndStringSocket)payload;
-                Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION FAILED", ipss.IP, DateTime.Now));
+                 // Print error info and close the socket
+                Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "NEW_PLAYER ERROR", ipss.IP, DateTime.Now));
                 ipss.Ss.Close();
-
-                // lone client is gone
-                //firstPlayer = null;
             }
-        }        
 
-
-        /// <summary>
-        /// Callback for when a message has been sent through
-        /// the StringSocket to a client. Non-null Exceptions 
-        /// will close the connection with the client.
-        /// </summary>
-        /// <param name="e">an Exception, if any</param>
-        /// <param name="payload">the StringSocket connecting
-        /// the server and client</param>
-        private void ExceptionCheck(Exception e, object payload)
-        {
-            if (e != null)
+            // NEW_PLAYER should be received immediately after client clicks Connect
+            else if (Regex.IsMatch(s.ToUpper(), @"^(NEW_PLAYER\s)"))
             {
-                ((StringSocket)payload).Close();
-            }
-        }
+                // Create a new Player using the player's name,
+                // IP, and StringSocket connection with the server.
+                Player currentPlayer = new Player(s.Substring(10).Trim(), ipss.IP, ipss.Ss);
 
+                // Keep firstPlayer threadsafe.
+                lock (playerMatch)
+                {
+                    // Null if first player, non-null if second player.
+                    if (firstPlayer == null)                        
+                        firstPlayer = currentPlayer;                        
 
-        /// <summary>
-        /// Stops Server.
-        /// </summary>
-        private void CloseServer()
-        {
-            // notify lone client
-            //if (firstPlayer != null)
-            //    firstPlayer.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, firstPlayer.Ss);
+                    // We have two players, so initialize a game between them.
+                    else
+                    {
+                        // Ensure players from the same IP address
+                        // do not initialize a game with each other.
+                        // (This handles the small gui error that
+                        // occurs when a single player disconnects
+                        // but then reconnects. However, comment out
+                        // if the ability to run a game with 2 players
+                        // from the same IP is wanted.)
+                        //if (firstPlayer.IP.Equals(currentPlayer.IP))
+                        //{
+                        //    // Update firstPlayer to the 
+                        //    // latest Player from the
+                        //    // same IP because firstPlayer's
+                        //    // StringSocket is closed when
+                        //    // when "Disconnect" is clicked.
+                        //    firstPlayer = currentPlayer;
+                        //    return;
+                        //}
 
-            //// notify all remaining clients
-            //foreach (BoggleGame g in BoggleGames)
-            //    g.ServerClosed();
-
-            server.Stop();
-
-            // THE BELOW WAS USED FOR THE DATABASE
-            //webServer.Stop();
-        }
-
-
-        private void CloseSocket(Exception e, object payload)
-        {
-            ((StringSocket)payload).Close();
-        }
+                        firstPlayer.Opponent = currentPlayer; // remembers opponent
+                        currentPlayer.Opponent = firstPlayer;
+                        new BoggleGame(firstPlayer, currentPlayer);
+                        firstPlayer = null; // gets firstPlayer ready for next pair up.
+                    }
+                } // end Lock
+            }           
+        }        
 
 
         /// <summary>
