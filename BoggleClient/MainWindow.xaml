@@ -60,7 +60,7 @@
         <Label Content="Chat" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="150,37,0,0" Width="50" FontSize="16" FontWeight="Bold" Panel.ZIndex="1" RenderTransformOrigin="3.32,0.677"/>        
         <Button x:Name="playButton" Content="Play" HorizontalAlignment="Left" VerticalAlignment="Top" Width="99" Margin="623,69,0,0" IsEnabled="False" Click="playButton_Click"/>
         <RichTextBox x:Name="chatDisplayBox" HorizontalAlignment="Left" Height="401" VerticalAlignment="Top" Width="253
-                     " Margin="49,179,0,0" IsReadOnly="True" FontSize="14" VerticalScrollBarVisibility="Auto">
+                     " Margin="49,179,0,0" IsReadOnly="True" FontSize="14" VerticalScrollBarVisibility="Auto" Background="White">
             <FlowDocument>
                 <Paragraph>
                     <Run/>

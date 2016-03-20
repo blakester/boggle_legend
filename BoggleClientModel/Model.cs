@@ -81,26 +81,26 @@ namespace BoggleClient
             {
                 ScoreUpdate(s);                
             }
-            else if (Regex.IsMatch(s, @"^(READY\s)")) // Starts Game
+            else if (Regex.IsMatch(s, @"^(CHAT\s)")) // Received chat message
             {
-                ReadyMessage(s);                
+                ReceiveChat(s.Substring(5));
             }
             else if (Regex.IsMatch(s, @"^(START\s)")) // Starts Game
             {
                 StartMessage(s);                
             }
-            else if (Regex.IsMatch(s, @"^(STOP\s)")) // End Game
+            else if (Regex.IsMatch(s, @"^(STOP\s)")) // Game finished
             {
                 SummaryMessage(s);               
-            }
-            else if (Regex.IsMatch(s, @"^(CHAT\s)")) // Received chat message
-            {
-                ReceiveChat(s.Substring(5));         
-            }
-            else if (Regex.IsMatch(s, @"^(OPPONENT_STOPPED)")) // Received chat message
+            }           
+            else if (Regex.IsMatch(s, @"^(OPPONENT_STOPPED)")) // Opponent hit Stop during game
             {
                 OpponentStopped();
-            } 
+            }
+            else if (Regex.IsMatch(s, @"^(READY\s)")) // Ready to start
+            {
+                ReadyMessage(s);
+            }
             else if (Regex.IsMatch(s, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);
             //else if (Regex.IsMatch(s, @"^(SERVER_CLOSED)"))
@@ -280,7 +280,6 @@ namespace BoggleClient
         public void SendChat(string message)
         {
             socket.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
-            //socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 
@@ -294,14 +293,18 @@ namespace BoggleClient
         public void ClickedPlay()
         {
             socket.BeginSend("PLAY\n", ExceptionCheck, null);
-            //socket.BeginReceive(ReceivedMessage, null); // Receiving Loop//*************************************************************
+        }
+
+
+        public void RetractPlay()
+        {
+            socket.BeginSend("RETRACT_PLAY\n", ExceptionCheck, null);
         }
 
 
         public void ClickedStop()
         {
             socket.BeginSend("STOP\n", ExceptionCheck, null);
-            //socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 

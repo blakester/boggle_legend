@@ -27,6 +27,7 @@ namespace BB
         private Player two;
         private int gameID = 0;
         private byte playCount = 0;
+        private byte resumeSentCount = 0;
         private Timer timer; // Game Timer
         private BoggleBoard board; // The board layout of the current game.
         private int timeLeft;
@@ -95,6 +96,14 @@ namespace BB
                 {
                     Stop(payload);
                 }
+                else if (Regex.IsMatch(s.ToUpper(), @"^(PAUSE)"))
+                {
+                    PauseTimer(payload);
+                }
+                else if (Regex.IsMatch(s.ToUpper(), @"^(RESUME)"))
+                {
+                    SendResume(payload);
+                }
                 else if (Regex.IsMatch(s.ToUpper(), @"^(RETRACT_PLAY)"))
                 {
                     RetractPlay();
@@ -134,6 +143,51 @@ namespace BB
 
             // print game stopped info
             Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "STOP", gameID, one.IP, two.IP, DateTime.Now));
+        }
+
+
+        private void PauseTimer(object payload)
+        {
+            // Pause the time updates
+            timer.Change(0, Timeout.Infinite);
+            ((Player)payload).Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, payload);
+
+            // print game paused info
+            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "PAUSE", gameID, one.IP, two.IP, DateTime.Now));
+        }
+
+
+        private void SendResume(object payload)
+        {
+            // Let both players know the game will resume
+            one.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
+            two.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
+        }
+
+
+        /// <summary>
+        /// Resumes the timer once both players have received
+        /// the RESUME message.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="payload"></param>
+        private void ResumeTimer(Exception e, object payload)
+        {
+            if (e != null)
+                Terminate(e, payload);
+            else
+            {
+                lock (playerlock)
+                {
+                    resumeSentCount++;
+                    if (resumeSentCount == 2)
+                    {
+                        resumeSentCount = 0;
+                        timer.Change(0, 1000); // Resume time updates
+                    }
+                }
+                
+            }
         }
 
 

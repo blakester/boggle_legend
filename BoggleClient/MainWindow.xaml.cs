@@ -87,8 +87,8 @@ namespace BoggleClient
                     + "Waiting for an opponent to connect...";
 
                 // Let model handle connecting to server.
-                model.Connect(playerTextBox.Text, serverTextBox.Text);                
-            }            
+                model.Connect(playerTextBox.Text, serverTextBox.Text);
+            }
             // Disconnect was clicked
             else
             {
@@ -100,9 +100,9 @@ namespace BoggleClient
                 chatEntryBox.IsEnabled = false;
                 playButton.Content = "Play";
                 model.playerDisconnected = true;
-                infoBox.Visibility = System.Windows.Visibility.Visible;                
+                infoBox.Visibility = System.Windows.Visibility.Visible;
                 infoBox.Text = "You disconnected from the server.\n\n"
-                    + "Enter your name and server IP Address then click Connect.";                
+                    + "Enter your name and server IP Address then click Connect.";
 
                 // Let model handle disconnecting from server.
                 model.Terminate(false);
@@ -124,7 +124,7 @@ namespace BoggleClient
             playButton.IsEnabled = true;
             opponentName = s;
             infoBox.Text = "You have been paired with " + s + ".\n\n"
-                + "Chat or click Play to begin!";            
+                + "Chat or click Play to begin!";
         }
 
 
@@ -148,7 +148,7 @@ namespace BoggleClient
         private void GameStartMessageHelper(string[] s)
         {
             // Allow user to quit game.
-            connectButton.Content = "Disconnect";
+            //connectButton.Content = "Disconnect";
 
             // Puts board string onto GUI.
             char[] boggleLetters = s[1].ToCharArray();
@@ -237,8 +237,8 @@ namespace BoggleClient
         /// </summary>
         /// <param name="opponentDisconnected">Used to determine if opponent disconnected from server.</param>
         private void OppDisconnectOrErrHelper(bool opponentDisconnected)
-        {           
-            connectButton.Content = "Connect";            
+        {
+            connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
             wordEntryBox.IsEnabled = false;
@@ -249,25 +249,25 @@ namespace BoggleClient
             // The infoBox will be hidden during gameplay
             //if (infoBox.Visibility == System.Windows.Visibility.Hidden)
             //{
-                // If opponent disconnected from server.
-                if (opponentDisconnected)
-                    infoBox.Text = opponentName + " disconnected from the server and ended your session.\n\n"
-                        + "Enter your name and server IP Address then click Connect to play.";
-                // If connection with server was lost unwillingly.
-                else
-                    infoBox.Text = "The server closed or there was a communication error.\n\n"
-                        + "Enter your name and server IP Address then click Connect to play.";
-                
-                // DECIDE WHAT I WANT GUI TO DO
-                // Clear game data and
-                // word entry box.
-                //opponentBox.Text = "";
-                //timeLeftBox.Text = "";
-                //pScoreBox.Text = "";
-                //oScoreBox.Text = "";
-                wordEntryBox.Text = "";               
+            // If opponent disconnected from server.
+            if (opponentDisconnected)
+                infoBox.Text = opponentName + " disconnected from the server and ended your session.\n\n"
+                    + "Enter your name and server IP Address then click Connect to play.";
+            // If connection with server was lost unwillingly.
+            else
+                infoBox.Text = "The server closed or there was a communication error.\n\n"
+                    + "Enter your name and server IP Address then click Connect to play.";
 
-                infoBox.Visibility = System.Windows.Visibility.Visible;
+            // DECIDE WHAT I WANT GUI TO DO
+            // Clear game data and
+            // word entry box.
+            //opponentBox.Text = "";
+            //timeLeftBox.Text = "";
+            //pScoreBox.Text = "";
+            //oScoreBox.Text = "";
+            wordEntryBox.Text = "";
+
+            infoBox.Visibility = System.Windows.Visibility.Visible;
             //}
             //// the game is over
             //else
@@ -389,6 +389,7 @@ namespace BoggleClient
 
             infoBox.Visibility = System.Windows.Visibility.Visible;
 
+            wordEntryBox.IsEnabled = false;
             playButton.Content = "Play";
         }
 
@@ -399,9 +400,9 @@ namespace BoggleClient
         /// <param name="array">Array with list of words.</param>
         private void SummaryPrinter(string[] array)
         {
-            if (array.Length != 0)    
-                foreach (string s in array)                
-                    infoBox.Text += s + "\n";            
+            if (array.Length != 0)
+                foreach (string s in array)
+                    infoBox.Text += s + "\n";
             else
                 infoBox.Text += "**NONE**\n";
             infoBox.Text += "\n";
@@ -450,13 +451,15 @@ namespace BoggleClient
                 tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
                 tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Green);
 
-                // Append the entered message to the message box
+                // Append the entered message to the message box (not sure if best technique for indenting)
+                chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(10, 0, 0, 0); // indent message
                 chatDisplayBox.AppendText(chatEntryBox.Text + "\n\n");
+                chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(0, 0, 0, 0); // reset for next header
                 chatDisplayBox.ScrollToEnd();
 
                 // Send the entered message and clear the entry box
                 model.SendChat(chatEntryBox.Text);
-                chatEntryBox.Clear();            
+                chatEntryBox.Clear();
             }
         }
 
@@ -475,8 +478,10 @@ namespace BoggleClient
             tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
             tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Red);
 
-            // Append the received message to the message box
+            // Append the received message to the message box (not sure if best technique for indenting)
+            chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(10, 0, 0, 0); // indent message
             chatDisplayBox.AppendText(message + "\n\n");
+            chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(0, 0, 0, 0); // reset for next header
             chatDisplayBox.ScrollToEnd();
         }
 
@@ -489,18 +494,28 @@ namespace BoggleClient
         {
             if (((string)playButton.Content) == "Play")
             {
-                playButton.Content = "Stop";
+                playButton.Content = "Cancel";
                 infoBox.Text = infoBox.Text = "Waiting for " + opponentName + " to click Play...";
                 model.ClickedPlay();
             }
-            // Stop was clicked
-            else
+            else if (((string)playButton.Content) == "Cancel")
             {
                 playButton.Content = "Play";
-                infoBox.Text = infoBox.Text = "You ended the game.\n\n" +
-                    "Chat or click Play to restart.";
-                infoBox.Visibility = System.Windows.Visibility.Visible;
-                model.ClickedStop();
+
+                // if during gameplay
+                if (infoBox.Visibility == Visibility.Hidden)
+                {
+                    infoBox.Text = infoBox.Text = "You ended the game.\n\n" +
+                        "Chat or click Play to restart.";
+                    infoBox.Visibility = System.Windows.Visibility.Visible;
+                    model.ClickedStop();
+                }
+                // player retracted Play command before game started
+                else
+                {
+                    infoBox.Text = "Chat or click Play to begin!";
+                    model.RetractPlay();
+                }
             }
         }
 
