@@ -92,10 +92,10 @@ namespace BB
                 {
                     Play();
                 }
-                else if (Regex.IsMatch(s.ToUpper(), @"^(STOP)"))
-                {
-                    Stop(payload);
-                }
+                //else if (Regex.IsMatch(s.ToUpper(), @"^(STOP)"))
+                //{
+                //    Stop(payload);
+                //}
                 else if (Regex.IsMatch(s.ToUpper(), @"^(PAUSE)"))
                 {
                     PauseTimer(payload);
@@ -134,22 +134,23 @@ namespace BB
         }
 
 
-        private void Stop(object payload)
-        {
-            // end the game if in progress
-            //if (timer != null)
-            timer.Dispose();
-            ((Player)payload).Opponent.Ss.BeginSend("OPPONENT_STOPPED\n", ExceptionCheck, payload);
+        //private void Stop(object payload)
+        //{
+        //    // end the game if in progress
+        //    //if (timer != null)
+        //    timer.Dispose();
+        //    ((Player)payload).Opponent.Ss.BeginSend("OPPONENT_STOPPED\n", ExceptionCheck, payload);
 
-            // print game stopped info
-            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "STOP", gameID, one.IP, two.IP, DateTime.Now));
-        }
+        //    // print game stopped info
+        //    Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "STOP", gameID, one.IP, two.IP, DateTime.Now));
+        //}
 
 
         private void PauseTimer(object payload)
         {
             // Pause the time updates
-            timer.Change(0, Timeout.Infinite);
+            if (timer != null) // BETTER WAY THAN THIS? ISSUE OCCURS WHEN PAUSE CLICKED AFTER TIMER HAS ALREADY BEEN DISPOSED AT END OF GAME
+                timer.Change(0, Timeout.Infinite);
             ((Player)payload).Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, payload);
 
             // print game paused info
@@ -183,7 +184,12 @@ namespace BB
                     if (resumeSentCount == 2)
                     {
                         resumeSentCount = 0;
-                        timer.Change(0, 1000); // Resume time updates
+                        timeLeft++;        // INVESTIGATE ALL THIS TIMING JAZZ
+                        if (timer != null) // BETTER WAY THAN THIS?
+                            timer.Change(0, 1000); // Resume time updates
+
+                        // print game resumed info
+                        Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "RESUME", gameID, one.IP, two.IP, DateTime.Now));
                     }
                 }
                 
