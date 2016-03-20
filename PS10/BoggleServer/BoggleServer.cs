@@ -36,7 +36,7 @@ namespace BB
         private TcpListener server; // Used to listen for player connections.        
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
-        public static int gameCount = 1;
+        //public static int gameCount = 1;
 
         // THE BELOW WAS USED FOR THE DATABASE
         //private TcpListener webServer; // Used to listen for web page requests.
@@ -293,7 +293,7 @@ namespace BB
 
                         firstPlayer.Opponent = currentPlayer; // remembers opponent
                         currentPlayer.Opponent = firstPlayer;
-                        new BoggleGame(firstPlayer, currentPlayer);
+                        new BoggleGame(firstPlayer, currentPlayer); // initialize a BoggleGame
                         firstPlayer = null; // gets firstPlayer ready for next pair up.
                     }
                 } // end Lock
