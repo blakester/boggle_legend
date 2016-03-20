@@ -1,4 +1,4 @@
-﻿-decide exactly how to use gameID
+﻿-Have Stop button pause game somehow? Change button to "Cancel" if the game hasn't started?
 -have countdown before game begins
 -change countdown to begin on gamelength and end on zero?
 

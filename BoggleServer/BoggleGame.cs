@@ -25,7 +25,7 @@ namespace BB
     {
         private Player one;
         private Player two;
-        private int gameID;
+        private int gameID = 0;
         private byte playCount = 0;
         private Timer timer; // Game Timer
         private BoggleBoard board; // The board layout of the current game.
@@ -56,12 +56,6 @@ namespace BB
             one.Ss.BeginReceive(MessageReceived, one);
             two.Ss.BeginReceive(MessageReceived, two);            
         }       
-
-        //public void ServerClosed()
-        //{
-        //    one.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, one.Ss);
-        //    two.Ss.BeginSend("SERVER_CLOSED\n", CloseSocket, two.Ss);
-        //}
 
 
         /// <summary>
@@ -107,10 +101,10 @@ namespace BB
                 {
                     RetractPlay();
                 }
-                else
-                {
-                    player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
-                }               
+                //else
+                //{
+                //    player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
+                //}               
             }
             else
                 Terminate(e, payload);                       
@@ -141,11 +135,11 @@ namespace BB
         {
             // end the game if in progress
             //if (timer != null)
-                timer.Dispose();
-            // player retracted Play request
-            //else
-            //    playCount--;
+            timer.Dispose();
             ((Player)payload).Opponent.Ss.BeginSend("OPPONENT_STOPPED\n", ExceptionCheck, payload);
+
+            // print game stopped info
+            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "STOP", gameID, one.IP, two.IP, DateTime.Now));
         }
 
 
@@ -169,13 +163,10 @@ namespace BB
             two.Ss.BeginSend("START " + board.ToString() + " "
                 + timeLeft + " " + one.Name + "\n", ExceptionCheck, two);
 
-            // Print game info
-            lock (playerlock)
-            {
-                gameID = BoggleServer.gameCount++;
-                Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}",
-                    "START", gameID, one.IP, two.IP, DateTime.Now));
-            }
+            // Print game info            
+            //gameID = BoggleServer.gameCount++;
+            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}",
+                "START", ++gameID, one.IP, two.IP, DateTime.Now));
 
             // Initialize and start the timer. TimeUpdate will
             // be called every second. Start delayed by 250ms.
@@ -281,20 +272,22 @@ namespace BB
         /// exception occured</param>
         private void Terminate(Exception e, object payload)
         {
-            //if (gameInProgress)
+            // stop sending time updates if game is in progress
             if (timer != null)
-                timer.Dispose(); // game is over, stop sending time updates
+                timer.Dispose(); 
             
             // Close socket to offending player
             Player dead = (Player)payload;
-            CloseSocket(null, dead.Ss);
+            CloseSocket(null, dead.Ss);               
 
-            // Notify then close socket to remaining Player
-            if (dead.Opponent.Ss.Connected)
-            {                
-                dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent.Ss);               
-                //Console.WriteLine(string.Format("{0, 13} GAME {1, 4} {2, -15} {3, -15} {4}", "PREMATURE END", gameID, dead.IP, dead.Opponent.IP, DateTime.Now));                
-            }
+            // Notify then close socket to remaining Player (when the remaining
+            // player's socket is closed, we'll again execute here and don't want
+            // to send terminated to the original disconnecting player)
+            if (dead.Opponent.Ss.Connected)             
+                dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent.Ss);
+
+            // print connection lost info
+            Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", dead.IP, DateTime.Now));
         }
 
 
