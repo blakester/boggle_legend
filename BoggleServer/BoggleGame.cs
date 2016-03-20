@@ -30,7 +30,6 @@ namespace BB
         private Timer timer; // Game Timer
         private BoggleBoard board; // The board layout of the current game.
         private int timeLeft;
-        //private bool gameInProgress; // Changes the state of the game when timeleft reaches zero.
         private readonly object playerlock; // Lock that protects Player while calculating scores.
 
 
@@ -45,7 +44,7 @@ namespace BB
             this.one = one;
             this.two = two;
 
-            // Lock
+            // Create lock to protect Player data
             playerlock = new object();
 
             // Let Players know game is ready to start
@@ -76,9 +75,8 @@ namespace BB
                 // Saves player for clarity purposes.
                 Player player = (Player)payload;
 
-                // Only listen for more words if game is still going.
-                //if (!gameDone)
-                    player.Ss.BeginReceive(MessageReceived, player);
+                // Immediately begin listening for more messages
+                player.Ss.BeginReceive(MessageReceived, player);
 
                 // Handle the message
                 if (Regex.IsMatch(s.ToUpper(), @"^(WORD\s)"))
@@ -100,11 +98,7 @@ namespace BB
                 else if (Regex.IsMatch(s.ToUpper(), @"^(RETRACT_PLAY)"))
                 {
                     RetractPlay();
-                }
-                //else
-                //{
-                //    player.Ss.BeginSend("IGNORING " + s + "\n", ExceptionCheck, player);
-                //}               
+                }            
             }
             else
                 Terminate(e, payload);                       
@@ -148,8 +142,6 @@ namespace BB
         /// </summary>
         private void Start()
         {            
-            //gameInProgress = true;
-
             // Create a BoggleBoard with the specified
             // string of letters.  Random otherwise.
             if (BoggleServer.CustomBoard == null)
@@ -164,7 +156,6 @@ namespace BB
                 + timeLeft + " " + one.Name + "\n", ExceptionCheck, two);
 
             // Print game info            
-            //gameID = BoggleServer.gameCount++;
             Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}",
                 "START", ++gameID, one.IP, two.IP, DateTime.Now));
 
@@ -310,7 +301,6 @@ namespace BB
         /// </summary>
         private void End()
         {
-            //gameInProgress = false;
             timer.Dispose();
 
             // Wait 1 second just to make sure everything is finished
@@ -336,10 +326,6 @@ namespace BB
             two.Ss.BeginSend(playerTwoStats, ExceptionCheck, two);
 
             Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "END", gameID, one.IP, two.IP, DateTime.Now));
-
-            // Begin waiting for more messages from the Players.
-            //one.Ss.BeginReceive(MessageReceived, one);
-            //two.Ss.BeginReceive(MessageReceived, two);   
 
             // THE BELOW WAS USED FOR THE DATABASE
             //UpdateDatabase();
