@@ -39,6 +39,7 @@ namespace BoggleClient
         //public event Action OpponentStoppedEvent;
         public event Action PauseEvent;
         public event Action ResumeEvent;
+        public event Action<string> CountDownEvent; 
 
 
         /// <summary>
@@ -87,6 +88,10 @@ namespace BoggleClient
             {
                 ReceivedChat(s.Substring(5));
             }
+            else if (Regex.IsMatch(s, @"^(COUNTDOWN\s)")) 
+            {
+                CountDown(s);
+            }
             else if (Regex.IsMatch(s, @"^(START\s)")) // Starts Game
             {
                 StartMessage(s);                
@@ -112,17 +117,7 @@ namespace BoggleClient
                 ReceivedResume();
             }
             else if (Regex.IsMatch(s, @"^(TERMINATED)")) // Opponent Disconnected
-                Terminate(true);
-            //else if (Regex.IsMatch(s, @"^(SERVER_CLOSED)"))
-            //{
-            //    ServerClosedEvent();
-            //    Terminate(false); // game is over, close communications
-            //}
-            //else if (Regex.IsMatch(message, @"^(IGNORING\s)")) // Error Sending
-            //{
-            //    IgnoreMessage(message);
-            //    socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
-            //}            
+                Terminate(true);          
         }
 
 
@@ -151,6 +146,13 @@ namespace BoggleClient
         //    socket.Close();
         //    client.Close();
         //}
+
+
+        private void CountDown(string s)
+        {
+            CountDownEvent(s.Substring(10));
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        }
 
 
         private void ReadyMessage(string message)

@@ -1,4 +1,6 @@
-﻿-Fix problem when game is paused with 1 sec remaining
+﻿-Terminate in BoggleGame.cs requires a Player...I think new methods such as pause might be passing in StringSockets
+-Set timer timout to Infinite instead of Disposing?
+-Fix problem when game is paused with 1 sec remaining
 -have countdown before game begins
 -have timestamp on chat messages?
 -require BOTH to resume to undo pause?
