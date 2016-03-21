@@ -41,12 +41,14 @@ namespace BoggleClient
             model.StartMessageEvent += GameStart;
             model.TimeMessageEvent += GameTime;
             model.ScoreMessageEvent += GameScore;
-            model.SummaryMessageEvent += GameSummary;
+            model.SummaryMessageEvent += GameCompleted;
             model.SocketExceptionEvent += SocketFail;
             //model.ServerClosedEvent += ServerClosed;
             model.ChatMessageEvent += ChatMessage;
             model.ReadyMessageEvent += GameReady;
-            model.OpponentStoppedEvent += GameStopped;
+            //model.OpponentStoppedEvent += GameStopped;
+            model.PauseEvent += GamePaused;
+            model.ResumeEvent += GameResumed;
         }
 
 
@@ -100,7 +102,7 @@ namespace BoggleClient
                 chatEntryBox.IsEnabled = false;
                 playButton.Content = "Play";
                 model.playerDisconnected = true;
-                infoBox.Visibility = System.Windows.Visibility.Visible;
+                infoBox.Visibility = Visibility.Visible;
                 infoBox.Text = "You disconnected from the server.\n\n"
                     + "Enter your name and server IP Address then click Connect.";
 
@@ -123,7 +125,7 @@ namespace BoggleClient
             chatEntryBox.IsEnabled = true;
             playButton.IsEnabled = true;
             opponentName = s;
-            infoBox.Text = "You have been paired with " + s + ".\n\n"
+            infoBox.Text = "Your opponent is " + s + ".\n\n"
                 + "Chat or click Play to begin!";
         }
 
@@ -147,8 +149,7 @@ namespace BoggleClient
         /// <param name="s">String Tokens containing start game variables from server.</param>
         private void GameStartMessageHelper(string[] s)
         {
-            // Allow user to quit game.
-            //connectButton.Content = "Disconnect";
+            playButton.Content = "Pause";
 
             // Puts board string onto GUI.
             char[] boggleLetters = s[1].ToCharArray();
@@ -170,23 +171,23 @@ namespace BoggleClient
             BSpot16.Text = boggleLetters[15] + "";
 
             // Assigns game time to GUI.
-            timeLeftBox.Text = s[2];
+            //timeLeftBox.Text = s[2];
 
             // Assigns opponent name to GUI.
             string opponentName = "";
-            for (int i = 3; i < s.Length; i++)
+            for (int i = 2; i < s.Length; i++)
             {
                 opponentName += s[i] + " ";
             }
             opponentBox.Text = opponentName;
 
-            // Sets GUI up for when game has begun.
-            infoBox.Visibility = System.Windows.Visibility.Hidden;
+            // Sets GUI up for when game has begun.            
             pScoreBox.Text = "0";
             oScoreBox.Text = "0";
             wordEntryBox.IsEnabled = true;
             chatEntryBox.IsEnabled = true;
             wordEntryBox.Focus();
+            infoBox.Visibility = Visibility.Hidden;
         }
 
 
@@ -206,77 +207,49 @@ namespace BoggleClient
         }
 
 
-        private void GameStopped()
+        private void GamePaused()
         {
-            Dispatcher.Invoke(new Action(() => { GameStoppedHelper(); }));
+            Dispatcher.Invoke(new Action(() => { GamePausedHelper(); }));
         }
 
 
-        private void GameStoppedHelper()
+        private void GamePausedHelper()
         {
-            playButton.Content = "Play";
-            infoBox.Text = infoBox.Text = opponentName + " ended the game.\n\n" +
-                    "Chat or click Play to restart.";
-            infoBox.Visibility = System.Windows.Visibility.Visible;
-        }
-
-
-        /// <summary>
-        /// Invokes the event thats responsible for resetting the GUI to it's orginal state.
-        /// </summary>
-        /// <param name="opponentDisconnect">Lets event know if opponent disconnect from server.</param>
-        private void OppDisconnectOrErr(bool opponentDisconnect)
-        {
-            Dispatcher.Invoke(new Action(() => { OppDisconnectOrErrHelper(opponentDisconnect); }));
-        }
-
-
-        /// <summary>
-        /// Resets the GUI to it's original state and updates infoBox to let player know of game summary or
-        /// disconnections.
-        /// </summary>
-        /// <param name="opponentDisconnected">Used to determine if opponent disconnected from server.</param>
-        private void OppDisconnectOrErrHelper(bool opponentDisconnected)
-        {
-            connectButton.Content = "Connect";
-            playerTextBox.IsEnabled = true;
-            serverTextBox.IsEnabled = true;
+            playButton.Content = "Resume"; // WAIT ON BOTH TO CLICK RESUME OR JUST OPPONENT?
             wordEntryBox.IsEnabled = false;
-            playButton.IsEnabled = false;
-            chatEntryBox.IsEnabled = false;
-            playButton.Content = "Play";
-
-            // The infoBox will be hidden during gameplay
-            //if (infoBox.Visibility == System.Windows.Visibility.Hidden)
-            //{
-            // If opponent disconnected from server.
-            if (opponentDisconnected)
-                infoBox.Text = opponentName + " disconnected from the server and ended your session.\n\n"
-                    + "Enter your name and server IP Address then click Connect to play.";
-            // If connection with server was lost unwillingly.
-            else
-                infoBox.Text = "The server closed or there was a communication error.\n\n"
-                    + "Enter your name and server IP Address then click Connect to play.";
-
-            // DECIDE WHAT I WANT GUI TO DO
-            // Clear game data and
-            // word entry box.
-            //opponentBox.Text = "";
-            //timeLeftBox.Text = "";
-            //pScoreBox.Text = "";
-            //oScoreBox.Text = "";
-            wordEntryBox.Text = "";
-
-            infoBox.Visibility = System.Windows.Visibility.Visible;
-            //}
-            //// the game is over
-            //else
-            //{
-            //    if (opponentDisconnect)
-            //        infoBox.Text = opponentBox.Text + " disconnected from the server and ended your session.\n\n"
-            //            + "Enter your name and server IP Address then click Connect to play.";
-            //}
+            infoBox.Text = infoBox.Text = opponentName + " paused the game.\n\n";
+            infoBox.Visibility = Visibility.Visible;
         }
+
+
+        private void GameResumed()
+        {
+            Dispatcher.Invoke(new Action(() => { GameResumedHelper(); }));
+        }
+
+
+        private void GameResumedHelper()
+        {
+            playButton.Content = "Pause";
+            wordEntryBox.IsEnabled = true;
+            wordEntryBox.Focus();
+            infoBox.Visibility = Visibility.Hidden;
+        }
+
+
+        //private void GameStopped()
+        //{
+        //    Dispatcher.Invoke(new Action(() => { GameStoppedHelper(); }));
+        //}
+
+
+        //private void GameStoppedHelper()
+        //{
+        //    playButton.Content = "Play";
+        //    infoBox.Text = infoBox.Text = opponentName + " ended the game.\n\n" +
+        //            "Chat or click Play to restart.";
+        //    infoBox.Visibility = Visibility.Visible;
+        //}       
 
 
         //private void ServerClosed()
@@ -337,9 +310,9 @@ namespace BoggleClient
         /// Invokes event that ends game and creates summary page.
         /// </summary>
         /// <param name="list">A list of String[] that contains lists of words.</param>
-        private void GameSummary(List<string[]> list)
+        private void GameCompleted(List<string[]> list)
         {
-            Dispatcher.Invoke(() => { GameSummaryMessageHelper(list); });
+            Dispatcher.Invoke(() => { GameCompletedHelper(list); });
         }
 
 
@@ -347,8 +320,11 @@ namespace BoggleClient
         /// Event that ends game and creates summary page.
         /// </summary>
         /// <param name="list">A list of String[] that contains lists of words.</param>
-        private void GameSummaryMessageHelper(List<string[]> list)
+        private void GameCompletedHelper(List<string[]> list)
         {
+            playButton.Content = "Play";
+            timeLeftBox.Text = "0";
+
             string[] pLegalWords = list[0];
             string[] oLegalWords = list[1];
             string[] sLegalWords = list[2];
@@ -387,7 +363,7 @@ namespace BoggleClient
             infoBox.Text += "Opponent Illegal Words\n";
             SummaryPrinter(oIllegalWords);
 
-            infoBox.Visibility = System.Windows.Visibility.Visible;
+            infoBox.Visibility = Visibility.Visible;
 
             wordEntryBox.IsEnabled = false;
             playButton.Content = "Play";
@@ -406,32 +382,6 @@ namespace BoggleClient
             else
                 infoBox.Text += "**NONE**\n";
             infoBox.Text += "\n";
-        }
-
-
-        /// <summary>
-        /// Inovkes an event when socket fails to connect.
-        /// </summary>
-        private void SocketFail()
-        {
-            Dispatcher.Invoke(() => { GameSocketFailHelper(); });
-        }
-
-
-        /// <summary>
-        /// Event when socket fails to connect.  Informs players.
-        /// </summary>
-        private void GameSocketFailHelper()
-        {
-            infoBox.Text = infoBox.Text = "Unable to connect to server. Server may not be "
-                + "running or you entered an invalid IP.\n\n"
-                + "Enter your name and server IP Address then click Connect.";
-
-            // Allow player to re-enter info.
-            connectButton.Content = "Connect";
-            playerTextBox.IsEnabled = true;
-            serverTextBox.IsEnabled = true;
-            playButton.IsEnabled = false;
         }
 
 
@@ -461,6 +411,8 @@ namespace BoggleClient
                 model.SendChat(chatEntryBox.Text);
                 chatEntryBox.Clear();
             }
+            else if (e.Key == Key.Enter && (chatEntryBox.Text.Trim() == ""))
+                chatEntryBox.CaretIndex = 0; // move caret back to beginning for entered empty strings
         }
 
 
@@ -468,6 +420,7 @@ namespace BoggleClient
         {
             Dispatcher.Invoke(() => { ChatMessageHelper(message); });
         }
+
 
         private void ChatMessageHelper(string message)
         {
@@ -485,10 +438,12 @@ namespace BoggleClient
             chatDisplayBox.ScrollToEnd();
         }
 
+
         private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            chatEntryBox.Clear();
+            chatEntryBox.Clear();  // ANY WAY TO AVOID THIS? ONLY NEED TO CLEAR TEXT BOX THE *FIRST* TIME ITS CLICKED
         }
+
 
         private void playButton_Click(object sender, RoutedEventArgs e)
         {
@@ -502,22 +457,109 @@ namespace BoggleClient
             {
                 playButton.Content = "Play";
 
-                // if during gameplay
-                if (infoBox.Visibility == Visibility.Hidden)
-                {
-                    infoBox.Text = infoBox.Text = "You ended the game.\n\n" +
-                        "Chat or click Play to restart.";
-                    infoBox.Visibility = System.Windows.Visibility.Visible;
-                    model.ClickedStop();
-                }
-                // player retracted Play command before game started
-                else
-                {
-                    infoBox.Text = "Chat or click Play to begin!";
-                    model.RetractPlay();
-                }
+                infoBox.Text = "Chat or click Play to begin!";
+                model.ClickedCancel();
+            }
+            else if (((string)playButton.Content) == "Pause")
+            {
+                model.ClickedPause();
+                playButton.Content = "Resume";
+                infoBox.Text = "You paused the game.";
+                infoBox.Visibility = Visibility.Visible;
+            }
+            // the Resume button was clicked
+            else
+            {
+                model.ClickedResume();
             }
         }
+
+
+        /// <summary>
+        /// Invokes the event thats responsible for resetting the GUI to it's orginal state.
+        /// </summary>
+        /// <param name="opponentDisconnect">Lets event know if opponent disconnect from server.</param>
+        private void OppDisconnectOrErr(bool opponentDisconnect)
+        {
+            Dispatcher.Invoke(new Action(() => { OppDisconnectOrErrHelper(opponentDisconnect); }));
+        }
+
+
+        /// <summary>
+        /// Resets the GUI to it's original state and updates infoBox to let player know of game summary or
+        /// disconnections.
+        /// </summary>
+        /// <param name="opponentDisconnected">Used to determine if opponent disconnected from server.</param>
+        private void OppDisconnectOrErrHelper(bool opponentDisconnected)
+        {
+            connectButton.Content = "Connect";
+            playerTextBox.IsEnabled = true;
+            serverTextBox.IsEnabled = true;
+            wordEntryBox.IsEnabled = false;
+            playButton.IsEnabled = false;
+            chatEntryBox.IsEnabled = false;
+            playButton.Content = "Play";
+
+            // The infoBox will be hidden during gameplay
+            //if (infoBox.Visibility == Visibility.Hidden)
+            //{
+            // If opponent disconnected from server.
+            if (opponentDisconnected)
+                infoBox.Text = opponentName + " disconnected from the server and ended your session.\n\n"
+                    + "Enter your name and server IP Address then click Connect to play.";
+            // If connection with server was lost unwillingly.
+            else
+                infoBox.Text = "The server closed or there was a communication error.\n\n"
+                    + "Enter your name and server IP Address then click Connect to play.";
+
+            // DECIDE WHAT I WANT GUI TO DO
+            // Clear game data and
+            // word entry box.
+            //opponentBox.Text = "";
+            //timeLeftBox.Text = "";
+            //pScoreBox.Text = "";
+            //oScoreBox.Text = "";
+            wordEntryBox.Text = "";
+
+            infoBox.Visibility = Visibility.Visible;
+            //}
+            //// the game is over
+            //else
+            //{
+            //    if (opponentDisconnect)
+            //        infoBox.Text = opponentBox.Text + " disconnected from the server and ended your session.\n\n"
+            //            + "Enter your name and server IP Address then click Connect to play.";
+            //}
+        }
+
+
+        /// <summary>
+        /// Inovkes an event when socket fails to connect.
+        /// </summary>
+        private void SocketFail()
+        {
+            Dispatcher.Invoke(() => { GameSocketFailHelper(); });
+        }
+
+
+        /// <summary>
+        /// Event when socket fails to connect.  Informs players.
+        /// </summary>
+        private void GameSocketFailHelper()
+        {
+            infoBox.Text = infoBox.Text = "Unable to connect to server. Server may not be "
+                + "running or you entered an invalid IP.\n\n"
+                + "Enter your name and server IP Address then click Connect.";
+
+            // Allow player to re-enter info.
+            connectButton.Content = "Connect";
+            playerTextBox.IsEnabled = true;
+            serverTextBox.IsEnabled = true;
+            playButton.IsEnabled = false;
+        }
+
+
+       
 
     }
 }
