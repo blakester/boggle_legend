@@ -36,7 +36,9 @@ namespace BoggleClient
         //public event Action ServerClosedEvent; // Event when server closes before game starts.
         public event Action<string> ChatMessageEvent; // Event when chat message received from opponent.
         public event Action<string> ReadyMessageEvent;
-        public event Action OpponentStoppedEvent;
+        //public event Action OpponentStoppedEvent;
+        public event Action PauseEvent;
+        public event Action ResumeEvent;
 
 
         /// <summary>
@@ -83,7 +85,7 @@ namespace BoggleClient
             }
             else if (Regex.IsMatch(s, @"^(CHAT\s)")) // Received chat message
             {
-                ReceiveChat(s.Substring(5));
+                ReceivedChat(s.Substring(5));
             }
             else if (Regex.IsMatch(s, @"^(START\s)")) // Starts Game
             {
@@ -93,13 +95,21 @@ namespace BoggleClient
             {
                 SummaryMessage(s);               
             }           
-            else if (Regex.IsMatch(s, @"^(OPPONENT_STOPPED)")) // Opponent hit Stop during game
-            {
-                OpponentStopped();
-            }
+            //else if (Regex.IsMatch(s, @"^(OPPONENT_STOPPED)")) // Opponent hit Stop during game
+            //{
+            //    OpponentStopped();
+            //}
             else if (Regex.IsMatch(s, @"^(READY\s)")) // Ready to start
             {
                 ReadyMessage(s);
+            }
+            else if (Regex.IsMatch(s, @"^(PAUSE)")) // Ready to start
+            {
+                ReceivedPause();
+            }
+            else if (Regex.IsMatch(s, @"^(RESUME)")) // Ready to start
+            {
+                ReceivedResume();
             }
             else if (Regex.IsMatch(s, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);
@@ -245,11 +255,11 @@ namespace BoggleClient
         }
 
 
-        private void OpponentStopped()
-        {
-            OpponentStoppedEvent(); 
-            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
-        }
+        //private void OpponentStopped()
+        //{
+        //    OpponentStoppedEvent(); 
+        //    socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        //}
 
 
         /// <summary>
@@ -283,7 +293,7 @@ namespace BoggleClient
         }
 
 
-        private void ReceiveChat(string message)
+        private void ReceivedChat(string message)
         {
             ChatMessageEvent(message);
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
@@ -296,16 +306,44 @@ namespace BoggleClient
         }
 
 
-        public void RetractPlay()
+        public void ClickedCancel()
         {
             socket.BeginSend("RETRACT_PLAY\n", ExceptionCheck, null);
         }
 
 
-        public void ClickedStop()
+        //public void ClickedStop()
+        //{
+        //    socket.BeginSend("STOP\n", ExceptionCheck, null);
+        //}
+
+
+        public void ClickedPause()
         {
-            socket.BeginSend("STOP\n", ExceptionCheck, null);
+            socket.BeginSend("PAUSE\n", ExceptionCheck, null);
         }
+
+
+        private void ReceivedPause()
+        {
+            PauseEvent();
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        }
+
+
+        public void ClickedResume()
+        {
+            socket.BeginSend("RESUME\n", ExceptionCheck, null);
+        }
+
+
+        private void ReceivedResume()
+        {
+            ResumeEvent();
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        }
+
+
 
 
         /// <summary>
