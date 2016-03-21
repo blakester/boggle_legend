@@ -49,6 +49,7 @@ namespace BoggleClient
             //model.OpponentStoppedEvent += GameStopped;
             model.PauseEvent += GamePaused;
             model.ResumeEvent += GameResumed;
+            model.CountDownEvent += GameCountDown;
         }
 
 
@@ -130,6 +131,23 @@ namespace BoggleClient
         }
 
 
+        private void GameCountDown(string s)
+        {
+            Dispatcher.Invoke(new Action(() => { GameCountDownHelper(s); }));
+        }
+
+
+        private void GameCountDownHelper(string s)
+        {
+            // DECIDE WHAT GUI STUFF TO DO
+            
+            countDownLabel.Content = s;
+            countDownLabel.Visibility = Visibility.Visible;
+            startingInLabel.Visibility = Visibility.Visible;
+            infoBox.Visibility = Visibility.Hidden;
+        }
+
+
         /// <summary>
         /// Invokes the event that handles the start of the game.
         /// </summary>
@@ -187,6 +205,8 @@ namespace BoggleClient
             wordEntryBox.IsEnabled = true;
             chatEntryBox.IsEnabled = true;
             wordEntryBox.Focus();
+            countDownLabel.Visibility = Visibility.Hidden;
+            startingInLabel.Visibility = Visibility.Hidden;
             infoBox.Visibility = Visibility.Hidden;
         }
 

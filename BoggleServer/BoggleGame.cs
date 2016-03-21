@@ -29,6 +29,7 @@ namespace BB
         private byte playCount = 0;
         private byte resumeSentCount = 0;
         private byte startSentCount = 0;
+        private byte countDown = 3;
         private Timer timer; // Game Timer
         private int timeLeft;
         private bool paused = false;
@@ -120,7 +121,8 @@ namespace BB
                 if (playCount == 2)
                 {
                     playCount = 0;
-                    Start();
+                    Countdown();
+                    //Start();
                 }
             }
         }
@@ -129,6 +131,31 @@ namespace BB
         private void RetractPlay()
         {
             playCount = 0;
+        }
+
+
+        private void Countdown()
+        {
+            timer = new Timer(CountDownUpdate, null, 0, 1000);
+        }
+
+
+        private void CountDownUpdate(object stateInfo)
+        {
+            // start game if countdown is over
+            if (countDown == 0)
+            {
+                timer.Dispose(); // get rid of count down timer OR MAYBE FREEZE INSTEAD?
+                Start(); // start the game
+                countDown = 3; // reset countdown
+            }
+            else
+            {
+                // Send both Players the remaining count down time.               
+                one.Ss.BeginSend("COUNTDOWN " + countDown + "\n", ExceptionCheck, one);
+                two.Ss.BeginSend("COUNTDOWN " + countDown + "\n", ExceptionCheck, two); // DON'T DECREMENT countDown UNTIL BOTH MESSAGES SENT?
+                countDown--;
+            }  
         }
 
 
@@ -174,8 +201,10 @@ namespace BB
 
                         // Initialize and start the timer. TimeUpdate will
                         // be called every second.
-                        timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
-                        timer.Change(0, 1000);
+                        //timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
+                        //timer.Change(0, 1000);
+
+                        timer = new Timer(TimeUpdate, null, 0, 1000);
 
                         // Print start game info            
                         Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}",
