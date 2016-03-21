@@ -28,9 +28,11 @@ namespace BB
         private int gameID = 0;
         private byte playCount = 0;
         private byte resumeSentCount = 0;
+        private byte startSentCount = 0;
         private Timer timer; // Game Timer
-        private BoggleBoard board; // The board layout of the current game.
         private int timeLeft;
+        private bool paused = false;
+        private BoggleBoard board; // The board layout of the current game.        
         private readonly object playerlock; // Lock that protects Player while calculating scores.
 
 
@@ -92,10 +94,6 @@ namespace BB
                 {
                     Play();
                 }
-                //else if (Regex.IsMatch(s.ToUpper(), @"^(STOP)"))
-                //{
-                //    Stop(payload);
-                //}
                 else if (Regex.IsMatch(s.ToUpper(), @"^(PAUSE)"))
                 {
                     PauseTimer(payload);
@@ -134,33 +132,88 @@ namespace BB
         }
 
 
-        //private void Stop(object payload)
-        //{
-        //    // end the game if in progress
-        //    //if (timer != null)
-        //    timer.Dispose();
-        //    ((Player)payload).Opponent.Ss.BeginSend("OPPONENT_STOPPED\n", ExceptionCheck, payload);
+        /// <summary>
+        /// Starts this BoggleGame.
+        /// </summary>
+        private void Start()
+        {
+            // Create a BoggleBoard with the specified
+            // string of letters.  Random otherwise.
+            if (BoggleServer.CustomBoard == null)
+                board = new BoggleBoard();
+            else
+                board = new BoggleBoard(BoggleServer.CustomBoard);
 
-        //    // print game stopped info
-        //    Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "STOP", gameID, one.IP, two.IP, DateTime.Now));
-        //}
+            timeLeft = BoggleServer.GameLength;
+
+            // Let the Players know the game is starting.
+            // The game won't start until both messages are sent.
+            one.Ss.BeginSend("START " + board.ToString() + " " + two.Name + "\n", StartTimer, one);
+            two.Ss.BeginSend("START " + board.ToString() + " " + one.Name + "\n", StartTimer, two);            
+        }
+
+
+        /// <summary>
+        /// This method starts the timer once both players have
+        /// been sent the START message.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="payload"></param>
+        private void StartTimer(Exception e, object payload)
+        {
+            if (e != null)
+                Terminate(e, payload);
+            else
+            {
+                lock (playerlock)
+                {
+                    startSentCount++;
+                    if (startSentCount == 2)
+                    {
+                        startSentCount = 0;
+
+                        // Initialize and start the timer. TimeUpdate will
+                        // be called every second.
+                        timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
+                        timer.Change(0, 1000);
+
+                        // Print start game info            
+                        Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}",
+                            "START", ++gameID, one.IP, two.IP, DateTime.Now));
+                    }
+                }
+            }
+        }
 
 
         private void PauseTimer(object payload)
         {
-            // Pause the time updates
-            if (timer != null) // BETTER WAY THAN THIS? ISSUE OCCURS WHEN PAUSE CLICKED AFTER TIMER HAS ALREADY BEEN DISPOSED AT END OF GAME
-                timer.Change(0, Timeout.Infinite);
-            ((Player)payload).Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, payload);
+            // only allow one player to initiate a pause (this is only needed
+            // for the highly unlikely event that both players' pauses are
+            // handled at the same time)
+            lock (playerlock)
+            {
+                // only allow player to pause the game if it hasn't ended 
+                // and the other player hasn't already paused it
+                if ((timer != null) && (!paused)) // DESPITE THE TIMER CHECK, I'VE STILL (RARELY) BEEN ABLE TO GET OBJECT DISPOSED EXCEPTIONS ON
+                {                                 // TIMER.CHANGE WHEN I PAUSE RIGHT BEFORE THE GAME ENDS. TRY/CATCH HERE?
+                    paused = true;
 
-            // print game paused info
-            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "PAUSE", gameID, one.IP, two.IP, DateTime.Now));
+                    // Pause the time updates and notify the other player
+                    timer.Change(0, Timeout.Infinite);
+                    ((Player)payload).Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, payload);
+
+                    // print game paused info
+                    Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "PAUSE", gameID, one.IP, two.IP, DateTime.Now));
+                }
+            }
         }
 
 
         private void SendResume(object payload)
         {
-            // Let both players know the game will resume
+            // Let both players know the game will resume.
+            // Timer will resume once both messages are sent.
             one.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
             two.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
         }
@@ -183,10 +236,10 @@ namespace BB
                     resumeSentCount++;
                     if (resumeSentCount == 2)
                     {
-                        resumeSentCount = 0;
-                        timeLeft++;        // INVESTIGATE ALL THIS TIMING JAZZ
-                        if (timer != null) // BETTER WAY THAN THIS?
-                            timer.Change(0, 1000); // Resume time updates
+                        paused = false;
+                        resumeSentCount = 0; // CHECK FOR NULL TIMERS ON CHANGE? MAYBE NOT WORTH IT B/C I THINK ITS EXTREMELY UNLIKELY
+                                             // A PAUSE->END/DISPOSE->RESUME COULD HAPPEN
+                        timer.Change(0, 1000); // Resume time updates
 
                         // print game resumed info
                         Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "RESUME", gameID, one.IP, two.IP, DateTime.Now));
@@ -194,36 +247,89 @@ namespace BB
                 }
                 
             }
+        }     
+
+
+        /// <summary>
+        /// Sends to each Player both their score and their opponent's.
+        /// </summary>
+        private void UpdateScore()
+        {
+            one.Ss.BeginSend("SCORE " + one.Score + " " + two.Score + "\n",
+                ExceptionCheck, one);
+            two.Ss.BeginSend("SCORE " + two.Score + " " + one.Score + "\n",
+                ExceptionCheck, two);
+        }        
+
+
+        /// <summary>
+        /// Called by the Timer every second. The time left
+        /// in the game is decremented by one and the Player's
+        /// are sent said value each time this method is called.
+        /// The game will end once the time runs out.
+        /// </summary>
+        /// <param name="stateInfo">NOT USED</param>
+        private void TimeUpdate(object stateInfo)
+        {
+            // only send time updates if the game wasn't paused since the last update
+            if (!paused)
+            {
+                // End the game if time is out.
+                if (timeLeft == 0)
+                    End();
+                else
+                {
+                    // Send both Players the remaining time.               
+                    one.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, one);
+                    two.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, two); // DON'T DECREMENT TIME UNTIL BOTH MESSAGES SENT?
+                    timeLeft--;
+                }                
+            }
         }
 
 
         /// <summary>
-        /// Starts this BoggleGame.
+        /// Ends this BoggleGame. Sends the final score and 
+        /// game summary messages to each Player. 
+        /// Then the StringSockets are closed to each Player.
         /// </summary>
-        private void Start()
-        {            
-            // Create a BoggleBoard with the specified
-            // string of letters.  Random otherwise.
-            if (BoggleServer.CustomBoard == null)
-                board = new BoggleBoard();
-            else
-                board = new BoggleBoard(BoggleServer.CustomBoard);
+        private void End()
+        {
+            //while (paused) { Thread.Yield(); } // Yield in case of last second pause
 
-            // Let the Players know the game has started.
-            one.Ss.BeginSend("START " + board.ToString() + " "
-                + timeLeft + " " + two.Name + "\n", ExceptionCheck, one);
-            two.Ss.BeginSend("START " + board.ToString() + " "
-                + timeLeft + " " + one.Name + "\n", ExceptionCheck, two);
+            timer.Dispose();            
 
-            // Print game info            
-            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}",
-                "START", ++gameID, one.IP, two.IP, DateTime.Now));
+            // Convert each list of words into a single string
+            // (list size) followed by words seperated by spaces.
+            string playerOneLegal = SetToString(one.LegalWords);
+            string playerTwoLegal = SetToString(two.LegalWords);
+            string shareLegal = SetToString(one.SharedLegalWords);
+            string playerOneIllegal = SetToString(one.IllegalWords);
+            string playerTwoIllegal = SetToString(two.IllegalWords);
 
-            // Initialize and start the timer. TimeUpdate will
-            // be called every second. Start delayed by 250ms.
-            timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
-            timeLeft = BoggleServer.GameLength;
-            timer.Change(250, 1000);         
+            // Use the above strings to create messages to send to
+            // each Player.
+            string playerOneStats = "STOP" + playerOneLegal + playerTwoLegal
+                + shareLegal + playerOneIllegal + playerTwoIllegal + "\n";
+            string playerTwoStats = "STOP" + playerTwoLegal + playerOneLegal
+                + shareLegal + playerTwoIllegal + playerOneIllegal + "\n";
+
+            // Send the messages
+            one.Ss.BeginSend(playerOneStats, ExceptionCheck, one);
+            two.Ss.BeginSend(playerTwoStats, ExceptionCheck, two);
+
+            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "END", gameID, one.IP, two.IP, DateTime.Now));
+
+            // THE BELOW WAS USED FOR THE DATABASE
+            //UpdateDatabase();
+
+        } // end private method End
+
+
+        private void RelayChatMessage(Player player, string message)
+        {
+            // Relay the chat message to the opponent
+            player.Opponent.Ss.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
         }
 
 
@@ -272,125 +378,6 @@ namespace BB
                 }
             } // end lock
         }
-
-
-        private void RelayChatMessage(Player player, string message)
-        {
-            // Relay the chat message to the opponent
-            player.Opponent.Ss.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
-        }
-
-
-        /// <summary>
-        /// Sends to each Player both their score and their opponent's.
-        /// </summary>
-        private void UpdateScore()
-        {
-            one.Ss.BeginSend("SCORE " + one.Score + " " + two.Score + "\n",
-                ExceptionCheck, one);
-            two.Ss.BeginSend("SCORE " + two.Score + " " + one.Score + "\n",
-                ExceptionCheck, two);
-        }        
-
-
-        /// <summary>
-        /// Called by the Timer every second. The time left
-        /// in the game is decremented by one and the Player's
-        /// are sent said value each time this method is called.
-        /// The game will end once the time runs out.
-        /// </summary>
-        /// <param name="stateInfo">NOT USED</param>
-        private void TimeUpdate(object stateInfo)
-        {
-            // Send both Players the remaining time.
-            timeLeft--;
-            one.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, one);
-            two.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, two);
-
-            // End the game if time is out.
-            if (timeLeft == 0)                
-                End();
-        }
-
-
-        /// <summary>
-        /// Called when an Exception occurs during communication
-        /// with a Player. This BoggleGame will terminate and the
-        /// remaining Player will be notified.
-        /// </summary>
-        /// <param name="e">the Exception that occured</param>
-        /// <param name="payload">the Player with which the
-        /// exception occured</param>
-        private void Terminate(Exception e, object payload)
-        {
-            // stop sending time updates if game is in progress
-            if (timer != null)
-                timer.Dispose(); 
-            
-            // Close socket to offending player
-            Player dead = (Player)payload;
-            CloseSocket(null, dead.Ss);               
-
-            // Notify then close socket to remaining Player (when the remaining
-            // player's socket is closed, we'll again execute here and don't want
-            // to send terminated to the original disconnecting player)
-            if (dead.Opponent.Ss.Connected)             
-                dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent.Ss);
-
-            // print connection lost info
-            Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", dead.IP, DateTime.Now));
-        }
-
-
-        /// <summary>
-        /// Closes the socket if not already done so.
-        /// </summary>
-        /// <param name="e">NOT USED</param>
-        /// <param name="payload">Player Stringsocket to close.</param>
-        private void CloseSocket(Exception e, object payload)
-        {
-            // Close the StringSocket to the Player.
-            ((StringSocket)payload).Close();
-        }
-
-
-        /// <summary>
-        /// Ends this BoggleGame. Sends the final score and 
-        /// game summary messages to each Player. 
-        /// Then the StringSockets are closed to each Player.
-        /// </summary>
-        private void End()
-        {
-            timer.Dispose();
-
-            // Wait 1 second just to make sure everything is finished
-            Thread.Sleep(1000);
-
-            // Convert each list of words into a single string
-            // (list size) followed by words seperated by spaces.
-            string playerOneLegal = SetToString(one.LegalWords);
-            string playerTwoLegal = SetToString(two.LegalWords);
-            string shareLegal = SetToString(one.SharedLegalWords);
-            string playerOneIllegal = SetToString(one.IllegalWords);
-            string playerTwoIllegal = SetToString(two.IllegalWords);
-
-            // Use the above strings to create messages to send to
-            // each Player.
-            string playerOneStats = "STOP" + playerOneLegal + playerTwoLegal
-                + shareLegal + playerOneIllegal + playerTwoIllegal + "\n";
-            string playerTwoStats = "STOP" + playerTwoLegal + playerOneLegal
-                + shareLegal + playerTwoIllegal + playerOneIllegal + "\n";
-
-            // Send the messages
-            one.Ss.BeginSend(playerOneStats, ExceptionCheck, one);
-            two.Ss.BeginSend(playerTwoStats, ExceptionCheck, two);
-
-            Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "END", gameID, one.IP, two.IP, DateTime.Now));
-
-            // THE BELOW WAS USED FOR THE DATABASE
-            //UpdateDatabase();
-
-        } // end private method End
 
 
         /// <summary>
@@ -450,6 +437,47 @@ namespace BB
 
 
         /// <summary>
+        /// Called when an Exception occurs during communication
+        /// with a Player. This BoggleGame will terminate and the
+        /// remaining Player will be notified.
+        /// </summary>
+        /// <param name="e">the Exception that occured</param>
+        /// <param name="payload">the Player with which the
+        /// exception occured</param>
+        private void Terminate(Exception e, object payload) // DOES THIS METHOD NEED TO BE MADE THREAD SAFE?
+        {
+            // stop sending time updates if game is in progress
+            if (timer != null)
+                timer.Dispose(); 
+            
+            // Close socket to offending player
+            Player dead = (Player)payload;                 
+            CloseSocket(null, dead.Ss);               
+
+            // Notify then close socket to remaining Player (when the remaining
+            // player's socket is closed, we'll again execute here and don't want
+            // to send terminated to the original disconnecting player)
+            if (dead.Opponent.Ss.Connected)             
+                dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent.Ss);
+
+            // print connection lost info
+            Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", dead.IP, DateTime.Now));
+        }
+
+
+        /// <summary>
+        /// Closes the socket if not already done so.
+        /// </summary>
+        /// <param name="e">NOT USED</param>
+        /// <param name="payload">Player Stringsocket to close.</param>
+        private void CloseSocket(Exception e, object payload)
+        {
+            // Close the StringSocket to the Player.
+            ((StringSocket)payload).Close();
+        }        
+
+
+        /// <summary>
         /// Called when a message has been sent through the StringSocket
         /// to a Player. Exceptions will end this BoggleGame.
         /// </summary>
@@ -459,9 +487,7 @@ namespace BB
         private void ExceptionCheck(Exception e, object payload)
         {
             if (e != null)
-            {
                 Terminate(e, payload);
-            }
         }
 
 
