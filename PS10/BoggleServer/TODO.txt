@@ -3,6 +3,7 @@
 -have timestamp on chat messages?
 -require BOTH to resume to undo pause?
 -countdown upon resume?
+-Ready, Set, Go instead of countdown?
 -Finalize server messages
 
 NOTES:
