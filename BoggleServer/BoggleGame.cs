@@ -217,9 +217,11 @@ namespace BB
 
         private void PauseTimer(object payload)
         {
-            // only allow one player to initiate a pause (this is only needed
+            // Only allow one player to initiate a pause (this is only needed
             // for the highly unlikely event that both players' pauses are
-            // handled at the same time)
+            // handled at the same time. In this case, after first player passes
+            // through the lock and pauses the game, the second player won't get
+            // past the if statement)
             lock (playerlock)
             {
                 // only allow player to pause the game if it hasn't ended or terminated 
@@ -228,9 +230,23 @@ namespace BB
                 {                                 // TIMER.CHANGE WHEN I PAUSE RIGHT BEFORE THE GAME ENDS. TRY/CATCH HERE?
                     paused = true;
 
-                    // Pause the time updates and notify the other player
-                    //timer.Change(0, Timeout.Infinite);
-                    timer.Change(Timeout.Infinite, Timeout.Infinite);
+                    // though highly unlikely, despite the above check, a player could get past it and
+                    // then have the timer disposed and get an exception calling Change()
+                    try 
+                    {
+                        // Pause the time updates and notify the other player
+                        //timer.Change(0, Timeout.Infinite);
+                        timer.Change(Timeout.Infinite, Timeout.Infinite); 
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // game must be over if timer was null, so
+                        // reset and ignore pause call by returning
+                        paused = false; 
+                        return;
+                    }
+
+                    // notify other player of pause
                     ((Player)payload).Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, payload);
 
                     // print game paused info
