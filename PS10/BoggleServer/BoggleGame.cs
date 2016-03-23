@@ -222,14 +222,15 @@ namespace BB
             // handled at the same time)
             lock (playerlock)
             {
-                // only allow player to pause the game if it hasn't ended 
-                // and the other player hasn't already paused it
+                // only allow player to pause the game if it hasn't ended or terminated 
+                // (i.e. the was timer disposed) and the other player hasn't already paused it
                 if ((timer != null) && (!paused)) // DESPITE THE TIMER CHECK, I'VE STILL (RARELY) BEEN ABLE TO GET OBJECT DISPOSED EXCEPTIONS ON
                 {                                 // TIMER.CHANGE WHEN I PAUSE RIGHT BEFORE THE GAME ENDS. TRY/CATCH HERE?
                     paused = true;
 
                     // Pause the time updates and notify the other player
-                    timer.Change(0, Timeout.Infinite);
+                    //timer.Change(0, Timeout.Infinite);
+                    timer.Change(Timeout.Infinite, Timeout.Infinite);
                     ((Player)payload).Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, payload);
 
                     // print game paused info
@@ -276,19 +277,7 @@ namespace BB
                 }
                 
             }
-        }     
-
-
-        /// <summary>
-        /// Sends to each Player both their score and their opponent's.
-        /// </summary>
-        private void UpdateScore()
-        {
-            one.Ss.BeginSend("SCORE " + one.Score + " " + two.Score + "\n",
-                ExceptionCheck, one);
-            two.Ss.BeginSend("SCORE " + two.Score + " " + one.Score + "\n",
-                ExceptionCheck, two);
-        }        
+        }
 
 
         /// <summary>
@@ -301,8 +290,8 @@ namespace BB
         private void TimeUpdate(object stateInfo)
         {
             // only send time updates if the game wasn't paused since the last update
-            if (!paused)
-            {
+            //if (!paused)
+            //{
                 // End the game if time is out.
                 if (timeLeft == 0)
                     End();
@@ -312,9 +301,21 @@ namespace BB
                     one.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, one);
                     two.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, two); // DON'T DECREMENT TIME UNTIL BOTH MESSAGES SENT?
                     timeLeft--;
-                }                
-            }
+                }
+            //}
         }
+
+
+        /// <summary>
+        /// Sends to each Player both their score and their opponent's.
+        /// </summary>
+        private void UpdateScore()
+        {
+            one.Ss.BeginSend("SCORE " + one.Score + " " + two.Score + "\n",
+                ExceptionCheck, one);
+            two.Ss.BeginSend("SCORE " + two.Score + " " + one.Score + "\n",
+                ExceptionCheck, two);
+        }            
 
 
         /// <summary>
@@ -326,7 +327,8 @@ namespace BB
         {
             //while (paused) { Thread.Yield(); } // Yield in case of last second pause
 
-            timer.Dispose();            
+            timer.Dispose();  
+            //timer.Change(Timeout.Infinite, Timeout.Infinite);
 
             // Convert each list of words into a single string
             // (list size) followed by words seperated by spaces.
@@ -474,7 +476,7 @@ namespace BB
         /// <param name="payload">the Player with which the
         /// exception occured</param>
         private void Terminate(Exception e, object payload) // DOES THIS METHOD NEED TO BE MADE THREAD SAFE?
-        {
+        {                                                   // ALSO CHECK FOR UNECESSARY REPEATS...IF MORE SHOULD FALL UNDER THE IF()
             // stop sending time updates if game is in progress
             if (timer != null)
                 timer.Dispose(); 
