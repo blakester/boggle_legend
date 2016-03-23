@@ -1,13 +1,14 @@
-﻿-Terminate in BoggleGame.cs requires a Player...I think new methods such as pause might be passing in StringSockets
--Disable Play/Cancel button during countdown?
--Set timer timout to Infinite instead of Disposing?
--Fix problem when game is paused with 1 sec remaining
--have countdown before game begins
+﻿-Disable Play/Cancel button during countdown?
+-Keep track of elapsed time with Stopwatch between TimeUpdate and Pause for a time accurate resume?
 -have timestamp on chat messages?
 -require BOTH to resume to undo pause?
+-countdown upon resume?
+-Finalize server messages
 
 NOTES:
 -IF I GET EXCEPTIONS IN MODEL, REMEMBER THAT I'VE COMMENTED OUT A COUPLE THINGS IN TERMINATE
+
+-Simply returning in catch statements in BoggleGame.cs, better to end thread somehow?
 
 -I think the try is needed in Model.Terminate because sockets can closed twice
  (once as a direct result of a player clicking Disconnect, and then because of
