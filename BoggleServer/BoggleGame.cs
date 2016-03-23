@@ -27,8 +27,9 @@ namespace BB
         private Player two;
         private int gameID = 0;
         private byte playCount = 0;
-        private byte resumeSentCount = 0;
+        private byte boardSentCount = 0;
         private byte startSentCount = 0;
+        private byte resumeSentCount = 0;        
         private byte countDown = 3;
         private Timer countDownTimer; 
         private Timer gameTimer; 
@@ -127,7 +128,8 @@ namespace BB
                 if (playCount == 2)
                 {
                     playCount = 0;
-                    Countdown();
+                    InitiateGame();
+                    //Countdown();
                     //Start();
                 }
             }
@@ -140,12 +142,43 @@ namespace BB
         }
 
 
-        private void Countdown()
+        private void InitiateGame()
         {
-            // though highly unlikely chronologically, it's possible 
-            // the timer could have been disposed by Terminate()
-            try { countDownTimer.Change(0, 1000); } // start the countdown
-            catch (ObjectDisposedException) { return; }
+            // Create a BoggleBoard with the specified
+            // string of letters.  Random otherwise.
+            if (BoggleServer.CustomBoard == null)
+                board = new BoggleBoard();
+            else
+                board = new BoggleBoard(BoggleServer.CustomBoard);
+
+            // reset timeLeft
+            timeLeft = BoggleServer.GameLength;
+
+            one.Ss.BeginSend("BOARD " + board.ToString() + " " + timeLeft + "\n", Countdown, one);
+            two.Ss.BeginSend("BOARD " + board.ToString() + " " + timeLeft + "\n", Countdown, two);  
+        }
+
+
+        private void Countdown(Exception e, object payload)
+        {
+            if (e != null)
+                Terminate(e, payload);
+            else
+            {
+                lock (playerlock)
+                {
+                    boardSentCount++;
+                    if (boardSentCount == 2)
+                    {
+                        boardSentCount = 0;
+
+                        // though highly unlikely chronologically, it's possible 
+                        // the timer could have been disposed by Terminate()
+                        try { countDownTimer.Change(0, 1000); } // start the countdown
+                        catch (ObjectDisposedException) { return; }
+                    }
+                }
+            }           
         }
 
 
@@ -154,7 +187,7 @@ namespace BB
             if (countDown > 0)
             {              
                 one.Ss.BeginSend("COUNTDOWN " + countDown + "\n", ExceptionCheck, one);
-                two.Ss.BeginSend("COUNTDOWN " + countDown + "\n", ExceptionCheck, two); // DON'T DECREMENT countDown UNTIL BOTH MESSAGES SENT?
+                two.Ss.BeginSend("COUNTDOWN " + countDown + "\n", ExceptionCheck, two);
                 countDown--;
             }
             // countdown over
@@ -176,19 +209,10 @@ namespace BB
         /// </summary>
         private void Start()
         {
-            // Create a BoggleBoard with the specified
-            // string of letters.  Random otherwise.
-            if (BoggleServer.CustomBoard == null)
-                board = new BoggleBoard();
-            else
-                board = new BoggleBoard(BoggleServer.CustomBoard);
-
-            timeLeft = BoggleServer.GameLength;
-
             // Let the Players know the game is starting.
             // The game won't start until both messages are sent.
-            one.Ss.BeginSend("START " + board.ToString() + " " + two.Name + "\n", StartTimer, one);
-            two.Ss.BeginSend("START " + board.ToString() + " " + one.Name + "\n", StartTimer, two);            
+            one.Ss.BeginSend("START\n", StartTimer, one);
+            two.Ss.BeginSend("START\n", StartTimer, two);            
         }
 
 

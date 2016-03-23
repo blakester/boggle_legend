@@ -38,6 +38,7 @@ namespace BoggleClient
             InitializeComponent();
             model = new Model();
             model.DisconnectOrErrorEvent += OppDisconnectOrErr;
+            model.ReceivedBoardEvent += SetUpBoard;
             model.StartMessageEvent += GameStart;
             model.TimeMessageEvent += GameTime;
             model.ScoreMessageEvent += GameScore;
@@ -131,46 +132,19 @@ namespace BoggleClient
         }
 
 
-        private void GameCountDown(string s)
+        private void SetUpBoard(string[] tokens)
         {
-            Dispatcher.Invoke(new Action(() => { GameCountDownHelper(s); }));
+            Dispatcher.Invoke(new Action(() => { SetUpBoardHelper(tokens); }));
         }
 
 
-        private void GameCountDownHelper(string s)
+        private void SetUpBoardHelper(string[] tokens)
         {
-            // DECIDE WHAT GUI STUFF TO DO
-            
-            countDownLabel.Content = s;
-            countDownLabel.Visibility = Visibility.Visible;
-            startingInLabel.Visibility = Visibility.Visible;
-            infoBox.Visibility = Visibility.Hidden;
-        }
-
-
-        /// <summary>
-        /// Invokes the event that handles the start of the game.
-        /// </summary>
-        /// <param name="s">String Tokens containing start game variables from server.</param>
-        private void GameStart(string[] s)
-        {
-            Dispatcher.Invoke(new Action(() => { GameStartMessageHelper(s); }));
-        }
-
-
-        /// <summary>
-        /// Invokes the event that handles the start of the game.
-        /// Set's up the boggle board letters.
-        /// Saves opponents name.
-        /// Sets up initial time.
-        /// </summary>
-        /// <param name="s">String Tokens containing start game variables from server.</param>
-        private void GameStartMessageHelper(string[] s)
-        {
-            playButton.Content = "Pause";
+            opponentBox.Text = opponentName;
+            timeLeftBox.Text = tokens[2];
 
             // Puts board string onto GUI.
-            char[] boggleLetters = s[1].ToCharArray();
+            char[] boggleLetters = tokens[1].ToCharArray();
             BSpot1.Text = boggleLetters[0] + "";
             BSpot2.Text = boggleLetters[1] + "";
             BSpot3.Text = boggleLetters[2] + "";
@@ -188,26 +162,64 @@ namespace BoggleClient
             BSpot15.Text = boggleLetters[14] + "";
             BSpot16.Text = boggleLetters[15] + "";
 
-            // Assigns game time to GUI.
-            //timeLeftBox.Text = s[2];
+            countDownLabel.Visibility = Visibility.Visible;
+            startingInLabel.Visibility = Visibility.Visible;
+            infoBox.Visibility = Visibility.Hidden;
+        }
 
-            // Assigns opponent name to GUI.
-            string opponentName = "";
-            for (int i = 2; i < s.Length; i++)
-            {
-                opponentName += s[i] + " ";
-            }
-            opponentBox.Text = opponentName;
+
+        private void GameCountDown(string s)
+        {
+            Dispatcher.Invoke(new Action(() => { GameCountDownHelper(s); }));
+        }
+
+
+        private void GameCountDownHelper(string s)
+        {
+            // DECIDE WHAT GUI STUFF TO DO             
+            double opacity = 1.0;
+
+            if (s.Equals("2"))
+                opacity = 0.8;
+            else if (s.Equals("1"))
+                opacity = 0.6;           
+            
+            countDownLabel.Content = s;
+            countDownLabel.Opacity = opacity;
+            startingInLabel.Opacity = opacity;
+        }
+
+
+        /// <summary>
+        /// Invokes the event that handles the start of the game.
+        /// </summary>
+        /// <param name="s">String Tokens containing start game variables from server.</param>
+        private void GameStart()
+        {
+            Dispatcher.Invoke(new Action(() => { GameStartMessageHelper(); }));
+        }
+
+
+        /// <summary>
+        /// Invokes the event that handles the start of the game.
+        /// Set's up the boggle board letters.
+        /// Saves opponents name.
+        /// Sets up initial time.
+        /// </summary>
+        /// <param name="s">String Tokens containing start game variables from server.</param>
+        private void GameStartMessageHelper()
+        {
+            playButton.Content = "Pause";
 
             // Sets GUI up for when game has begun.            
             pScoreBox.Text = "0";
             oScoreBox.Text = "0";
             wordEntryBox.IsEnabled = true;
             chatEntryBox.IsEnabled = true;
+            wordEntryBox.Clear();
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
             startingInLabel.Visibility = Visibility.Hidden;
-            infoBox.Visibility = Visibility.Hidden;
         }
 
 
@@ -255,34 +267,6 @@ namespace BoggleClient
             wordEntryBox.Focus();
             infoBox.Visibility = Visibility.Hidden;
         }
-
-
-        //private void GameStopped()
-        //{
-        //    Dispatcher.Invoke(new Action(() => { GameStoppedHelper(); }));
-        //}
-
-
-        //private void GameStoppedHelper()
-        //{
-        //    playButton.Content = "Play";
-        //    infoBox.Text = infoBox.Text = opponentName + " ended the game.\n\n" +
-        //            "Chat or click Play to restart.";
-        //    infoBox.Visibility = Visibility.Visible;
-        //}       
-
-
-        //private void ServerClosed()
-        //{
-        //    Dispatcher.Invoke(new Action(() => { ServerClosedHelper(); }));
-        //}
-
-
-        //private void ServerClosedHelper()
-        //{
-        //    infoBox.Text = "The server closed.\n\n"
-        //                + "Enter your name and server IP Address then click Connect.";
-        //}        
 
 
         /// <summary>
@@ -520,10 +504,6 @@ namespace BoggleClient
             chatEntryBox.IsEnabled = false;
             playButton.Content = "Play";
 
-            // The infoBox will be hidden during gameplay
-            //if (infoBox.Visibility == Visibility.Hidden)
-            //{
-            // If opponent disconnected from server.
             if (opponentDisconnected)
                 infoBox.Text = opponentName + " disconnected from the server and ended your session.\n\n"
                     + "Enter your name and server IP Address then click Connect to play.";
@@ -532,24 +512,15 @@ namespace BoggleClient
                 infoBox.Text = "The server closed or there was a communication error.\n\n"
                     + "Enter your name and server IP Address then click Connect to play.";
 
-            // DECIDE WHAT I WANT GUI TO DO
             // Clear game data and
             // word entry box.
-            //opponentBox.Text = "";
-            //timeLeftBox.Text = "";
-            //pScoreBox.Text = "";
-            //oScoreBox.Text = "";
+            opponentBox.Text = "";
+            timeLeftBox.Text = "";
+            pScoreBox.Text = "";
+            oScoreBox.Text = "";
             wordEntryBox.Text = "";
 
             infoBox.Visibility = Visibility.Visible;
-            //}
-            //// the game is over
-            //else
-            //{
-            //    if (opponentDisconnect)
-            //        infoBox.Text = opponentBox.Text + " disconnected from the server and ended your session.\n\n"
-            //            + "Enter your name and server IP Address then click Connect to play.";
-            //}
         }
 
 
