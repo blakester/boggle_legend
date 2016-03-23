@@ -30,9 +30,11 @@ namespace BB
         private byte resumeSentCount = 0;
         private byte startSentCount = 0;
         private byte countDown = 3;
-        private Timer timer; // Game Timer
+        private Timer countDownTimer; 
+        private Timer gameTimer; 
         private int timeLeft;
         private bool paused = false;
+        private bool gameOver = false;
         private BoggleBoard board; // The board layout of the current game.        
         private readonly object playerlock; // Lock that protects Player while calculating scores.
 
@@ -51,9 +53,13 @@ namespace BB
             // Create lock to protect Player data
             playerlock = new object();
 
+            // Initialize the timers
+            countDownTimer = new Timer(CountDownUpdate, null, Timeout.Infinite, Timeout.Infinite);
+            gameTimer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
+
             // Let Players know game is ready to start
-            one.Ss.BeginSend("READY " + two.Name + "\n", ExceptionCheck, one.Ss);
-            two.Ss.BeginSend("READY " + one.Name + "\n", ExceptionCheck, two.Ss);
+            one.Ss.BeginSend("READY " + two.Name + "\n", ExceptionCheck, one);
+            two.Ss.BeginSend("READY " + one.Name + "\n", ExceptionCheck, two);
 
             // Begin waiting for messages from the Players.
             one.Ss.BeginReceive(MessageReceived, one);
@@ -136,26 +142,32 @@ namespace BB
 
         private void Countdown()
         {
-            timer = new Timer(CountDownUpdate, null, 0, 1000);
+            // though highly unlikely chronologically, it's possible 
+            // the timer could have been disposed by Terminate()
+            try { countDownTimer.Change(0, 1000); } // start the countdown
+            catch (ObjectDisposedException) { return; }
         }
 
 
         private void CountDownUpdate(object stateInfo)
-        {
-            // start game if countdown is over
-            if (countDown == 0)
-            {
-                timer.Dispose(); // get rid of count down timer OR MAYBE FREEZE INSTEAD?
-                Start(); // start the game
-                countDown = 3; // reset countdown
-            }
-            else
-            {
-                // Send both Players the remaining count down time.               
+        {            
+            if (countDown > 0)
+            {              
                 one.Ss.BeginSend("COUNTDOWN " + countDown + "\n", ExceptionCheck, one);
                 two.Ss.BeginSend("COUNTDOWN " + countDown + "\n", ExceptionCheck, two); // DON'T DECREMENT countDown UNTIL BOTH MESSAGES SENT?
                 countDown--;
-            }  
+            }
+            // countdown over
+            else
+            {
+                // though highly unlikely chronologically, it's possible 
+                // the timer could have been disposed by Terminate()
+                try { countDownTimer.Change(Timeout.Infinite, Timeout.Infinite); } // freeze timer
+                catch (ObjectDisposedException) { return; }
+
+                Start(); // start the game
+                countDown = 3; // reset countdown
+            }
         }
 
 
@@ -198,13 +210,12 @@ namespace BB
                     if (startSentCount == 2)
                     {
                         startSentCount = 0;
+                        gameOver = false;                       
 
-                        // Initialize and start the timer. TimeUpdate will
-                        // be called every second.
-                        //timer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
-                        //timer.Change(0, 1000);
-
-                        timer = new Timer(TimeUpdate, null, 0, 1000);
+                        // though highly unlikely chronologically, it's possible 
+                        // the timer could have been disposed by Terminate()
+                        try { gameTimer.Change(0, 1000); } // start timer
+                        catch (ObjectDisposedException) { return; }
 
                         // Print start game info            
                         Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}",
@@ -224,33 +235,26 @@ namespace BB
             // past the if statement)
             lock (playerlock)
             {
-                // only allow player to pause the game if it hasn't ended or terminated 
-                // (i.e. the was timer disposed) and the other player hasn't already paused it
-                if ((timer != null) && (!paused)) // DESPITE THE TIMER CHECK, I'VE STILL (RARELY) BEEN ABLE TO GET OBJECT DISPOSED EXCEPTIONS ON
-                {                                 // TIMER.CHANGE WHEN I PAUSE RIGHT BEFORE THE GAME ENDS. TRY/CATCH HERE?
+                // only allow player to pause the game if the other player hasn't already paused it
+                if (!paused) 
+                {
+                    // though highly unlikely chronologically, it's possible 
+                    // the timer could have been disposed by Terminate()
+                    try { gameTimer.Change(Timeout.Infinite, Timeout.Infinite); } // Pause the time updates
+                    catch (ObjectDisposedException) { return; }
+
                     paused = true;
 
-                    // though highly unlikely, despite the above check, a player could get past it and
-                    // then have the timer disposed and get an exception calling Change()
-                    try 
+                    // though also highly unlikely, it's possible a player could send PAUSE right before
+                    // receiving the STOP message (technically, a player COULD still sneak past this)
+                    if (!gameOver)
                     {
-                        // Pause the time updates and notify the other player
-                        //timer.Change(0, Timeout.Infinite);
-                        timer.Change(Timeout.Infinite, Timeout.Infinite); 
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        // game must be over if timer was null, so
-                        // reset and ignore pause call by returning
-                        paused = false; 
-                        return;
-                    }
+                        // notify other player of pause
+                        ((Player)payload).Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, payload);
 
-                    // notify other player of pause
-                    ((Player)payload).Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, payload);
-
-                    // print game paused info
-                    Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "PAUSE", gameID, one.IP, two.IP, DateTime.Now));
+                        // print game paused info
+                        Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "PAUSE", gameID, one.IP, two.IP, DateTime.Now));
+                    }
                 }
             }
         }
@@ -283,15 +287,17 @@ namespace BB
                     if (resumeSentCount == 2)
                     {
                         paused = false;
-                        resumeSentCount = 0; // CHECK FOR NULL TIMERS ON CHANGE? MAYBE NOT WORTH IT B/C I THINK ITS EXTREMELY UNLIKELY
-                                             // A PAUSE->END/DISPOSE->RESUME COULD HAPPEN
-                        timer.Change(0, 1000); // Resume time updates
+                        resumeSentCount = 0;
+                         
+                        // though highly unlikely chronologically, it's possible 
+                        // the timer could have been disposed by Terminate()
+                        try { gameTimer.Change(0, 1000); } // Resume time updates
+                        catch (ObjectDisposedException) { return; }
 
                         // print game resumed info
                         Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "RESUME", gameID, one.IP, two.IP, DateTime.Now));
                     }
-                }
-                
+                }                
             }
         }
 
@@ -304,21 +310,16 @@ namespace BB
         /// </summary>
         /// <param name="stateInfo">NOT USED</param>
         private void TimeUpdate(object stateInfo)
-        {
-            // only send time updates if the game wasn't paused since the last update
-            //if (!paused)
-            //{
-                // End the game if time is out.
-                if (timeLeft == 0)
-                    End();
-                else
-                {
-                    // Send both Players the remaining time.               
-                    one.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, one);
-                    two.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, two); // DON'T DECREMENT TIME UNTIL BOTH MESSAGES SENT?
-                    timeLeft--;
-                }
-            //}
+        {            
+            if (timeLeft > 0)
+            {              
+                one.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, one);
+                two.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, two);
+                timeLeft--;
+            }
+            // game finished
+            else
+                End();
         }
 
 
@@ -341,10 +342,12 @@ namespace BB
         /// </summary>
         private void End()
         {
-            //while (paused) { Thread.Yield(); } // Yield in case of last second pause
+            gameOver = true;            
 
-            timer.Dispose();  
-            //timer.Change(Timeout.Infinite, Timeout.Infinite);
+            // though highly unlikely chronologically, it's possible 
+            // the timer could have been disposed by Terminate()
+            try { gameTimer.Change(Timeout.Infinite, Timeout.Infinite); } // freeze gameTimer
+            catch (ObjectDisposedException) { return; }
 
             // Convert each list of words into a single string
             // (list size) followed by words seperated by spaces.
@@ -365,6 +368,16 @@ namespace BB
             one.Ss.BeginSend(playerOneStats, ExceptionCheck, one);
             two.Ss.BeginSend(playerTwoStats, ExceptionCheck, two);
 
+            // Clear players' data for next game
+            one.Score = 0;
+            one.LegalWords.Clear();
+            one.IllegalWords.Clear();            
+            one.SharedLegalWords.Clear();
+            two.Score = 0;
+            two.LegalWords.Clear();
+            two.IllegalWords.Clear();            
+            two.SharedLegalWords.Clear();           
+
             Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "END", gameID, one.IP, two.IP, DateTime.Now));
 
             // THE BELOW WAS USED FOR THE DATABASE
@@ -376,7 +389,61 @@ namespace BB
         private void RelayChatMessage(Player player, string message)
         {
             // Relay the chat message to the opponent
-            player.Opponent.Ss.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
+            player.Opponent.Ss.BeginSend("CHAT " + message + "\n", ExceptionCheck, player.Opponent);
+        }
+
+
+        /// <summary>
+        /// Called when an Exception occurs during communication
+        /// with a Player. This BoggleGame will terminate and the
+        /// remaining Player will be notified.
+        /// </summary>
+        /// <param name="e">the Exception that occured</param>
+        /// <param name="payload">the Player with which the
+        /// exception occured</param>
+        private void Terminate(Exception e, object payload)
+        {
+            // stop sending all time updates if game
+            gameTimer.Dispose();
+            countDownTimer.Dispose();
+
+            // Close socket to offending player
+            Player dead = (Player)payload;
+            CloseSocket(null, dead.Ss);
+
+            // Notify then close socket to remaining Player (when the remaining
+            // player's socket is closed, we'll again execute here and don't want
+            // to send terminated to the original disconnecting player)
+            if (dead.Opponent.Ss.Connected)
+                dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent.Ss);
+
+            // print connection lost info
+            Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", dead.IP, DateTime.Now));
+        }
+
+
+        /// <summary>
+        /// Closes the socket if not already done so.
+        /// </summary>
+        /// <param name="e">NOT USED</param>
+        /// <param name="payload">Player Stringsocket to close.</param>
+        private void CloseSocket(Exception e, object payload)
+        {
+            // Close the StringSocket to the Player.
+            ((StringSocket)payload).Close();
+        }
+
+
+        /// <summary>
+        /// Called when a message has been sent through the StringSocket
+        /// to a Player. Exceptions will end this BoggleGame.
+        /// </summary>
+        /// <param name="e">an Exception, if any</param>
+        /// <param name="payload">the Player</param>
+        private void ExceptionCheck(Exception e, object payload)
+        {
+            if (e != null)
+                Terminate(e, payload);
         }
 
 
@@ -480,62 +547,7 @@ namespace BB
                 temp += " " + s;
             }
             return temp;
-        }
-
-
-        /// <summary>
-        /// Called when an Exception occurs during communication
-        /// with a Player. This BoggleGame will terminate and the
-        /// remaining Player will be notified.
-        /// </summary>
-        /// <param name="e">the Exception that occured</param>
-        /// <param name="payload">the Player with which the
-        /// exception occured</param>
-        private void Terminate(Exception e, object payload) // DOES THIS METHOD NEED TO BE MADE THREAD SAFE?
-        {                                                   // ALSO CHECK FOR UNECESSARY REPEATS...IF MORE SHOULD FALL UNDER THE IF()
-            // stop sending time updates if game is in progress
-            if (timer != null)
-                timer.Dispose(); 
-            
-            // Close socket to offending player
-            Player dead = (Player)payload;                 
-            CloseSocket(null, dead.Ss);               
-
-            // Notify then close socket to remaining Player (when the remaining
-            // player's socket is closed, we'll again execute here and don't want
-            // to send terminated to the original disconnecting player)
-            if (dead.Opponent.Ss.Connected)             
-                dead.Opponent.Ss.BeginSend("TERMINATED\n", CloseSocket, dead.Opponent.Ss);
-
-            // print connection lost info
-            Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION LOST", dead.IP, DateTime.Now));
-        }
-
-
-        /// <summary>
-        /// Closes the socket if not already done so.
-        /// </summary>
-        /// <param name="e">NOT USED</param>
-        /// <param name="payload">Player Stringsocket to close.</param>
-        private void CloseSocket(Exception e, object payload)
-        {
-            // Close the StringSocket to the Player.
-            ((StringSocket)payload).Close();
         }        
-
-
-        /// <summary>
-        /// Called when a message has been sent through the StringSocket
-        /// to a Player. Exceptions will end this BoggleGame.
-        /// </summary>
-        /// <param name="e">an Exception, if any</param>
-        /// <param name="payload">the StringSocket connecting
-        /// the server and Player</param>
-        private void ExceptionCheck(Exception e, object payload)
-        {
-            if (e != null)
-                Terminate(e, payload);
-        }
 
 
         // THE BELOW WAS USED FOR THE DATABASE
