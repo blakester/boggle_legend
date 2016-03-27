@@ -57,7 +57,7 @@ namespace BB
             playerlock = new object();
 
             // Initialize the timers
-            countDownTimer = new Timer(CountDownUpdate, null, Timeout.Infinite, Timeout.Infinite);
+            countDownTimer = new Timer(CountDownUpdate, new Boolean(), Timeout.Infinite, Timeout.Infinite);
             gameTimer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
             watch = new Stopwatch();
 
