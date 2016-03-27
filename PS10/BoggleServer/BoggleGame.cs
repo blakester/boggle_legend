@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using CustomNetworking;
 using System.Threading;
 using System.Text.RegularExpressions;
-//using System.Diagnostics;
+using System.Diagnostics;
 // THE BELOW WAS USED FOR THE DATABASE
 //using MySql.Data.MySqlClient;
 
@@ -33,7 +33,8 @@ namespace BB
         private byte resumeSentCount = 0;        
         private byte countDown = 3;
         private Timer countDownTimer; 
-        private Timer gameTimer; 
+        private Timer gameTimer;
+        Stopwatch watch;
         private int timeLeft;
         private bool paused = false;
         private bool gameOver = false;
@@ -58,7 +59,7 @@ namespace BB
             // Initialize the timers
             countDownTimer = new Timer(CountDownUpdate, null, Timeout.Infinite, Timeout.Infinite);
             gameTimer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
-            //Stopwatch watch = new Stopwatch();
+            watch = new Stopwatch();
 
             // Let Players know game is ready to start
             one.Ss.BeginSend("READY " + two.Name + "\n", ExceptionCheck, one);
@@ -264,6 +265,8 @@ namespace BB
                 // only allow player to pause the game if the other player hasn't already paused it
                 if (!paused) 
                 {
+                    watch.Stop(); // get elapsed time since last time update
+
                     // though highly unlikely chronologically, it's possible 
                     // the timer could have been disposed by Terminate()
                     try { gameTimer.Change(Timeout.Infinite, Timeout.Infinite); } // Pause the time updates
@@ -317,7 +320,7 @@ namespace BB
                          
                         // though highly unlikely chronologically, it's possible 
                         // the timer could have been disposed by Terminate()
-                        try { gameTimer.Change(0, 1000); } // Resume time updates
+                        try { gameTimer.Change(1000 - watch.ElapsedMilliseconds, 1000); } // Resume time updates once remaining time has passed
                         catch (ObjectDisposedException) { return; }
 
                         // print game resumed info
@@ -341,6 +344,7 @@ namespace BB
             {              
                 one.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, one);
                 two.Ss.BeginSend("TIME " + timeLeft + "\n", ExceptionCheck, two);
+                watch.Restart(); // keep track of elapsed time if someone clicks pause
                 timeLeft--;
             }
             // game finished
@@ -374,6 +378,8 @@ namespace BB
             // the timer could have been disposed by Terminate()
             try { gameTimer.Change(Timeout.Infinite, Timeout.Infinite); } // freeze gameTimer
             catch (ObjectDisposedException) { return; }
+
+            watch.Stop(); // elapsed time no longer needed
 
             // Convert each list of words into a single string
             // (list size) followed by words seperated by spaces.
@@ -432,6 +438,7 @@ namespace BB
             // stop sending all time updates if game
             gameTimer.Dispose();
             countDownTimer.Dispose();
+            watch.Stop(); // elapsed time no longer needed
 
             // Close socket to offending player
             Player dead = (Player)payload;
