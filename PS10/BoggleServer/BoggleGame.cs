@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CustomNetworking;
 using System.Threading;
 using System.Text.RegularExpressions;
+//using System.Diagnostics;
 // THE BELOW WAS USED FOR THE DATABASE
 //using MySql.Data.MySqlClient;
 
@@ -57,6 +58,7 @@ namespace BB
             // Initialize the timers
             countDownTimer = new Timer(CountDownUpdate, null, Timeout.Infinite, Timeout.Infinite);
             gameTimer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
+            //Stopwatch watch = new Stopwatch();
 
             // Let Players know game is ready to start
             one.Ss.BeginSend("READY " + two.Name + "\n", ExceptionCheck, one);
