@@ -1,9 +1,10 @@
 ﻿-Disable Play/Cancel button during countdown?
--Keep track of elapsed time with Stopwatch between TimeUpdate and Pause for a time accurate resume?
 -have timestamp on chat messages?
 -require BOTH to resume to undo pause?
 -countdown upon resume?
 -Ready, Set, Go instead of countdown?
+-Get rid of Regex's...unecessary overhead?
+-Find way to slide up chatDisplayBox when messages are at bottom
 -Finalize server messages
 
 NOTES:
