@@ -30,6 +30,7 @@ namespace BB
         private byte playCount = 0;
         private byte boardSentCount = 0;
         private byte startSentCount = 0;
+        private byte resumeCount = 0;
         private byte resumeSentCount = 0;        
         private byte countDown = 3;
         private Timer countDownTimer; 
@@ -57,7 +58,7 @@ namespace BB
             playerlock = new object();
 
             // Initialize the timers
-            countDownTimer = new Timer(CountDownUpdate, new Boolean(), Timeout.Infinite, Timeout.Infinite);
+            countDownTimer = new Timer(CountDownUpdate, null, Timeout.Infinite, Timeout.Infinite);
             gameTimer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
             watch = new Stopwatch();
 
@@ -94,29 +95,17 @@ namespace BB
 
                 // Handle the message
                 if (Regex.IsMatch(s.ToUpper(), @"^(WORD\s)"))
-                {
-                    ProcessWord(player, s.Substring(5).Trim().ToUpper());
-                }
-                else if (Regex.IsMatch(s.ToUpper(), @"^(CHAT\s)"))
-                {
-                    RelayChatMessage(player, s.Substring(5));
-                }
-                else if (Regex.IsMatch(s.ToUpper(), @"^(PLAY)"))
-                {
-                    Play();
-                }
-                else if (Regex.IsMatch(s.ToUpper(), @"^(PAUSE)"))
-                {
-                    PauseTimer(payload);
-                }
-                else if (Regex.IsMatch(s.ToUpper(), @"^(RESUME)"))
-                {
-                    SendResume(payload);
-                }
-                else if (Regex.IsMatch(s.ToUpper(), @"^(RETRACT_PLAY)"))
-                {
-                    RetractPlay();
-                }            
+                    ProcessWord(player, s.Substring(5).Trim().ToUpper());            
+                else if (Regex.IsMatch(s.ToUpper(), @"^(CHAT\s)"))                
+                    RelayChatMessage(player, s.Substring(5));                
+                else if (Regex.IsMatch(s.ToUpper(), @"^(PLAY)"))                
+                    Play();                
+                else if (Regex.IsMatch(s.ToUpper(), @"^(PAUSE)"))                
+                    PauseTimer(payload);                
+                else if (Regex.IsMatch(s.ToUpper(), @"^(RESUME)"))                
+                    SendResume(payload);                
+                else if (Regex.IsMatch(s.ToUpper(), @"^(CANCEL\s)"))                
+                    Cancel(s.Substring(7));                            
             }
             else
                 Terminate(e, payload);                       
@@ -132,16 +121,17 @@ namespace BB
                 {
                     playCount = 0;
                     InitiateGame();
-                    //Countdown();
-                    //Start();
                 }
             }
         }
 
 
-        private void RetractPlay()
+        private void Cancel(string s)
         {
-            playCount = 0;
+            if (s == "True")
+                resumeCount = 0;
+            else
+                playCount = 0;
         }
 
 
@@ -289,12 +279,26 @@ namespace BB
         }
 
 
+        /// <summary>
+        /// Sends both players the RESUME message once they've
+        /// both clicked the Resume button.
+        /// </summary>
+        /// <param name="payload"></param>
         private void SendResume(object payload)
         {
-            // Let both players know the game will resume.
-            // Timer will resume once both messages are sent.
-            one.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
-            two.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
+            lock (playerlock)
+            {
+                resumeCount++;
+                if (resumeCount == 2)
+                {
+                    resumeCount = 0;
+
+                    // Let both players know the game will resume.
+                    // Timer will resume once both messages are sent.
+                    one.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
+                    two.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
+                }
+            }
         }
 
 
