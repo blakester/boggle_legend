@@ -1,6 +1,5 @@
 ﻿-Disable Play/Cancel button during countdown?
 -have timestamp on chat messages?
--require BOTH to resume to undo pause?
 -countdown upon resume?
 -Ready, Set, Go instead of countdown?
 -Get rid of Regex's...unecessary overhead?
