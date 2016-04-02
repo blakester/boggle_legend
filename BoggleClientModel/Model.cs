@@ -39,8 +39,10 @@ namespace BoggleClient
         public event Action<string> ReadyMessageEvent;
         //public event Action OpponentStoppedEvent;
         public event Action PauseEvent;
+        public event Action<string> ResumingEvent;
         public event Action ResumeEvent;
-        public event Action<string> CountDownEvent; 
+        public event Action<string> CountDownEvent;
+        
 
 
         /// <summary>
@@ -55,7 +57,6 @@ namespace BoggleClient
             {
                 client = new TcpClient(ip, port);
                 socket = new StringSocket(client.Client, UTF8Encoding.Default);
-                //socketOpen = clientOpen = true;//*****************************************************************************************
                 socket.BeginSend("NEW_PLAYER " + player + "\n", ExceptionCheck, null);
                 socket.BeginReceive(ReceivedMessage, null);
             }
@@ -92,6 +93,10 @@ namespace BoggleClient
             else if (Regex.IsMatch(s, @"^(COUNTDOWN\s)")) 
             {
                 CountDown(s);
+            }
+            else if (Regex.IsMatch(s, @"^(RESUMING\s)"))
+            {
+                Resuming(s);
             }
             else if (Regex.IsMatch(s, @"^(BOARD\s)"))
             {
@@ -215,6 +220,13 @@ namespace BoggleClient
         }
 
 
+        private void Resuming(string message)
+        {
+            ResumingEvent(message.Substring(9));
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        }
+
+
         /// <summary>
         /// Parses the STOP message into an List of arrays 
         /// and activates an event for the controller to handle.
@@ -318,9 +330,9 @@ namespace BoggleClient
         }
 
 
-        public void ClickedCancel()
+        public void ClickedCancel(bool resume)
         {
-            socket.BeginSend("RETRACT_PLAY\n", ExceptionCheck, null);
+            socket.BeginSend("CANCEL " + resume + "\n", ExceptionCheck, null);
         }
 
 
