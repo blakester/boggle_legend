@@ -28,6 +28,7 @@ namespace BoggleClient
 
         private Model model; // The model to handle socket and computation.
         private string opponentName;
+        private bool resumeClicked;
         //private bool playerDisconnected;
 
         /// <summary>
@@ -49,8 +50,10 @@ namespace BoggleClient
             model.ReadyMessageEvent += GameReady;
             //model.OpponentStoppedEvent += GameStopped;
             model.PauseEvent += GamePaused;
+            model.ResumingEvent += GameResuming;
             model.ResumeEvent += GameResumed;
             model.CountDownEvent += GameCountDown;
+            
         }
 
 
@@ -162,28 +165,35 @@ namespace BoggleClient
             BSpot15.Text = boggleLetters[14] + "";
             BSpot16.Text = boggleLetters[15] + "";
 
-            countDownLabel.Visibility = Visibility.Visible;
-            startingInLabel.Visibility = Visibility.Visible;
-            infoBox.Visibility = Visibility.Hidden;
+            //countDownLabel.Visibility = Visibility.Visible;
+            //startingInLabel.Visibility = Visibility.Visible;
+            //infoBox.Visibility = Visibility.Hidden;
         }
 
 
         private void GameCountDown(string s)
         {
-            Dispatcher.Invoke(new Action(() => { GameCountDownHelper(s); }));
+            Dispatcher.Invoke(new Action(() => { GameCountdownHelper(s); }));
         }
 
 
-        private void GameCountDownHelper(string s)
+        private void GameCountdownHelper(string s)
         {
-            // DECIDE WHAT GUI STUFF TO DO             
-            double opacity = 1.0;
+            double opacity;
 
-            if (s.Equals("2"))
+            if (s.Equals("3"))
+            {
+                opacity = 1.0;
+                startingInLabel.Content = "Starting in...";
+                countDownLabel.Visibility = Visibility.Visible;
+                startingInLabel.Visibility = Visibility.Visible;
+                infoBox.Visibility = Visibility.Hidden;
+            }
+            else if (s.Equals("2"))
                 opacity = 0.8;
-            else if (s.Equals("1"))
-                opacity = 0.6;           
-            
+            else
+                opacity = 0.6;
+
             countDownLabel.Content = s;
             countDownLabel.Opacity = opacity;
             startingInLabel.Opacity = opacity;
@@ -247,10 +257,39 @@ namespace BoggleClient
 
         private void GamePausedHelper()
         {
-            playButton.Content = "Resume"; // WAIT ON BOTH TO CLICK RESUME OR JUST OPPONENT?
+            playButton.Content = "Resume";
             wordEntryBox.IsEnabled = false;
-            infoBox.Text = infoBox.Text = opponentName + " paused the game.\n\n";
-            infoBox.Visibility = Visibility.Visible;
+            infoBox.Text = infoBox.Text = opponentName + " paused the game.\n\nClick Resume to continue.";
+            infoBox.Visibility = Visibility.Visible;            
+        }
+
+
+        private void GameResuming(string s)
+        {
+            Dispatcher.Invoke(new Action(() => { GameResumingHelper(s); }));
+        }
+
+
+        private void GameResumingHelper(string s)
+        {
+            double opacity;
+
+            if (s.Equals("3"))
+            {
+                opacity = 1.0;
+                startingInLabel.Content = "Resuming in...";
+                startingInLabel.Visibility = Visibility.Visible;
+                countDownLabel.Visibility = Visibility.Visible;
+                infoBox.Visibility = Visibility.Hidden;
+            }
+            else if (s.Equals("2"))
+                opacity = 0.8;
+            else
+                opacity = 0.6;
+
+            countDownLabel.Content = s;
+            countDownLabel.Opacity = opacity;
+            startingInLabel.Opacity = opacity;
         }
 
 
@@ -265,7 +304,9 @@ namespace BoggleClient
             playButton.Content = "Pause";
             wordEntryBox.IsEnabled = true;
             wordEntryBox.Focus();
-            infoBox.Visibility = Visibility.Hidden;
+            countDownLabel.Visibility = Visibility.Hidden;
+            startingInLabel.Visibility = Visibility.Hidden;
+            //infoBox.Visibility = Visibility.Hidden;
         }
 
 
@@ -453,27 +494,39 @@ namespace BoggleClient
         {
             if (((string)playButton.Content) == "Play")
             {
-                playButton.Content = "Cancel";
+                resumeClicked = false;
+                playButton.Content = "Cancel";                
                 infoBox.Text = infoBox.Text = "Waiting for " + opponentName + " to click Play...";
                 model.ClickedPlay();
             }
             else if (((string)playButton.Content) == "Cancel")
             {
-                playButton.Content = "Play";
-
-                infoBox.Text = "Chat or click Play to begin!";
-                model.ClickedCancel();
+                if (resumeClicked)
+                {
+                    playButton.Content = "Resume";
+                    infoBox.Text = "Click Resume to continue.";
+                }
+                else
+                {
+                    playButton.Content = "Play";
+                    infoBox.Text = "Chat or click Play to begin!";
+                }
+                model.ClickedCancel(resumeClicked);
             }
             else if (((string)playButton.Content) == "Pause")
             {
                 model.ClickedPause();
                 playButton.Content = "Resume";
-                infoBox.Text = "You paused the game.";
+                wordEntryBox.IsEnabled = false;
+                infoBox.Text = "You paused the game.\n\nClick Resume to continue.";
                 infoBox.Visibility = Visibility.Visible;
             }
             // the Resume button was clicked
             else
             {
+                resumeClicked = true;
+                playButton.Content = "Cancel";
+                infoBox.Text = "Waiting for " + opponentName + " to click Resume...";
                 model.ClickedResume();
             }
         }
@@ -548,9 +601,5 @@ namespace BoggleClient
             serverTextBox.IsEnabled = true;
             playButton.IsEnabled = false;
         }
-
-
-       
-
     }
 }

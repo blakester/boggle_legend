@@ -33,8 +33,10 @@ namespace BB
         private byte resumeCount = 0;
         private byte resumeSentCount = 0;        
         private byte countDown = 3;
+        private byte resumeCountDown = 3;
         private Timer countDownTimer; 
         private Timer gameTimer;
+        private Timer resumeTimer;
         Stopwatch watch;
         private int timeLeft;
         private bool paused = false;
@@ -58,8 +60,9 @@ namespace BB
             playerlock = new object();
 
             // Initialize the timers
-            countDownTimer = new Timer(CountDownUpdate, null, Timeout.Infinite, Timeout.Infinite);
+            countDownTimer = new Timer(CountdownUpdate, null, Timeout.Infinite, Timeout.Infinite);
             gameTimer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
+            resumeTimer = new Timer(ResumingUpdate, null, Timeout.Infinite, Timeout.Infinite);
             watch = new Stopwatch();
 
             // Let Players know game is ready to start
@@ -103,7 +106,7 @@ namespace BB
                 else if (Regex.IsMatch(s.ToUpper(), @"^(PAUSE)"))                
                     PauseTimer(payload);                
                 else if (Regex.IsMatch(s.ToUpper(), @"^(RESUME)"))                
-                    SendResume(payload);                
+                    ResumingCountdown(payload);                
                 else if (Regex.IsMatch(s.ToUpper(), @"^(CANCEL\s)"))                
                     Cancel(s.Substring(7));                            
             }
@@ -175,7 +178,7 @@ namespace BB
         }
 
 
-        private void CountDownUpdate(object stateInfo)
+        private void CountdownUpdate(object stateInfo)
         {            
             if (countDown > 0)
             {              
@@ -280,24 +283,50 @@ namespace BB
 
 
         /// <summary>
-        /// Sends both players the RESUME message once they've
-        /// both clicked the Resume button.
+        /// Starts the resume countdown once both players
+        /// have clicked Resume.
         /// </summary>
         /// <param name="payload"></param>
-        private void SendResume(object payload)
+        private void ResumingCountdown(object payload)
         {
             lock (playerlock)
             {
                 resumeCount++;
                 if (resumeCount == 2)
                 {
-                    resumeCount = 0;
+                    // though highly unlikely chronologically, it's possible 
+                    // the timer could have been disposed by Terminate()
+                    try { resumeTimer.Change(0, 1000); } // start the resume countdown
+                    catch (ObjectDisposedException) { return; }
 
-                    // Let both players know the game will resume.
-                    // Timer will resume once both messages are sent.
-                    one.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
-                    two.Ss.BeginSend("RESUME\n", ResumeTimer, payload);
+                    resumeCount = 0;                    
                 }
+            }
+        }
+
+
+        private void ResumingUpdate(object stateInfo)
+        {
+            if (resumeCountDown > 0)
+            {
+                one.Ss.BeginSend("RESUMING " + resumeCountDown + "\n", ExceptionCheck, one);
+                two.Ss.BeginSend("RESUMING " + resumeCountDown + "\n", ExceptionCheck, two);
+                resumeCountDown--;
+            }
+            // resuming countdown over
+            else
+            {
+                // though highly unlikely chronologically, it's possible 
+                // the timer could have been disposed by Terminate()
+                try { resumeTimer.Change(Timeout.Infinite, Timeout.Infinite); } // freeze resuming timer
+                catch (ObjectDisposedException) { return; }
+
+                // Let both players know the game will resume.
+                // Timer will resume once both messages are sent.
+                one.Ss.BeginSend("RESUME\n", ResumeTimer, one);
+                two.Ss.BeginSend("RESUME\n", ResumeTimer, two);
+
+                resumeCountDown = 3; // reset resuming countdown
             }
         }
 
