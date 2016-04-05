@@ -28,22 +28,18 @@ namespace BoggleClient
         
         // These activate events for the controller to execute.
         public event Action<bool> DisconnectOrErrorEvent; // Event when game is done, resets GUI
-        public event Action<string[]> ReceivedBoardEvent; 
+        public event Action<string[]> ReceivedBoardEvent;
+        public event Action<string, bool> CountDownEvent;
         public event Action StartMessageEvent; // Event when START is recieved.
-        public event Action<string[]> TimeMessageEvent; // Event when TIME is recieved.
+        public event Action<string> TimeMessageEvent; // Event when TIME is recieved.
         public event Action<string[]> ScoreMessageEvent; // Event when SCORE is recieved.
         public event Action<List<string[]>> SummaryMessageEvent; // Event when STOP is recieved.
         public event Action SocketExceptionEvent; // Event when socket failed to connect.
-        //public event Action ServerClosedEvent; // Event when server closes before game starts.
         public event Action<string> ChatMessageEvent; // Event when chat message received from opponent.
         public event Action<string> ReadyMessageEvent;
-        //public event Action OpponentStoppedEvent;
         public event Action PauseEvent;
-        public event Action<string> ResumingEvent;
         public event Action ResumeEvent;
-        public event Action<string> CountDownEvent;
         
-
 
         /// <summary>
         /// Connects the client to the server and let's server know that client is
@@ -78,50 +74,28 @@ namespace BoggleClient
         {            
             if (s == null || e != null)
                 Terminate(false);
-            else if (Regex.IsMatch(s, @"^(TIME\s)")) // Time Update
-            {
-                TimeUpdate(s);                
-            }
-            else if (Regex.IsMatch(s, @"^(SCORE\s)")) // Update Score
-            {
-                ScoreUpdate(s);                
-            }
-            else if (Regex.IsMatch(s, @"^(CHAT\s)")) // Received chat message
-            {
-                ReceivedChat(s);
-            }
-            else if (Regex.IsMatch(s, @"^(COUNTDOWN\s)")) 
-            {
-                CountDown(s);
-            }
-            else if (Regex.IsMatch(s, @"^(RESUMING\s)"))
-            {
-                Resuming(s);
-            }
-            else if (Regex.IsMatch(s, @"^(BOARD\s)"))
-            {
-                BoardMessage(s);
-            }
-            else if (Regex.IsMatch(s, @"^(START)")) // Starts Game
-            {
-                StartMessage();                
-            }
-            else if (Regex.IsMatch(s, @"^(STOP\s)")) // Game finished
-            {
-                SummaryMessage(s);               
-            }           
-            else if (Regex.IsMatch(s, @"^(READY\s)")) // Ready to start
-            {
-                ReadyMessage(s);
-            }
-            else if (Regex.IsMatch(s, @"^(PAUSE)")) // Ready to start
-            {
-                ReceivedPause();
-            }
-            else if (Regex.IsMatch(s, @"^(RESUME)")) // Ready to start
-            {
-                ReceivedResume();
-            }
+            else if (Regex.IsMatch(s, @"^(TIME\s)")) // Time Update            
+                TimeUpdate(s);               
+            else if (Regex.IsMatch(s, @"^(SCORE\s)")) // Update Score            
+                ScoreUpdate(s);            
+            else if (Regex.IsMatch(s, @"^(CHAT\s)")) // Received chat message            
+                ReceivedChat(s);            
+            else if (Regex.IsMatch(s, @"^(COUNTDOWN\s)"))             
+                CountDown(s, true);            
+            else if (Regex.IsMatch(s, @"^(RESUMING\s)"))            
+                CountDown(s, false);            
+            else if (Regex.IsMatch(s, @"^(BOARD\s)"))            
+                BoardMessage(s);            
+            else if (Regex.IsMatch(s, @"^(START)")) // Starts Game            
+                StartMessage();             
+            else if (Regex.IsMatch(s, @"^(STOP\s)")) // Game finished            
+                SummaryMessage(s);                     
+            else if (Regex.IsMatch(s, @"^(READY\s)")) // Ready to start            
+                ReadyMessage(s);            
+            else if (Regex.IsMatch(s, @"^(PAUSE)")) // Ready to start            
+                ReceivedPause();            
+            else if (Regex.IsMatch(s, @"^(RESUME)")) // Ready to start            
+                ReceivedResume();            
             else if (Regex.IsMatch(s, @"^(TERMINATED)")) // Opponent Disconnected
                 Terminate(true);          
         }
@@ -171,9 +145,12 @@ namespace BoggleClient
         }
 
 
-        private void CountDown(string message)
+        private void CountDown(string message, bool starting)
         {
-            CountDownEvent(message.Substring(10));
+            if (starting)
+                CountDownEvent(message.Substring(10), starting);
+            else
+                CountDownEvent(message.Substring(9), starting);
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
@@ -185,8 +162,6 @@ namespace BoggleClient
         /// <param name="message">Message to parse into array.</param>
         private void StartMessage()
         {
-            //char[] spaces = { ' ' }; // Ensures that empty entries are not created.
-            //string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
             StartMessageEvent();
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
@@ -199,9 +174,7 @@ namespace BoggleClient
         /// <param name="message">Message to parse into array.</param>
         private void TimeUpdate(string message)
         {
-            char[] spaces = { ' ' };
-            string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
-            TimeMessageEvent(tokens);
+            TimeMessageEvent(message.Substring(5));
             socket.BeginReceive(ReceivedMessage, null);
         }
 
@@ -216,13 +189,6 @@ namespace BoggleClient
             char[] spaces = { ' ' };
             string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
             ScoreMessageEvent(tokens);
-            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
-        }
-
-
-        private void Resuming(string message)
-        {
-            ResumingEvent(message.Substring(9));
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
@@ -279,13 +245,6 @@ namespace BoggleClient
         }
 
 
-        //private void OpponentStopped()
-        //{
-        //    OpponentStoppedEvent(); 
-        //    socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
-        //}
-
-
         /// <summary>
         /// Let's us know that the server recieved something from us.
         /// We simply eat up the message to allow other messages to be recieved.
@@ -336,12 +295,6 @@ namespace BoggleClient
         }
 
 
-        //public void ClickedStop()
-        //{
-        //    socket.BeginSend("STOP\n", ExceptionCheck, null);
-        //}
-
-
         public void ClickedPause()
         {
             socket.BeginSend("PAUSE\n", ExceptionCheck, null);
@@ -368,12 +321,10 @@ namespace BoggleClient
         }
 
 
-
-
         /// <summary>
         /// Callback to the sockets BeginSend function. Checks to
         /// see if any errors have occured. Terminates if so, nothing if
-        /// message was sent succesffuly.
+        /// message was sent successfully.
         /// </summary>
         /// <param name="e">Exception thrown, if not null.</param>
         /// <param name="payload">NOT USED.</param>
