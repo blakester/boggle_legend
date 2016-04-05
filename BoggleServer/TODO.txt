@@ -1,6 +1,4 @@
 ﻿-in BoggleGame.MessageReceived, some methods are being passed payload but could probably be passed player
--combine GameResumingHelper and GameCountdownHelper in mainwindow?
--Disable Play/Cancel button during countdown?
 -have timestamp on chat messages?
 -Ready, Set, Go instead of countdown?
 -Get rid of Regex's...unecessary overhead?

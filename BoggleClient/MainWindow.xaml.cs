@@ -45,15 +45,11 @@ namespace BoggleClient
             model.ScoreMessageEvent += GameScore;
             model.SummaryMessageEvent += GameCompleted;
             model.SocketExceptionEvent += SocketFail;
-            //model.ServerClosedEvent += ServerClosed;
             model.ChatMessageEvent += ChatMessage;
             model.ReadyMessageEvent += GameReady;
-            //model.OpponentStoppedEvent += GameStopped;
             model.PauseEvent += GamePaused;
-            model.ResumingEvent += GameResuming;
             model.ResumeEvent += GameResumed;
-            model.CountDownEvent += GameCountDown;
-            
+            model.CountDownEvent += GameCountDown;            
         }
 
 
@@ -171,20 +167,26 @@ namespace BoggleClient
         }
 
 
-        private void GameCountDown(string s)
+        private void GameCountDown(string s, bool starting)
         {
-            Dispatcher.Invoke(new Action(() => { GameCountdownHelper(s); }));
+            Dispatcher.Invoke(new Action(() => { GameCountdownHelper(s, starting); }));
         }
 
 
-        private void GameCountdownHelper(string s)
+        private void GameCountdownHelper(string s, bool starting)
         {
             double opacity;
 
             if (s.Equals("3"))
             {
                 opacity = 1.0;
-                startingInLabel.Content = "Starting in...";
+
+                if (starting)
+                    startingInLabel.Content = "Starting in...";
+                else
+                    startingInLabel.Content = "Resuming in...";
+
+                playButton.IsEnabled = false;//**********************************************************************************
                 countDownLabel.Visibility = Visibility.Visible;
                 startingInLabel.Visibility = Visibility.Visible;
                 infoBox.Visibility = Visibility.Hidden;
@@ -226,6 +228,7 @@ namespace BoggleClient
             oScoreBox.Text = "0";
             wordEntryBox.IsEnabled = true;
             chatEntryBox.IsEnabled = true;
+            playButton.IsEnabled = true;//**********************************************************************************
             wordEntryBox.Clear();
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
@@ -264,35 +267,6 @@ namespace BoggleClient
         }
 
 
-        private void GameResuming(string s)
-        {
-            Dispatcher.Invoke(new Action(() => { GameResumingHelper(s); }));
-        }
-
-
-        private void GameResumingHelper(string s)
-        {
-            double opacity;
-
-            if (s.Equals("3"))
-            {
-                opacity = 1.0;
-                startingInLabel.Content = "Resuming in...";
-                startingInLabel.Visibility = Visibility.Visible;
-                countDownLabel.Visibility = Visibility.Visible;
-                infoBox.Visibility = Visibility.Hidden;
-            }
-            else if (s.Equals("2"))
-                opacity = 0.8;
-            else
-                opacity = 0.6;
-
-            countDownLabel.Content = s;
-            countDownLabel.Opacity = opacity;
-            startingInLabel.Opacity = opacity;
-        }
-
-
         private void GameResumed()
         {
             Dispatcher.Invoke(new Action(() => { GameResumedHelper(); }));
@@ -303,6 +277,7 @@ namespace BoggleClient
         {
             playButton.Content = "Pause";
             wordEntryBox.IsEnabled = true;
+            playButton.IsEnabled = true;//**********************************************************************************
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
             startingInLabel.Visibility = Visibility.Hidden;
@@ -314,7 +289,7 @@ namespace BoggleClient
         /// Invokes an event to update time on GUI.
         /// </summary>
         /// <param name="s">Array that contains TIME and actual time.</param>
-        private void GameTime(string[] s)
+        private void GameTime(string s)
         {
             Dispatcher.Invoke(new Action(() => { GameTimeMessageHelper(s); }));
         }
@@ -324,9 +299,9 @@ namespace BoggleClient
         /// Event to update time on GUI.
         /// </summary>
         /// <param name="s">Array that contains TIME and actual time.</param>
-        private void GameTimeMessageHelper(string[] s)
+        private void GameTimeMessageHelper(string s)
         {
-            timeLeftBox.Text = s[1];
+            timeLeftBox.Text = s;
         }
 
 
@@ -582,14 +557,14 @@ namespace BoggleClient
         /// </summary>
         private void SocketFail()
         {
-            Dispatcher.Invoke(() => { GameSocketFailHelper(); });
+            Dispatcher.Invoke(() => { SocketFailHelper(); });
         }
 
 
         /// <summary>
         /// Event when socket fails to connect.  Informs players.
         /// </summary>
-        private void GameSocketFailHelper()
+        private void SocketFailHelper()
         {
             infoBox.Text = infoBox.Text = "Unable to connect to server. Server may not be "
                 + "running or you entered an invalid IP.\n\n"
@@ -599,7 +574,7 @@ namespace BoggleClient
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
-            playButton.IsEnabled = false;
+            //playButton.IsEnabled = false;//*****************************************IS THIS NEEDED***************************************
         }
     }
 }
