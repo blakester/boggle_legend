@@ -104,9 +104,9 @@ namespace BB
                 else if (Regex.IsMatch(s.ToUpper(), @"^(PLAY)"))                
                     Play();                
                 else if (Regex.IsMatch(s.ToUpper(), @"^(PAUSE)"))                
-                    PauseTimer(payload);                
+                    PauseTimer(player);                
                 else if (Regex.IsMatch(s.ToUpper(), @"^(RESUME)"))                
-                    ResumingCountdown(payload);                
+                    ResumingCountdown();                
                 else if (Regex.IsMatch(s.ToUpper(), @"^(CANCEL\s)"))                
                     Cancel(s.Substring(7));                            
             }
@@ -115,6 +115,9 @@ namespace BB
         }
 
 
+        /// <summary>
+        /// Initiates the game once both players have clicked Play
+        /// </summary>
         private void Play()
         {
             lock (playerlock)
@@ -129,6 +132,10 @@ namespace BB
         }
 
 
+        /// <summary>
+        /// Cancels a Resume or Play request
+        /// </summary>
+        /// <param name="s"></param>
         private void Cancel(string s)
         {
             if (s == "True")
@@ -138,6 +145,9 @@ namespace BB
         }
 
 
+        /// <summary>
+        /// Sends both players the boggle board and game length
+        /// </summary>
         private void InitiateGame()
         {
             // Create a BoggleBoard with the specified
@@ -150,11 +160,16 @@ namespace BB
             // reset timeLeft
             timeLeft = BoggleServer.GameLength;
 
+            // Send players the board. Countdown starts after both messages are sent.
             one.Ss.BeginSend("BOARD " + board.ToString() + " " + timeLeft + "\n", Countdown, one);
             two.Ss.BeginSend("BOARD " + board.ToString() + " " + timeLeft + "\n", Countdown, two);  
         }
 
-
+        /// <summary>
+        /// Starts countdown once both players have been sent the BOARD message.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="payload"></param>
         private void Countdown(Exception e, object payload)
         {
             if (e != null)
@@ -178,6 +193,10 @@ namespace BB
         }
 
 
+        /// <summary>
+        /// Sends the remaining countdown time to both players each second of the countdown.
+        /// </summary>
+        /// <param name="stateInfo"></param>
         private void CountdownUpdate(object stateInfo)
         {            
             if (countDown > 0)
@@ -213,8 +232,7 @@ namespace BB
 
 
         /// <summary>
-        /// This method starts the timer once both players have
-        /// been sent the START message.
+        /// Starts the timer once both players have been sent the START message.
         /// </summary>
         /// <param name="e"></param>
         /// <param name="payload"></param>
@@ -246,7 +264,11 @@ namespace BB
         }
 
 
-        private void PauseTimer(object payload)
+        /// <summary>
+        /// Pauses the game and notifies the specified player's opponent.
+        /// </summary>
+        /// <param name="player"></param>
+        private void PauseTimer(Player player)
         {
             // Only allow one player to initiate a pause (this is only needed
             // for the highly unlikely event that both players' pauses are
@@ -272,7 +294,7 @@ namespace BB
                     if (!gameOver)
                     {
                         // notify other player of pause
-                        ((Player)payload).Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, payload);
+                        player.Opponent.Ss.BeginSend("PAUSE\n", ExceptionCheck, player);
 
                         // print game paused info
                         Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "PAUSE", gameID, one.IP, two.IP, DateTime.Now));
@@ -287,7 +309,7 @@ namespace BB
         /// have clicked Resume.
         /// </summary>
         /// <param name="payload"></param>
-        private void ResumingCountdown(object payload)
+        private void ResumingCountdown()
         {
             lock (playerlock)
             {
@@ -305,6 +327,11 @@ namespace BB
         }
 
 
+        /// <summary>
+        /// Sends the remaining resuming countdown time to both players each second of the
+        /// resume countdown.
+        /// </summary>
+        /// <param name="stateInfo"></param>
         private void ResumingUpdate(object stateInfo)
         {
             if (resumeCountDown > 0)
@@ -332,7 +359,7 @@ namespace BB
 
 
         /// <summary>
-        /// Resumes the timer once both players have received
+        /// Resumes the timer once both players have been sent
         /// the RESUME message.
         /// </summary>
         /// <param name="e"></param>
@@ -401,7 +428,6 @@ namespace BB
         /// <summary>
         /// Ends this BoggleGame. Sends the final score and 
         /// game summary messages to each Player. 
-        /// Then the StringSockets are closed to each Player.
         /// </summary>
         private void End()
         {
@@ -451,9 +477,13 @@ namespace BB
         } // end private method End
 
 
+        /// <summary>
+        /// Sends the specified string to the specified player's opponent.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="message"></param>
         private void RelayChatMessage(Player player, string message)
         {
-            // Relay the chat message to the opponent
             player.Opponent.Ss.BeginSend("CHAT " + message + "\n", ExceptionCheck, player.Opponent);
         }
 
@@ -468,9 +498,10 @@ namespace BB
         /// exception occured</param>
         private void Terminate(Exception e, object payload)
         {
-            // stop sending all time updates if game
+            // stop sending all time updates
             gameTimer.Dispose();
             countDownTimer.Dispose();
+            resumeTimer.Dispose();
             watch.Stop(); // elapsed time no longer needed
 
             // Close socket to offending player
@@ -513,6 +544,12 @@ namespace BB
         }
 
 
+        /// <summary>
+        /// Updates both players scores appropriately given the specified
+        /// word sent from the specified player.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="word"></param>
         private void ProcessWord(Player player, string word)
         {
             // Words must be atleast 3 characters long.
