@@ -25,11 +25,10 @@ namespace BoggleClient
     /// </summary>
     public partial class MainWindow : Window
     {
-
         private Model model; // The model to handle socket and computation.
         private string opponentName;
         private bool resumeClicked;
-        //private bool playerDisconnected;
+
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -38,18 +37,18 @@ namespace BoggleClient
         {
             InitializeComponent();
             model = new Model();
-            model.DisconnectOrErrorEvent += OppDisconnectOrErr;
-            model.ReceivedBoardEvent += SetUpBoard;
-            model.StartMessageEvent += GameStart;
-            model.TimeMessageEvent += GameTime;
-            model.ScoreMessageEvent += GameScore;
-            model.SummaryMessageEvent += GameCompleted;
-            model.SocketExceptionEvent += SocketFail;
-            model.ChatMessageEvent += ChatMessage;
             model.ReadyMessageEvent += GameReady;
-            model.PauseEvent += GamePaused;
-            model.ResumeEvent += GameResumed;
-            model.CountDownEvent += GameCountDown;            
+            model.BoardMessageEvent += SetUpBoard;
+            model.CountdownMessageEvent += CountDown;
+            model.StartMessageEvent += Start;            
+            model.TimeMessageEvent += Time;
+            model.ScoreMessageEvent += Score;
+            model.PauseMessageEvent += Paused;
+            model.ResumeMessageEvent += Resumed;
+            model.SummaryMessageEvent += GameCompleted;
+            model.ChatMessageEvent += ChatMessage; 
+            model.DisconnectOrErrorEvent += OppDisconnectOrErr;
+            model.SocketExceptionEvent += SocketFail;                                 
         }
 
 
@@ -108,11 +107,15 @@ namespace BoggleClient
                     + "Enter your name and server IP Address then click Connect.";
 
                 // Let model handle disconnecting from server.
-                model.Terminate(false);
-                //model.CloseSocket();                
+                model.Terminate(false);               
             }
         }
 
+
+        /// <summary>
+        /// Enables client to start game and/or chat.
+        /// </summary>
+        /// <param name="s"></param>
         private void GameReady(string s)
         {
             Dispatcher.Invoke(new Action(() => { GameReadyHelper(s); }));
@@ -131,6 +134,57 @@ namespace BoggleClient
         }
 
 
+        /// <summary>
+        /// Handler when Play is clicked.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void playButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (((string)playButton.Content) == "Play")
+            {
+                resumeClicked = false;
+                playButton.Content = "Cancel";
+                infoBox.Text = infoBox.Text = "Waiting for " + opponentName + " to click Play...";
+                model.ClickedPlay();
+            }
+            else if (((string)playButton.Content) == "Cancel")
+            {
+                if (resumeClicked)
+                {
+                    playButton.Content = "Resume";
+                    infoBox.Text = "Click Resume to continue.";
+                }
+                else
+                {
+                    playButton.Content = "Play";
+                    infoBox.Text = "Chat or click Play to begin!";
+                }
+                model.ClickedCancel(resumeClicked);
+            }
+            else if (((string)playButton.Content) == "Pause")
+            {
+                model.ClickedPause();
+                playButton.Content = "Resume";
+                wordEntryBox.IsEnabled = false;
+                infoBox.Text = "You paused the game.\n\nClick Resume to continue.";
+                infoBox.Visibility = Visibility.Visible;
+            }
+            // the Resume button was clicked
+            else
+            {
+                resumeClicked = true;
+                playButton.Content = "Cancel";
+                infoBox.Text = "Waiting for " + opponentName + " to click Resume...";
+                model.ClickedResume();
+            }
+        }
+
+
+        /// <summary>
+        /// Sets up the opponent box, time left box, and game board.
+        /// </summary>
+        /// <param name="tokens"></param>
         private void SetUpBoard(string[] tokens)
         {
             Dispatcher.Invoke(new Action(() => { SetUpBoardHelper(tokens); }));
@@ -160,20 +214,22 @@ namespace BoggleClient
             BSpot14.Text = boggleLetters[13] + "";
             BSpot15.Text = boggleLetters[14] + "";
             BSpot16.Text = boggleLetters[15] + "";
-
-            //countDownLabel.Visibility = Visibility.Visible;
-            //startingInLabel.Visibility = Visibility.Visible;
-            //infoBox.Visibility = Visibility.Hidden;
         }
 
 
-        private void GameCountDown(string s, bool starting)
+        /// <summary>
+        /// Displays a start countdown if "starting" is true.
+        /// Otherwise displays a resume countdown.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="starting"></param>
+        private void CountDown(string s, bool starting)
         {
-            Dispatcher.Invoke(new Action(() => { GameCountdownHelper(s, starting); }));
+            Dispatcher.Invoke(new Action(() => { CountdownHelper(s, starting); }));
         }
 
 
-        private void GameCountdownHelper(string s, bool starting)
+        private void CountdownHelper(string s, bool starting)
         {
             double opacity;
 
@@ -203,23 +259,15 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Invokes the event that handles the start of the game.
+        /// Displays the game board and enables client for gameplay.
         /// </summary>
-        /// <param name="s">String Tokens containing start game variables from server.</param>
-        private void GameStart()
+        private void Start()
         {
-            Dispatcher.Invoke(new Action(() => { GameStartMessageHelper(); }));
+            Dispatcher.Invoke(new Action(() => { StartHelper(); }));
         }
 
 
-        /// <summary>
-        /// Invokes the event that handles the start of the game.
-        /// Set's up the boggle board letters.
-        /// Saves opponents name.
-        /// Sets up initial time.
-        /// </summary>
-        /// <param name="s">String Tokens containing start game variables from server.</param>
-        private void GameStartMessageHelper()
+        void StartHelper()
         {
             playButton.Content = "Pause";
 
@@ -233,6 +281,22 @@ namespace BoggleClient
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
             startingInLabel.Visibility = Visibility.Hidden;
+        }
+
+
+        /// <summary>
+        /// Updates the current game time.
+        /// </summary>
+        /// <param name="s"></param>
+        private void Time(string s)
+        {
+            Dispatcher.Invoke(new Action(() => { TimeHelper(s); }));
+        }
+
+
+        private void TimeHelper(string s)
+        {
+            timeLeftBox.Text = s;
         }
 
 
@@ -252,13 +316,33 @@ namespace BoggleClient
         }
 
 
-        private void GamePaused()
+        /// <summary>
+        /// Updates both players' scores.
+        /// </summary>
+        /// <param name="s">Array that contains SCORE and actual scores.</param>
+        private void Score(string[] s)
         {
-            Dispatcher.Invoke(new Action(() => { GamePausedHelper(); }));
+            Dispatcher.Invoke(new Action(() => { ScoreHelper(s); }));
         }
 
 
-        private void GamePausedHelper()
+        private void ScoreHelper(string[] s)
+        {
+            pScoreBox.Text = s[1];
+            oScoreBox.Text = s[2];
+        }
+
+
+        /// <summary>
+        /// Pauses gameplay.
+        /// </summary>
+        private void Paused()
+        {
+            Dispatcher.Invoke(new Action(() => { PausedHelper(); }));
+        }
+
+
+        private void PausedHelper()
         {
             playButton.Content = "Resume";
             wordEntryBox.IsEnabled = false;
@@ -267,13 +351,16 @@ namespace BoggleClient
         }
 
 
-        private void GameResumed()
+        /// <summary>
+        /// Resumes gameplay.
+        /// </summary>
+        private void Resumed()
         {
-            Dispatcher.Invoke(new Action(() => { GameResumedHelper(); }));
+            Dispatcher.Invoke(new Action(() => { ResumedHelper(); }));
         }
 
 
-        private void GameResumedHelper()
+        private void ResumedHelper()
         {
             playButton.Content = "Pause";
             wordEntryBox.IsEnabled = true;
@@ -281,53 +368,11 @@ namespace BoggleClient
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
             startingInLabel.Visibility = Visibility.Hidden;
-            //infoBox.Visibility = Visibility.Hidden;
-        }
+        }        
 
 
         /// <summary>
-        /// Invokes an event to update time on GUI.
-        /// </summary>
-        /// <param name="s">Array that contains TIME and actual time.</param>
-        private void GameTime(string s)
-        {
-            Dispatcher.Invoke(new Action(() => { GameTimeMessageHelper(s); }));
-        }
-
-
-        /// <summary>
-        /// Event to update time on GUI.
-        /// </summary>
-        /// <param name="s">Array that contains TIME and actual time.</param>
-        private void GameTimeMessageHelper(string s)
-        {
-            timeLeftBox.Text = s;
-        }
-
-
-        /// <summary>
-        /// Invokes an event to update score on GUI.
-        /// </summary>
-        /// <param name="s">Array that contains SCORE and actual scores.</param>
-        private void GameScore(string[] s)
-        {
-            Dispatcher.Invoke(new Action(() => { GameScoreMessageHelper(s); }));
-        }
-
-
-        /// <summary>
-        /// Event to update score on GUI.
-        /// </summary>
-        /// <param name="s">Array that contains SCORE and actual scores.</param>
-        private void GameScoreMessageHelper(string[] s)
-        {
-            pScoreBox.Text = s[1];
-            oScoreBox.Text = s[2];
-        }
-
-
-        /// <summary>
-        /// Invokes event that ends game and creates summary page.
+        /// Ends the game and displays the game results
         /// </summary>
         /// <param name="list">A list of String[] that contains lists of words.</param>
         private void GameCompleted(List<string[]> list)
@@ -336,10 +381,6 @@ namespace BoggleClient
         }
 
 
-        /// <summary>
-        /// Event that ends game and creates summary page.
-        /// </summary>
-        /// <param name="list">A list of String[] that contains lists of words.</param>
         private void GameCompletedHelper(List<string[]> list)
         {
             playButton.Content = "Play";
@@ -436,6 +477,10 @@ namespace BoggleClient
         }
 
 
+        /// <summary>
+        /// Displays the specified chat message from the opponent.
+        /// </summary>
+        /// <param name="message"></param>
         private void ChatMessage(string message)
         {
             Dispatcher.Invoke(() => { ChatMessageHelper(message); });
@@ -459,69 +504,28 @@ namespace BoggleClient
         }
 
 
+        /// <summary>
+        /// Handler when chatEntryBox receives focus.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
         {
             chatEntryBox.Clear();  // ANY WAY TO AVOID THIS? ONLY NEED TO CLEAR TEXT BOX THE *FIRST* TIME ITS CLICKED
-        }
-
-
-        private void playButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (((string)playButton.Content) == "Play")
-            {
-                resumeClicked = false;
-                playButton.Content = "Cancel";                
-                infoBox.Text = infoBox.Text = "Waiting for " + opponentName + " to click Play...";
-                model.ClickedPlay();
-            }
-            else if (((string)playButton.Content) == "Cancel")
-            {
-                if (resumeClicked)
-                {
-                    playButton.Content = "Resume";
-                    infoBox.Text = "Click Resume to continue.";
-                }
-                else
-                {
-                    playButton.Content = "Play";
-                    infoBox.Text = "Chat or click Play to begin!";
-                }
-                model.ClickedCancel(resumeClicked);
-            }
-            else if (((string)playButton.Content) == "Pause")
-            {
-                model.ClickedPause();
-                playButton.Content = "Resume";
-                wordEntryBox.IsEnabled = false;
-                infoBox.Text = "You paused the game.\n\nClick Resume to continue.";
-                infoBox.Visibility = Visibility.Visible;
-            }
-            // the Resume button was clicked
-            else
-            {
-                resumeClicked = true;
-                playButton.Content = "Cancel";
-                infoBox.Text = "Waiting for " + opponentName + " to click Resume...";
-                model.ClickedResume();
-            }
-        }
+        }      
 
 
         /// <summary>
-        /// Invokes the event thats responsible for resetting the GUI to it's orginal state.
+        /// Sets the client appropriately when the opponent disconnects
+        /// or there is a communication error.
         /// </summary>
-        /// <param name="opponentDisconnect">Lets event know if opponent disconnect from server.</param>
-        private void OppDisconnectOrErr(bool opponentDisconnect)
+        /// <param name="opponentDisconnect"></param>
+        private void OppDisconnectOrErr(bool opponentDisconnected)
         {
-            Dispatcher.Invoke(new Action(() => { OppDisconnectOrErrHelper(opponentDisconnect); }));
+            Dispatcher.Invoke(new Action(() => { OppDisconnectOrErrHelper(opponentDisconnected); }));
         }
 
 
-        /// <summary>
-        /// Resets the GUI to it's original state and updates infoBox to let player know of game summary or
-        /// disconnections.
-        /// </summary>
-        /// <param name="opponentDisconnected">Used to determine if opponent disconnected from server.</param>
         private void OppDisconnectOrErrHelper(bool opponentDisconnected)
         {
             connectButton.Content = "Connect";
@@ -540,8 +544,7 @@ namespace BoggleClient
                 infoBox.Text = "The server closed or there was a communication error.\n\n"
                     + "Enter your name and server IP Address then click Connect to play.";
 
-            // Clear game data and
-            // word entry box.
+            // Clear game data and word entry box.
             opponentBox.Text = "";
             timeLeftBox.Text = "";
             pScoreBox.Text = "";
@@ -553,7 +556,7 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Inovkes an event when socket fails to connect.
+        /// Sets client appropriately when connection to server cannot be made.
         /// </summary>
         private void SocketFail()
         {
@@ -561,9 +564,6 @@ namespace BoggleClient
         }
 
 
-        /// <summary>
-        /// Event when socket fails to connect.  Informs players.
-        /// </summary>
         private void SocketFailHelper()
         {
             infoBox.Text = infoBox.Text = "Unable to connect to server. Server may not be "

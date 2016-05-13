@@ -21,29 +21,28 @@ namespace BoggleClient
     public class Model
     {
         // Class Variables
-        private TcpClient client; // Allows us to connect to server.
-        private StringSocket socket; // Wrapper that takes care of sending strings over socket.
-        private const int port = 2000; // The port the server is using.
+        private TcpClient client;         // Allows us to connect to server.
+        private StringSocket socket;      // Wrapper that takes care of sending strings over socket.
+        private const int port = 2000;    // The port the server is using.
         public bool playerDisconnected;
         
-        // These activate events for the controller to execute.
-        public event Action<bool> DisconnectOrErrorEvent; // Event when game is done, resets GUI
-        public event Action<string[]> ReceivedBoardEvent;
-        public event Action<string, bool> CountDownEvent;
-        public event Action StartMessageEvent; // Event when START is recieved.
-        public event Action<string> TimeMessageEvent; // Event when TIME is recieved.
-        public event Action<string[]> ScoreMessageEvent; // Event when SCORE is recieved.
-        public event Action<List<string[]>> SummaryMessageEvent; // Event when STOP is recieved.
-        public event Action SocketExceptionEvent; // Event when socket failed to connect.
-        public event Action<string> ChatMessageEvent; // Event when chat message received from opponent.
+        // Events for the controller to handle.        
         public event Action<string> ReadyMessageEvent;
-        public event Action PauseEvent;
-        public event Action ResumeEvent;
-        
+        public event Action<string[]> BoardMessageEvent;
+        public event Action<string, bool> CountdownMessageEvent;
+        public event Action StartMessageEvent;                   
+        public event Action<string> TimeMessageEvent;         
+        public event Action<string[]> ScoreMessageEvent;        
+        public event Action PauseMessageEvent;                        
+        public event Action ResumeMessageEvent;
+        public event Action<List<string[]>> SummaryMessageEvent; 
+        public event Action<string> ChatMessageEvent;            
+        public event Action<bool> DisconnectOrErrorEvent;        
+        public event Action SocketExceptionEvent;                 
+
 
         /// <summary>
-        /// Connects the client to the server and let's server know that client is
-        /// ready to play. Also begins receiving.
+        /// Attempts to connect player to the specified IP.
         /// </summary>
         /// <param name="player">The clients name.</param>
         /// <param name="ip">The servers IP Adress.</param>
@@ -68,99 +67,83 @@ namespace BoggleClient
         /// Handles all socket incoming messages from the server.
         /// </summary>
         /// <param name="s">Message that was received.</param>
-        /// <param name="e">Exeption, if there was one.</param>
+        /// <param name="e">Exception, if there was one.</param>
         /// <param name="payload">NOT USED.</param>
         private void ReceivedMessage(string s, Exception e, object payload)
         {            
             if (s == null || e != null)
                 Terminate(false);
-            else if (Regex.IsMatch(s, @"^(TIME\s)")) // Time Update            
-                TimeUpdate(s);               
-            else if (Regex.IsMatch(s, @"^(SCORE\s)")) // Update Score            
-                ScoreUpdate(s);            
-            else if (Regex.IsMatch(s, @"^(CHAT\s)")) // Received chat message            
+            else if (Regex.IsMatch(s, @"^(TIME\s)"))            
+                ReceivedTime(s);               
+            else if (Regex.IsMatch(s, @"^(SCORE\s)"))            
+                ReceivedScore(s);            
+            else if (Regex.IsMatch(s, @"^(CHAT\s)"))             
                 ReceivedChat(s);            
             else if (Regex.IsMatch(s, @"^(COUNTDOWN\s)"))             
-                CountDown(s, true);            
+                ReceivedCountdown(s, true);            
             else if (Regex.IsMatch(s, @"^(RESUMING\s)"))            
-                CountDown(s, false);            
-            else if (Regex.IsMatch(s, @"^(BOARD\s)"))            
-                BoardMessage(s);            
-            else if (Regex.IsMatch(s, @"^(START)")) // Starts Game            
-                StartMessage();             
-            else if (Regex.IsMatch(s, @"^(STOP\s)")) // Game finished            
-                SummaryMessage(s);                     
-            else if (Regex.IsMatch(s, @"^(READY\s)")) // Ready to start            
-                ReadyMessage(s);            
-            else if (Regex.IsMatch(s, @"^(PAUSE)")) // Ready to start            
+                ReceivedCountdown(s, false);            
+            else if (Regex.IsMatch(s, @"^(BOARD\s)"))        
+                ReceivedBoard(s);            
+            else if (Regex.IsMatch(s, @"^(START)"))            
+                ReceivedStart();             
+            else if (Regex.IsMatch(s, @"^(STOP\s)"))             
+                ReceivedStop(s);                       
+            else if (Regex.IsMatch(s, @"^(PAUSE)"))           
                 ReceivedPause();            
-            else if (Regex.IsMatch(s, @"^(RESUME)")) // Ready to start            
-                ReceivedResume();            
-            else if (Regex.IsMatch(s, @"^(TERMINATED)")) // Opponent Disconnected
+            else if (Regex.IsMatch(s, @"^(RESUME)"))           
+                ReceivedResume();
+            else if (Regex.IsMatch(s, @"^(READY\s)"))
+                ReceivedReady(s); 
+            else if (Regex.IsMatch(s, @"^(TERMINATED)"))
                 Terminate(true);          
         }
 
 
         /// <summary>
-        /// Disconnects and closes the socket and TCPclient.  Activates an event
-        /// that allows the GUI to reset things as needed when a disconnection happens.
+        /// Fires event when an oppenent is ready to play and/or chat.
         /// </summary>
-        /// <param name="opponentDisconnected">Allows event to know if player
-        ///                                    disconnected or opponent disconnected.</param>
-        public void Terminate(bool opponentDisconnected)
+        /// <param name="message"></param>
+        private void ReceivedReady(string message)
         {
-            //try
-            //{
-                socket.Close();
-                client.Close();
-            //}
-            //finally
-            //{
-                if (!playerDisconnected /*&& (DisconnectOrErrorEvent != null)*/)
-                    DisconnectOrErrorEvent(opponentDisconnected);
-            //}
-        }
-
-        //public void CloseSocket()
-        //{
-        //    socket.Close();
-        //    client.Close();
-        //}       
-
-
-        private void ReadyMessage(string message)
-        {
-            // send the opponent's name
-            ReadyMessageEvent(message.Substring(6));
-            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
-        }
-
-
-        private void BoardMessage(string message)
-        {
-            char[] spaces = { ' ' }; // Ensures that empty entries are not created.
-            string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
-            ReceivedBoardEvent(tokens);
-            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
-        }
-
-
-        private void CountDown(string message, bool starting)
-        {
-            if (starting)
-                CountDownEvent(message.Substring(10), starting);
-            else
-                CountDownEvent(message.Substring(9), starting);
+            ReadyMessageEvent(message.Substring(6)); // send the opponent's name
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 
         /// <summary>
-        /// Parses the START message into an array and activates an event for the controller to handle.
-        /// VARIENT: The string[] sent to event will contain START in index 0.
+        /// Fires event when game board is received.
         /// </summary>
-        /// <param name="message">Message to parse into array.</param>
-        private void StartMessage()
+        /// <param name="message"></param>
+        private void ReceivedBoard(string message)
+        {
+            char[] spaces = { ' ' }; // Ensures that empty entries are not created.
+            string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
+            BoardMessageEvent(tokens);
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        }
+
+
+        /// <summary>
+        /// Fires event when a countdown time is received, whether said
+        /// time is for the game starting, or resuming.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="starting"></param>
+        private void ReceivedCountdown(string message, bool starting)
+        {
+            if (starting)
+                CountdownMessageEvent(message.Substring(10), starting);
+            else
+                CountdownMessageEvent(message.Substring(9), starting);
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        }
+
+
+        /// <summary>
+        /// Fires event when the game has begun.
+        /// </summary>
+        private void ReceivedStart()
         {
             StartMessageEvent();
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
@@ -168,11 +151,10 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Parses the TIME message into an array and activates an event for the controller to handle.
-        /// VARIENT: The string[] sent to event will contain TIME in index 0.
+        /// Fires event when a time update is received.
         /// </summary>
-        /// <param name="message">Message to parse into array.</param>
-        private void TimeUpdate(string message)
+        /// <param name="message"></param>
+        private void ReceivedTime(string message)
         {
             TimeMessageEvent(message.Substring(5));
             socket.BeginReceive(ReceivedMessage, null);
@@ -180,11 +162,10 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Parses the SCORE message into an array and activates an event for the controller to handle.
-        /// VARIENT: The string[] sent to event will contain SCORE in index 0.
+        /// Fires event when a scores update is received.
         /// </summary>
-        /// <param name="message">Message to parse into array.</param>
-        private void ScoreUpdate(string message)
+        /// <param name="message"></param>
+        private void ReceivedScore(string message)
         {
             char[] spaces = { ' ' };
             string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
@@ -202,10 +183,10 @@ namespace BoggleClient
         /// shared words
         /// opponent legal
         /// opponent illegal
-        /// VARIENT: We do take STOP.
+        /// INVARIENT: We do take STOP.
         /// </summary>
         /// <param name="message">Message to parse into array.</param>
-        private void SummaryMessage(string message)
+        private void ReceivedStop(string message)
         {
             // List to be sent to event.
             List<string[]> results = new List<string[]>();
@@ -246,18 +227,7 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Let's us know that the server recieved something from us.
-        /// We simply eat up the message to allow other messages to be recieved.
-        /// </summary>
-        /// <param name="message">NOT USED.</param>
-        //private void IgnoreMessage(string message)
-        //{
-        //    //IGNORING THE IGNORING!!!!
-        //}
-
-
-        /// <summary>
-        /// Sends the words that the players has entered.
+        /// Sends the word that the player has entered.
         /// </summary>
         /// <param name="word">Word to be sent.</param>
         public void SendWord(string word)
@@ -267,7 +237,7 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Sends the message to be relayed to the opponent
+        /// Sends the chat message to be relayed to the opponent.
         /// </summary>
         /// <param name="word"></param>
         public void SendChat(string message)
@@ -276,6 +246,10 @@ namespace BoggleClient
         }
 
 
+        /// <summary>
+        /// Fires event when a chat message has been received.
+        /// </summary>
+        /// <param name="message"></param>
         private void ReceivedChat(string message)
         {
             ChatMessageEvent(message.Substring(5));
@@ -283,40 +257,59 @@ namespace BoggleClient
         }
 
 
+        /// <summary>
+        /// Notify server that player wants to start.
+        /// </summary>
         public void ClickedPlay()
         {
             socket.BeginSend("PLAY\n", ExceptionCheck, null);
         }
 
 
+        /// <summary>
+        /// Notify server that player cancelled request to start or resume.
+        /// </summary>
+        /// <param name="resume"></param>
         public void ClickedCancel(bool resume)
         {
             socket.BeginSend("CANCEL " + resume + "\n", ExceptionCheck, null);
         }
 
 
+        /// <summary>
+        /// Notify server that player clicked Pause.
+        /// </summary>
         public void ClickedPause()
         {
             socket.BeginSend("PAUSE\n", ExceptionCheck, null);
         }
 
 
+        /// <summary>
+        /// Fires event when opponent clicked Pause.
+        /// </summary>
         private void ReceivedPause()
         {
-            PauseEvent();
+            PauseMessageEvent();
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 
+        /// <summary>
+        /// Notify server that player clicked Resume.
+        /// </summary>
         public void ClickedResume()
         {
             socket.BeginSend("RESUME\n", ExceptionCheck, null);
         }
 
 
+        /// <summary>
+        /// Fires event when the game has resumed.
+        /// </summary>
         private void ReceivedResume()
         {
-            ResumeEvent();
+            ResumeMessageEvent();
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
@@ -333,5 +326,22 @@ namespace BoggleClient
             if (e != null)
                 Terminate(false);
         }
+
+
+        /// <summary>
+        /// Disconnects and closes the socket and TCPclient.  Activates an event
+        /// that allows the GUI to reset things as needed when a disconnection happens.
+        /// </summary>
+        /// <param name="opponentDisconnected">Allows event to know if player
+        ///                                    disconnected or opponent disconnected.</param>
+        public void Terminate(bool opponentDisconnected)
+        {
+            socket.Close();
+            client.Close();
+
+            if (!playerDisconnected)
+                DisconnectOrErrorEvent(opponentDisconnected);
+        } 
+
     }// end Class
 } // end Namespace
