@@ -4,6 +4,7 @@
 -Find way to slide up chatDisplayBox when messages are at bottom
 -Finalize server messages
 -run a code analysis
+-check for notes in code
 
 NOTES:
 -IF I GET EXCEPTIONS IN MODEL, REMEMBER THAT I'VE COMMENTED OUT A COUPLE THINGS IN TERMINATE
