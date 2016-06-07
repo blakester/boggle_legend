@@ -1,12 +1,14 @@
-﻿-have oppenent name appear in quotations?
+﻿-Change "Q" to "Qu"
+-change background color to indicate whether winning, losing, or tied?
 -finish sounds in client
 -dispose the SoundPlayers in client
--figure out how to display the list of possible words in client
+-have how to play info?
 -Get rid of Regex's...unecessary overhead?
 -Find way to slide up chatDisplayBox when messages are at bottom
 -Finalize server messages
 -run a code analysis
 -check for notes in code
+-make sure server still handles multiple games correctly
 
 NOTES:
 -IF I GET EXCEPTIONS IN MODEL, REMEMBER THAT I'VE COMMENTED OUT A COUPLE THINGS IN TERMINATE

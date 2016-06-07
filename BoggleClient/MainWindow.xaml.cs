@@ -20,7 +20,6 @@ using System.Media;
 
 namespace BoggleClient
 {
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -29,9 +28,7 @@ namespace BoggleClient
         private Model model; // The model to handle socket and computation.
         private string opponentName;
         private bool resumeClicked;
-        private SoundPlayer countSound;
-        private SoundPlayer incSound;
-        private SoundPlayer decSound;
+        private SoundPlayer countSound, incSound, decSound, winSound, lossSound, tieSound, chatSound;
 
 
         /// <summary>
@@ -44,22 +41,30 @@ namespace BoggleClient
             model.ReadyMessageEvent += GameReady;
             model.BoardMessageEvent += SetUpBoard;
             model.CountdownMessageEvent += CountDown;
-            model.StartMessageEvent += Start;            
+            model.StartMessageEvent += Start;
             model.TimeMessageEvent += Time;
             model.ScoreMessageEvent += Score;
             model.PauseMessageEvent += Paused;
             model.ResumeMessageEvent += Resumed;
             model.SummaryMessageEvent += GameCompleted;
-            model.ChatMessageEvent += ChatMessage; 
+            model.ChatMessageEvent += ChatMessage;
             model.DisconnectOrErrorEvent += OppDisconnectOrErr;
-            model.SocketExceptionEvent += SocketFail;   
-            
-            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/beep-07.wav");//DISPOSE THESE!!!!!
-            incSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/sound99.wav");
-            decSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/sound95.wav");
+            model.SocketExceptionEvent += SocketFail;
+
+            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/count.wav");//DISPOSE THESE!!!!!
+            incSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/inc.wav");
+            decSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/dec.wav");
+            winSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/win.wav");
+            lossSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/loss.wav");
+            tieSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/tie.wav");
+            chatSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/chat.wav");
             countSound.Load();
             incSound.Load();
             decSound.Load();
+            winSound.Load();
+            lossSound.Load();
+            tieSound.Load();
+            chatSound.Load();
         }
 
 
@@ -113,12 +118,13 @@ namespace BoggleClient
                 chatEntryBox.IsEnabled = false;
                 playButton.Content = "Play";
                 model.playerDisconnected = true;
+                showBoardButton.Visibility = Visibility.Hidden;//**************************************************************
                 infoBox.Visibility = Visibility.Visible;
                 infoBox.Text = "You disconnected from the server.\n\n"
                     + "Enter your name and server IP Address then click Connect.";
 
                 // Let model handle disconnecting from server.
-                model.Terminate(false);               
+                model.Terminate(false);
             }
         }
 
@@ -140,7 +146,7 @@ namespace BoggleClient
             chatEntryBox.IsEnabled = true;
             playButton.IsEnabled = true;
             opponentName = s;
-            infoBox.Text = "Your opponent is " + s + ".\n\n"
+            infoBox.Text = "Your opponent is \"" + s + "\".\n\n"
                 + "Chat or click Play to begin!";
         }
 
@@ -156,7 +162,7 @@ namespace BoggleClient
             {
                 resumeClicked = false;
                 playButton.Content = "Cancel";
-                infoBox.Text = infoBox.Text = "Waiting for " + opponentName + " to click Play...";
+                infoBox.Text = infoBox.Text = "Waiting for \"" + opponentName + "\" to click Play...";
                 showBoardButton.Visibility = Visibility.Hidden;//*************************************************************
                 infoBox.Visibility = Visibility.Visible;//********************************************************************
                 model.ClickedPlay();
@@ -188,7 +194,7 @@ namespace BoggleClient
             {
                 resumeClicked = true;
                 playButton.Content = "Cancel";
-                infoBox.Text = "Waiting for " + opponentName + " to click Resume...";
+                infoBox.Text = "Waiting for \"" + opponentName + "\" to click Resume...";
                 model.ClickedResume();
             }
         }
@@ -274,10 +280,7 @@ namespace BoggleClient
             //    soundPlayer.Play(); // can also use soundPlayer.PlaySync()
             //}
 
-            if (audioCheckBox.IsChecked == false)
-            {
-                countSound.Play();
-            }
+            if (soundOffCheckBox.IsChecked == false) { countSound.Play(); }
         }
 
 
@@ -303,7 +306,7 @@ namespace BoggleClient
             wordEntryBox.Clear();
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
-            startingInLabel.Visibility = Visibility.Hidden;            
+            startingInLabel.Visibility = Visibility.Hidden;
         }
 
 
@@ -356,13 +359,13 @@ namespace BoggleClient
             int pNewScore = int.Parse(s[1]);
             int oOldScore = int.Parse(oScoreBox.Text);
             int oNewScore = int.Parse(s[2]);
-            
+
             // Update the scores
             pScoreBox.Text = s[1];
             oScoreBox.Text = s[2];
 
             // Play the appropriate sound
-            if (audioCheckBox.IsChecked == false)
+            if (soundOffCheckBox.IsChecked == false)
             {
                 if ((pNewScore > pOldScore) || (oNewScore < oOldScore))
                     incSound.Play();
@@ -385,8 +388,8 @@ namespace BoggleClient
         {
             playButton.Content = "Resume";
             wordEntryBox.IsEnabled = false;
-            infoBox.Text = infoBox.Text = opponentName + " paused the game.\n\nClick Resume to continue.";
-            infoBox.Visibility = Visibility.Visible;            
+            infoBox.Text = infoBox.Text = "\"" + opponentName + "\" paused the game.\n\nClick Resume to continue.";
+            infoBox.Visibility = Visibility.Visible;
         }
 
 
@@ -407,7 +410,7 @@ namespace BoggleClient
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
             startingInLabel.Visibility = Visibility.Hidden;
-        }        
+        }
 
 
         /// <summary>
@@ -430,22 +433,32 @@ namespace BoggleClient
             string[] sLegalWords = list[2];
             string[] pIllegalWords = list[3];
             string[] oIllegalWords = list[4];
+            string[] possibleWords = list[5];//**************************************************************************
 
             // Pulls player scores out of GUI.
-            int playerScore;
-            int opponentScore;
-            int.TryParse(pScoreBox.Text, out playerScore);
-            int.TryParse(oScoreBox.Text, out opponentScore);
+            int playerScore = int.Parse(pScoreBox.Text);
+            int opponentScore = int.Parse(oScoreBox.Text);
+            //int.TryParse(pScoreBox.Text, out playerScore);
+            //int.TryParse(oScoreBox.Text, out opponentScore);
 
             // Constructs Summary page.
             infoBox.Text = "Time Has Expired!\n";
 
             if (playerScore > opponentScore)
+            {
+                if (soundOffCheckBox.IsChecked == false) { winSound.Play(); }
                 infoBox.Text += "WINNER!\n\n";
+            }
             else if (playerScore < opponentScore)
+            {
+                if (soundOffCheckBox.IsChecked == false) { lossSound.Play(); }
                 infoBox.Text += "LOSER\n\n";
+            }
             else
+            {
+                if (soundOffCheckBox.IsChecked == false) { tieSound.Play(); }
                 infoBox.Text += "BOTH ARE LOSERS!\n\n";
+            }
 
             infoBox.Text += "*** Game Summary ***\n\n"
                 + "Your Legal Words\n";
@@ -463,8 +476,11 @@ namespace BoggleClient
             infoBox.Text += "Opponent Illegal Words\n";
             SummaryPrinter(oIllegalWords);
 
+            infoBox.Text += "All Possible Words\n";
+            SummaryPrinter(possibleWords);
+
             infoBox.Visibility = Visibility.Visible;
-            showBoardButton.Content = "Show Board";//*********************************************************************
+            showBoardButton.Content = "Show Board"; // Reset button
             showBoardButton.Visibility = Visibility.Visible;//*************************************************************
 
             wordEntryBox.IsEnabled = false;
@@ -484,6 +500,26 @@ namespace BoggleClient
             else
                 infoBox.Text += "**NONE**\n";
             infoBox.Text += "\n";
+        }
+
+
+        /// <summary>
+        /// Toggles between the game board and message board after games.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void showBoardButton_Click(object sender, RoutedEventArgs e)//**************************************************************
+        {
+            if (showBoardButton.Content.ToString() == "Show Board")
+            {
+                showBoardButton.Content = "Show Results";
+                infoBox.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                showBoardButton.Content = "Show Board";
+                infoBox.Visibility = Visibility.Visible;
+            }
         }
 
 
@@ -542,6 +578,8 @@ namespace BoggleClient
             chatDisplayBox.AppendText(message + "\n\n");
             chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(0, 0, 0, 0); // reset for next header
             chatDisplayBox.ScrollToEnd();
+
+            if (soundOffCheckBox.IsChecked == false) { chatSound.Play(); }
         }
 
 
@@ -552,8 +590,8 @@ namespace BoggleClient
         /// <param name="e"></param>
         private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            chatEntryBox.Clear();  // ANY WAY TO AVOID THIS? ONLY NEED TO CLEAR TEXT BOX THE *FIRST* TIME ITS CLICKED
-        }      
+            chatEntryBox.Clear();  // ANY WAY TO AVOID THIS? ONLY NEED TO CLEAR TEXT BOX THE *FIRST* TIME ITS CLICKED **********************
+        }
 
 
         /// <summary>
@@ -578,7 +616,7 @@ namespace BoggleClient
             playButton.Content = "Play";
 
             if (opponentDisconnected)
-                infoBox.Text = opponentName + " disconnected from the server and ended your session.\n\n"
+                infoBox.Text = "\"" + opponentName + "\" disconnected from the server and ended your session.\n\n"
                     + "Enter your name and server IP Address then click Connect to play.";
             // If connection with server was lost unwillingly.
             else
@@ -592,6 +630,7 @@ namespace BoggleClient
             oScoreBox.Text = "";
             wordEntryBox.Text = "";
 
+            showBoardButton.Visibility = Visibility.Hidden;//**************************************************************
             infoBox.Visibility = Visibility.Visible;
         }
 
@@ -616,21 +655,6 @@ namespace BoggleClient
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
             //playButton.IsEnabled = false;//*****************************************IS THIS NEEDED***************************************
-        }
-
-
-        private void showBoardButton_Click(object sender, RoutedEventArgs e)//**************************************************************
-        {
-            if (showBoardButton.Content.ToString() == "Show Board")
-            {
-                showBoardButton.Content = "Show Results";
-                infoBox.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                showBoardButton.Content = "Show Board";
-                infoBox.Visibility = Visibility.Visible;
-            }
         }
     }
 }

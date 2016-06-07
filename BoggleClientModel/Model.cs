@@ -183,6 +183,7 @@ namespace BoggleClient
         /// shared words
         /// opponent legal
         /// opponent illegal
+        /// all possible words
         /// INVARIENT: We do take STOP.
         /// </summary>
         /// <param name="message">Message to parse into array.</param>
@@ -200,7 +201,7 @@ namespace BoggleClient
             int key = 0;
             int tempKey = 0;
             int index = 0;
-            string[] temp = new string[key];
+            string[] temp= new string[key];
             foreach (string s in tokens)
             {
                 if (int.TryParse(s, out tempKey))

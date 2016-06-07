@@ -74,7 +74,7 @@
         </RichTextBox>
         <Label x:Name="countDownLabel" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="380,291,0,0" Height="218" Width="315" Panel.ZIndex="1" FontStyle="Italic" Background="White" FontSize="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Label x:Name="startingInLabel" Content="Starting in..." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="380,179,0,0" Height="112" Width="315" FontSize="50" Panel.ZIndex="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" FontStyle="Italic" Background="White"/>
-        <CheckBox x:Name="audioCheckBox" Content="Sound Off" VerticalAlignment="Top" Margin="354,99,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft"/>
+        <CheckBox x:Name="soundOffCheckBox" Content="Sound Off" VerticalAlignment="Top" Margin="354,99,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft"/>
         <Button x:Name="showBoardButton" Content="Show Board" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="623,92,0,0" Click="showBoardButton_Click" Height="23" Visibility="Hidden"/>
     </Grid>
 </Window>

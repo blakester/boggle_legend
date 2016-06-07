@@ -45,9 +45,14 @@
     <Content Include="Resources\dictionary.txt" />
     <Content Include="README.txt" />
     <Content Include="Resources\dictionary3.txt" />
-    <Content Include="Resources\Sounds\beep-07.wav" />
-    <Content Include="Resources\Sounds\sound95.wav" />
-    <Content Include="Resources\Sounds\sound99.wav" />
+    <Content Include="Resources\Sounds\chat.wav" />
+    <Content Include="Resources\Sounds\count.wav" />
+    <Content Include="Resources\Sounds\loss.wav" />
+    <Content Include="Resources\Sounds\tie.wav" />
+    <Content Include="Resources\Sounds\nautical024.wav" />
+    <Content Include="Resources\Sounds\dec.wav" />
+    <Content Include="Resources\Sounds\inc.wav" />
+    <Content Include="Resources\Sounds\win.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
