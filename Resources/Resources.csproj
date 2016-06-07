@@ -44,6 +44,7 @@
     <Content Include="Libraries\StringSocketOfficial.dll" />
     <Content Include="Resources\dictionary.txt" />
     <Content Include="README.txt" />
+    <Content Include="Resources\dictionary3.txt" />
     <Content Include="Resources\Sounds\beep-07.wav" />
     <Content Include="Resources\Sounds\sound95.wav" />
     <Content Include="Resources\Sounds\sound99.wav" />

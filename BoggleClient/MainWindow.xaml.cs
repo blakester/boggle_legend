@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Media;
 
 namespace BoggleClient
 {
@@ -28,6 +29,9 @@ namespace BoggleClient
         private Model model; // The model to handle socket and computation.
         private string opponentName;
         private bool resumeClicked;
+        private SoundPlayer countSound;
+        private SoundPlayer incSound;
+        private SoundPlayer decSound;
 
 
         /// <summary>
@@ -48,7 +52,14 @@ namespace BoggleClient
             model.SummaryMessageEvent += GameCompleted;
             model.ChatMessageEvent += ChatMessage; 
             model.DisconnectOrErrorEvent += OppDisconnectOrErr;
-            model.SocketExceptionEvent += SocketFail;                                 
+            model.SocketExceptionEvent += SocketFail;   
+            
+            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/beep-07.wav");
+            incSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/sound99.wav");
+            decSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/sound95.wav");
+            countSound.Load();
+            incSound.Load();
+            decSound.Load();
         }
 
 
@@ -70,7 +81,7 @@ namespace BoggleClient
             oScoreBox.Text = "";
             wordEntryBox.Text = "";
 
-            if (((string)connectButton.Content) == "Connect")
+            if (connectButton.Content.ToString() == "Connect")
             {
                 // If player has a an empty name or server IP.
                 if (playerTextBox.Text == "" || serverTextBox.Text == "")
@@ -141,14 +152,16 @@ namespace BoggleClient
         /// <param name="e"></param>
         private void playButton_Click(object sender, RoutedEventArgs e)
         {
-            if (((string)playButton.Content) == "Play")
+            if (playButton.Content.ToString() == "Play")
             {
                 resumeClicked = false;
                 playButton.Content = "Cancel";
                 infoBox.Text = infoBox.Text = "Waiting for " + opponentName + " to click Play...";
+                showBoardButton.Visibility = Visibility.Hidden;//*************************************************************
+                infoBox.Visibility = Visibility.Visible;//********************************************************************
                 model.ClickedPlay();
             }
-            else if (((string)playButton.Content) == "Cancel")
+            else if (playButton.Content.ToString() == "Cancel")
             {
                 if (resumeClicked)
                 {
@@ -162,7 +175,7 @@ namespace BoggleClient
                 }
                 model.ClickedCancel(resumeClicked);
             }
-            else if (((string)playButton.Content) == "Pause")
+            else if (playButton.Content.ToString() == "Pause")
             {
                 model.ClickedPause();
                 playButton.Content = "Resume";
@@ -255,6 +268,16 @@ namespace BoggleClient
             countDownLabel.Content = s;
             countDownLabel.Opacity = opacity;
             startingInLabel.Opacity = opacity;
+
+            //using (var soundPlayer = new SoundPlayer(@"../../../Resources/Resources/Sounds/beep-07.wav"))
+            //{
+            //    soundPlayer.Play(); // can also use soundPlayer.PlaySync()
+            //}
+
+            if (audioCheckBox.IsChecked == false)
+            {
+                countSound.Play();
+            }
         }
 
 
@@ -280,7 +303,7 @@ namespace BoggleClient
             wordEntryBox.Clear();
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
-            startingInLabel.Visibility = Visibility.Hidden;
+            startingInLabel.Visibility = Visibility.Hidden;            
         }
 
 
@@ -328,8 +351,24 @@ namespace BoggleClient
 
         private void ScoreHelper(string[] s)
         {
+            // Determine if player/opponent scores went down
+            int pOldScore = int.Parse(pScoreBox.Text);
+            int pNewScore = int.Parse(s[1]);
+            int oOldScore = int.Parse(oScoreBox.Text);
+            int oNewScore = int.Parse(s[2]);
+            
+            // Update the scores
             pScoreBox.Text = s[1];
             oScoreBox.Text = s[2];
+
+            // Play the appropriate sound
+            if (audioCheckBox.IsChecked == false)
+            {
+                if ((pNewScore > pOldScore) || (oNewScore < oOldScore))
+                    incSound.Play();
+                else
+                    decSound.Play();
+            }
         }
 
 
@@ -425,6 +464,8 @@ namespace BoggleClient
             SummaryPrinter(oIllegalWords);
 
             infoBox.Visibility = Visibility.Visible;
+            showBoardButton.Content = "Show Board";//*********************************************************************
+            showBoardButton.Visibility = Visibility.Visible;//*************************************************************
 
             wordEntryBox.IsEnabled = false;
             playButton.Content = "Play";
@@ -575,6 +616,21 @@ namespace BoggleClient
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
             //playButton.IsEnabled = false;//*****************************************IS THIS NEEDED***************************************
+        }
+
+
+        private void showBoardButton_Click(object sender, RoutedEventArgs e)//**************************************************************
+        {
+            if (showBoardButton.Content.ToString() == "Show Board")
+            {
+                showBoardButton.Content = "Show Results";
+                infoBox.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                showBoardButton.Content = "Show Board";
+                infoBox.Visibility = Visibility.Visible;
+            }
         }
     }
 }
