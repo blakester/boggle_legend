@@ -447,13 +447,14 @@ namespace BB
             string shareLegal = SetToString(one.SharedLegalWords);
             string playerOneIllegal = SetToString(one.IllegalWords);
             string playerTwoIllegal = SetToString(two.IllegalWords);
+            string possibleWords = PossibleWords();//****************************************************************************
 
             // Use the above strings to create messages to send to
             // each Player.
             string playerOneStats = "STOP" + playerOneLegal + playerTwoLegal
-                + shareLegal + playerOneIllegal + playerTwoIllegal + "\n";
+                + shareLegal + playerOneIllegal + playerTwoIllegal + possibleWords + "\n";
             string playerTwoStats = "STOP" + playerTwoLegal + playerOneLegal
-                + shareLegal + playerTwoIllegal + playerOneIllegal + "\n";
+                + shareLegal + playerTwoIllegal + playerOneIllegal + possibleWords + "\n";
 
             // Send the messages
             one.Ss.BeginSend(playerOneStats, ExceptionCheck, one);
@@ -471,11 +472,15 @@ namespace BB
 
             Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "END", gameID, one.IP, two.IP, DateTime.Now));
 
-            // ALL POSSIBLE WORDS FOR THE BOARD (SEND LIST TO CLIENTS?)
+            // DELETE ME!!!
+            //int delete = 0;
             //foreach (string word in BoggleServer.LegalWords)
-            //if (board.CanBeFormed(word))
-            //    Console.WriteLine(word);
-
+            //    if (board.CanBeFormed(word))
+            //    {
+            //        delete++;
+            //        Console.WriteLine(word);
+            //    }
+            //Console.WriteLine(delete);
 
             // THE BELOW WAS USED FOR THE DATABASE
             //UpdateDatabase();
@@ -656,7 +661,21 @@ namespace BB
                 temp += " " + s;
             }
             return temp;
-        }        
+        }
+
+
+        private string PossibleWords()
+        {
+            int count = 0;
+            StringBuilder temp = new StringBuilder(2048);
+            foreach (string word in BoggleServer.LegalWords)
+                if (board.CanBeFormed(word))
+                {
+                    count++;
+                    temp.Append(" " + word);                    
+                }
+            return temp.Insert(0, " " + count).ToString();
+        }
 
 
         // THE BELOW WAS USED FOR THE DATABASE

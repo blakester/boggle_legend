@@ -1,5 +1,7 @@
 ﻿-have oppenent name appear in quotations?
--Beep sounds for countdowns?
+-finish sounds in client
+-dispose the SoundPlayers in client
+-figure out how to display the list of possible words in client
 -Get rid of Regex's...unecessary overhead?
 -Find way to slide up chatDisplayBox when messages are at bottom
 -Finalize server messages
