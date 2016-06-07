@@ -471,6 +471,19 @@ namespace BB
 
             Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "END", gameID, one.IP, two.IP, DateTime.Now));
 
+            // ALL POSSIBLE WORDS FOR THE BOARD
+            //foreach (string word in BoggleServer.LegalWords)
+            //if ((word.Length >= 3) && board.CanBeFormed(word))
+            //    Console.WriteLine(word);
+
+
+            using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(@"../../../Resources/Resources/dictionary3.txt"))
+            {
+                foreach (string word in BoggleServer.LegalWords)
+                    if ((word.Length >= 3))
+                        outputFile.WriteLine(word);
+            }
+
             // THE BELOW WAS USED FOR THE DATABASE
             //UpdateDatabase();
 
