@@ -308,7 +308,6 @@ namespace BB
         /// Starts the resume countdown once both players
         /// have clicked Resume.
         /// </summary>
-        /// <param name="payload"></param>
         private void ResumingCountdown()
         {
             lock (playerlock)
@@ -449,8 +448,7 @@ namespace BB
             string playerTwoIllegal = SetToString(two.IllegalWords);
             string possibleWords = PossibleWords();//****************************************************************************
 
-            // Use the above strings to create messages to send to
-            // each Player.
+            // Use the above strings to create messages to send to each Player.
             string playerOneStats = "STOP" + playerOneLegal + playerTwoLegal
                 + shareLegal + playerOneIllegal + playerTwoIllegal + possibleWords + "\n";
             string playerTwoStats = "STOP" + playerTwoLegal + playerOneLegal
@@ -655,26 +653,26 @@ namespace BB
         /// <returns>a summary string</returns>
         private string SetToString(HashSet<string> set)
         {
-            string temp = " " + set.Count;
+            StringBuilder words = new StringBuilder(" " + set.Count, 256);
             foreach (string s in set)
             {
-                temp += " " + s;
+                words.Append(" " + s);
             }
-            return temp;
+            return words.ToString();
         }
 
 
         private string PossibleWords()
         {
             int count = 0;
-            StringBuilder temp = new StringBuilder(2048);
+            StringBuilder words = new StringBuilder(2048);
             foreach (string word in BoggleServer.LegalWords)
                 if (board.CanBeFormed(word))
                 {
                     count++;
-                    temp.Append(" " + word);                    
+                    words.Append(" " + word);                    
                 }
-            return temp.Insert(0, " " + count).ToString();
+            return words.Insert(0, " " + count).ToString();
         }
 
 
