@@ -54,7 +54,7 @@ namespace BoggleClient
             model.DisconnectOrErrorEvent += OppDisconnectOrErr;
             model.SocketExceptionEvent += SocketFail;   
             
-            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/beep-07.wav");
+            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/beep-07.wav");//DISPOSE THESE!!!!!
             incSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/sound99.wav");
             decSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/sound95.wav");
             countSound.Load();
