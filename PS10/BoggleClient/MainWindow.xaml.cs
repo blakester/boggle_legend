@@ -534,7 +534,7 @@ namespace BoggleClient
             {
                 // Format and append a "Me:" header to the message box
                 TextRange tr = new TextRange(chatDisplayBox.Document.ContentEnd, chatDisplayBox.Document.ContentEnd);
-                tr.Text = String.Format("Me ({0})\n", DateTime.Now.ToString("h:m tt").ToLower());
+                tr.Text = String.Format("Me ({0})\n", DateTime.Now.ToString("h:mm tt").ToLower());
                 tr.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
                 tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
                 tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Green);
@@ -568,7 +568,7 @@ namespace BoggleClient
         {
             // Format and append an oppononent name & timestamp header to the message box
             TextRange tr = new TextRange(chatDisplayBox.Document.ContentEnd, chatDisplayBox.Document.ContentEnd);
-            tr.Text = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:m tt").ToLower());
+            tr.Text = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:mm tt").ToLower());
             tr.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
             tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
             tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Red);
