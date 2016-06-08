@@ -196,37 +196,69 @@ namespace BB
                 return false;
             }
 
-            // ORIGINA WAY: U IMPLIED IN "QU" WORDS, BUT NON-QU WORDS NOT ALLOWED
+            // IF NO 'Q' CHECKS AT ALL, ALL WORDS MUST EXPLICITLY APPEAR ON BOARD.
+            // DRAWBACK: Q AND U WON'T OFTEN APPEAR ADJACENT, THEREFORE IT WILL BE
+            // VERY UNCOMMON TO BE ABLE TO SPELL WORDS WITH Q.
+
+            // ISSUE: NON-QU WORDS NOT ALLOWED
+            // ORIGINA WAY
             //if (firstChar == 'Q')
             //{
             //    if (rest.Length == 0)
             //    {
             //        return false;
             //    }
-            //    if (rest[0] != 'U')
-            //    {
+            //    if (rest[0] != 'U') 
+            //    {                   
             //        return false;
             //    }
             //    rest = rest.Substring(1);
             //}
 
+            // ISSUE: A LITERAL "QUIT" ON BOARD WON'T WORK
             // NEW WAY: If the word being played contains "QU", the first U following
             // the Q is implied and need not be adjacent to Q on the board, or even on
             // the board at all. However, an additional U (words containing QUU) must 
             // explicitly be adjacent to Q. The implied U should increase the likelihood
-            // that QU words can be played. The word being played must still be spelled
+            // that QU words can be played since Q and U won't show up next to each other
+            // very often. The word being played must still be spelled
             // out in its entirety though.
-            if (firstChar == 'Q')
+            if (firstChar == 'Q' && (rest.Length > 0))
             {
-                if (rest.Length == 0)
-                {
-                    return false;
-                }
+                //if (rest.Length == 0) // THIS "IF" DISALLOWS WORDS ENDING IN Q, THE && ABOVE FIXES THIS
+                //{
+                //    return false; 
+                //}
                 if (rest[0] == 'U')
                 {
                     rest = rest.Substring(1);
-                }                
+                }
             }
+
+            // Check if an implied 'U' is needed
+            //if (firstChar == 'Q' && (rest.Length > 0))
+            //{
+            //    if (rest[0] == 'U')          // trying to spell something containing atleast QU
+            //    {
+            //        if (rest[1] == 'U')      // trying to spell something containing QUU
+            //        {
+            //            // if (U chain explicitly adjacent to Q == 0) // CREATE FUNCTION THAT RETURNS LENGHT OF U CHAIN
+            //            //   return false; // not enough U's, can only imply 1
+
+            //            // else if (U chain explicitly adjacent to Q == 1)
+            //            //   rest = rest.Substring(1); // imply first U
+
+            //            // if we make it here, U chain == 2, so no implying needed
+            //        }
+            //        else                     // trying to spell something containing only QU
+            //        {
+            //            // if (U chain explicitly adjacent to Q == 0)
+            //            //   rest = rest.Substring(1); // imply first U
+
+            //            // if we make it here, U chain > 0, so no implying needed
+            //        }
+            //    }                
+            //}
 
             // Mark this square as visited.
             visited[i, j] = true;
