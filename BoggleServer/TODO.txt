@@ -1,4 +1,4 @@
-﻿-Change "Q" to "Qu"
+﻿-Issue: if, for example, QUIT literally appears on board, it's not accepted because of the extra implied U.
 -change background color to indicate whether winning, losing, or tied?
 -finish sounds in client
 -dispose the SoundPlayers in client
