@@ -196,17 +196,36 @@ namespace BB
                 return false;
             }
 
+            // ORIGINA WAY: U IMPLIED IN "QU" WORDS, BUT NON-QU WORDS NOT ALLOWED
+            //if (firstChar == 'Q')
+            //{
+            //    if (rest.Length == 0)
+            //    {
+            //        return false;
+            //    }
+            //    if (rest[0] != 'U')
+            //    {
+            //        return false;
+            //    }
+            //    rest = rest.Substring(1);
+            //}
+
+            // NEW WAY: If the word being played contains "QU", the first U following
+            // the Q is implied and need not be adjacent to Q on the board, or even on
+            // the board at all. However, an additional U (words containing QUU) must 
+            // explicitly be adjacent to Q. The implied U should increase the likelihood
+            // that QU words can be played. The word being played must still be spelled
+            // out in its entirety though.
             if (firstChar == 'Q')
             {
                 if (rest.Length == 0)
                 {
                     return false;
                 }
-                if (rest[0] != 'U')
+                if (rest[0] == 'U')
                 {
-                    return false;
-                }
-                rest = rest.Substring(1);
+                    rest = rest.Substring(1);
+                }                
             }
 
             // Mark this square as visited.

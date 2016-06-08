@@ -473,7 +473,7 @@ namespace BB
             // DELETE ME!!!
             //int delete = 0;
             //foreach (string word in BoggleServer.LegalWords)
-            //    if (board.CanBeFormed(word))
+            //    if (word.Length == 16)
             //    {
             //        delete++;
             //        Console.WriteLine(word);
