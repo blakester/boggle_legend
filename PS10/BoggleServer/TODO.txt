@@ -1,4 +1,5 @@
-﻿-Issue: if, for example, QUIT literally appears on board, it's not accepted because of the extra implied U.
+﻿-Only show all possible words upon request of client? (this would speed up the end of games)
+-allow 16 letter words? (would have to find new list)
 -change background color to indicate whether winning, losing, or tied?
 -finish sounds in client
 -dispose the SoundPlayers in client
