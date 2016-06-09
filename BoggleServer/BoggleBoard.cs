@@ -190,6 +190,7 @@ namespace BB
 
             char firstChar = word[0];
             string rest = word.Substring(1);
+            int uChainLength;
 
             if (firstChar != board[i, j])
             {
@@ -223,42 +224,49 @@ namespace BB
             // that QU words can be played since Q and U won't show up next to each other
             // very often. The word being played must still be spelled
             // out in its entirety though.
-            if (firstChar == 'Q' && (rest.Length > 0))
-            {
-                //if (rest.Length == 0) // THIS "IF" DISALLOWS WORDS ENDING IN Q, THE && ABOVE FIXES THIS
-                //{
-                //    return false; 
-                //}
-                if (rest[0] == 'U')
-                {
-                    rest = rest.Substring(1);
-                }
-            }
-
-            // Check if an implied 'U' is needed
             //if (firstChar == 'Q' && (rest.Length > 0))
             //{
-            //    if (rest[0] == 'U')          // trying to spell something containing atleast QU
+            //    //if (rest.Length == 0) // THIS "IF" DISALLOWS WORDS ENDING IN Q, THE && ABOVE FIXES THIS
+            //    //{
+            //    //    return false; 
+            //    //}
+            //    if (rest[0] == 'U')
             //    {
-            //        if (rest[1] == 'U')      // trying to spell something containing QUU
-            //        {
-            //            // if (U chain explicitly adjacent to Q == 0) // CREATE FUNCTION THAT RETURNS LENGHT OF U CHAIN
-            //            //   return false; // not enough U's, can only imply 1
-
-            //            // else if (U chain explicitly adjacent to Q == 1)
-            //            //   rest = rest.Substring(1); // imply first U
-
-            //            // if we make it here, U chain == 2, so no implying needed
-            //        }
-            //        else                     // trying to spell something containing only QU
-            //        {
-            //            // if (U chain explicitly adjacent to Q == 0)
-            //            //   rest = rest.Substring(1); // imply first U
-
-            //            // if we make it here, U chain > 0, so no implying needed
-            //        }
-            //    }                
+            //        rest = rest.Substring(1);
+            //    }
             //}
+
+            // Check if an implied 'U' is needed following a 'Q'
+            if (firstChar == 'Q' && (rest.Length > 0))
+            {
+                // trying to spell something containing atleast QU
+                if (rest[0] == 'U')          
+                {
+                    // Get how many U's are connected
+                    uChainLength = UChainLength(i,j);
+
+                    // trying to spell something containing QUU
+                    if (rest[1] == 'U')      
+                    {
+                        if (uChainLength == 0) 
+                           return false; // not enough U's, can only imply 1
+
+                        else if (uChainLength == 1)
+                           rest = rest.Substring(1); // imply first U
+
+                        // if we make it here, U chain == 2, so no implying needed
+                    }
+
+                    // trying to spell something containing only QU
+                    else                     
+                    {
+                        if (uChainLength == 0)
+                           rest = rest.Substring(1); // imply first U
+
+                        // if we make it here, U chain > 0, so no implying needed
+                    }
+                }                
+            }
 
             // Mark this square as visited.
             visited[i, j] = true;
@@ -276,6 +284,65 @@ namespace BB
             // We failed.  Unmark this square and return false.
             visited[i, j] = false;
             return false;
+        }
+
+
+        // This doesn't necessarily find EVERY U and therefore doesn't necessarily
+        // return the right answer. But I think it will work for any chain of 2 U's
+        // which is all that is presently possible. KEEP TESTING!
+        private int UChainLength(int i, int j)
+        {
+            bool[,] visited = new bool[4, 4];
+            bool foundU;
+            int uCount = 0;
+            int adj_i, adj_j; // Coordinates of adjacent square
+
+            // We don't want to revisit the current square
+            visited[i, j] = true;
+
+            do
+            {
+                foundU = false;
+
+                for (int x = -1; x < 2; x++)
+                {
+                    adj_i = i + x;
+
+                    // Continue to next row if this one's out of range
+                    if ((adj_i < 0 || adj_i >= 4))
+                        continue;
+
+                    for (int y = -1; y < 2; y++)
+                    {
+                        adj_j = j + y;
+
+                        // Continue to next square if this column is out of range or if
+                        // this square has already been visited
+                        if ((adj_j < 0 || adj_j >= 4) || (visited[adj_i, adj_j] == true))
+                            continue;
+
+                        // Mark square as visited
+                        visited[adj_i, adj_j] = true;
+
+                        // If the square is a U, increment uCount and update (i,j)
+                        // so now we can check said square's neighbors
+                        if (board[adj_i, adj_j] == 'U')
+                        {
+                            uCount++;
+                            i = adj_i;
+                            j = adj_j;
+                            foundU = true;
+                            break;
+                        }
+                    }
+
+                    if (foundU)
+                        break;
+                }
+            }
+            while (foundU);
+
+            return uCount;
         }
     }
 }
