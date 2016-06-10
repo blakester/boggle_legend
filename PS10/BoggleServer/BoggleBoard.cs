@@ -241,32 +241,32 @@ namespace BB
             if (firstChar == 'Q' && (rest.Length > 0))
             {
                 // trying to spell something containing atleast QU
-                if (rest[0] == 'U')          
+                if (rest[0] == 'U')
                 {
                     // Get how many U's are connected
-                    uChainLength = UChainLength(i,j);
+                    uChainLength = UChainLength(i, j);
 
                     // trying to spell something containing QUU
-                    if (rest[1] == 'U')      
+                    if (rest[1] == 'U')
                     {
-                        if (uChainLength == 0) 
-                           return false; // not enough U's, can only imply 1
+                        if (uChainLength == 0)
+                            return false; // not enough U's, can only imply 1
 
                         else if (uChainLength == 1)
-                           rest = rest.Substring(1); // imply first U
+                            rest = rest.Substring(1); // imply first U
 
                         // if we make it here, uChainLength == 2, so no implying needed
                     }
 
                     // trying to spell something containing only QU
-                    else                     
+                    else
                     {
                         if (uChainLength == 0)
-                           rest = rest.Substring(1); // imply first U
+                            rest = rest.Substring(1); // imply first U
 
                         // if we make it here, uChainLength > 0, so no implying needed
                     }
-                }                
+                }
             }
 
             // Mark this square as visited.
