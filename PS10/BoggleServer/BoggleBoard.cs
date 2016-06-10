@@ -199,7 +199,7 @@ namespace BB
 
             // IF NO 'Q' CHECKS AT ALL, ALL WORDS MUST EXPLICITLY APPEAR ON BOARD.
             // DRAWBACK: Q AND U WON'T OFTEN APPEAR ADJACENT, THEREFORE IT WILL BE
-            // VERY UNCOMMON TO BE ABLE TO SPELL WORDS WITH Q.
+            // VERY UNCOMMON TO BE ABLE TO SPELL ENGLISH WORDS WITH Q.
 
             // ISSUE: NON-QU WORDS NOT ALLOWED
             // ORIGINA WAY
@@ -236,6 +236,7 @@ namespace BB
             //    }
             //}
 
+
             // Check if an implied 'U' is needed following a 'Q'
             if (firstChar == 'Q' && (rest.Length > 0))
             {
@@ -254,7 +255,7 @@ namespace BB
                         else if (uChainLength == 1)
                            rest = rest.Substring(1); // imply first U
 
-                        // if we make it here, U chain == 2, so no implying needed
+                        // if we make it here, uChainLength == 2, so no implying needed
                     }
 
                     // trying to spell something containing only QU
@@ -263,7 +264,7 @@ namespace BB
                         if (uChainLength == 0)
                            rest = rest.Substring(1); // imply first U
 
-                        // if we make it here, U chain > 0, so no implying needed
+                        // if we make it here, uChainLength > 0, so no implying needed
                     }
                 }                
             }
@@ -287,9 +288,16 @@ namespace BB
         }
 
 
-        // This doesn't necessarily find EVERY U and therefore doesn't necessarily
-        // return the right answer. But I think it will work for any chain of 2 U's
-        // which is all that is presently possible. KEEP TESTING!
+        /// <summary>
+        /// Returns the length of the chain of adjacent U's where at least one
+        /// U is adjacent to the square at the specified coordinates. This is only
+        /// guaranteed to be correct if the actual length is 2 or less. However, given 
+        /// that there are no words with 3 consecutive U's, and none currently in
+        /// "dictionary.txt", this method should suffice.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <returns></returns>
         private int UChainLength(int i, int j)
         {
             bool[,] visited = new bool[4, 4];
@@ -304,9 +312,10 @@ namespace BB
             {
                 foundU = false;
 
+                // Search all squares around (i,j) for a U
                 for (int x = -1; x < 2; x++)
                 {
-                    adj_i = i + x;
+                    adj_i = i + x; // row to seach
 
                     // Continue to next row if this one's out of range
                     if ((adj_i < 0 || adj_i >= 4))
@@ -314,7 +323,7 @@ namespace BB
 
                     for (int y = -1; y < 2; y++)
                     {
-                        adj_j = j + y;
+                        adj_j = j + y; // column to search
 
                         // Continue to next square if this column is out of range or if
                         // this square has already been visited
