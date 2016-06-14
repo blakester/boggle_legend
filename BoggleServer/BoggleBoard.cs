@@ -289,8 +289,8 @@ namespace BB
 
 
         /// <summary>
-        /// Returns the length of the chain of adjacent U's where at least one
-        /// U is adjacent to the square at the specified coordinates. This is only
+        /// Returns the length of the chain of adjacent U's where at least one of said
+        /// U's is adjacent to the square at the specified coordinates. This is only
         /// guaranteed to be correct if the actual length is 2 or less. However, given 
         /// that there are no words with 3 consecutive U's, and none currently in
         /// "dictionary.txt", this method should suffice.
@@ -355,4 +355,3 @@ namespace BB
         }
     }
 }
-
