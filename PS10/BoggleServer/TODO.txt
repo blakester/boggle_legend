@@ -1,4 +1,5 @@
 ﻿-Only show all possible words upon request of client? (this would speed up the end of games)
+-words sent right before end don't get added to summary lists. Any way to fix this?
 -Reset scores in GUI to zero when starting a new game.
 -allow 16 letter words? (would have to find new list)
 -change background color to indicate whether winning, losing, or tied?
