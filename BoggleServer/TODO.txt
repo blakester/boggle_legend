@@ -1,17 +1,17 @@
-﻿-Only show all possible words upon request of client? (this would speed up the end of games)
--words sent right before end don't get added to summary lists. Any way to fix this?
--Reset scores in GUI to zero when starting a new game.
+﻿-use if statement to clear text in chatbox only when necessary?
 -allow 16 letter words? (would have to find new list)
--change background color to indicate whether winning, losing, or tied?
+-Only show all possible words upon request of client? (this would speed up the end of games)
+-have how to play info?
+-words sent right before end don't get added to summary lists. Any way to fix this?
 -finish sounds in client
 -dispose the SoundPlayers in client
--have how to play info?
 -Get rid of Regex's...unecessary overhead?
 -Find way to slide up chatDisplayBox when messages are at bottom
 -Finalize server messages
 -run a code analysis
 -check for notes in code
 -make sure server still handles multiple games correctly
+-make sure all build options are good (for example, there's an optimize code option)
 
 NOTES:
 -IF I GET EXCEPTIONS IN MODEL, REMEMBER THAT I'VE COMMENTED OUT A COUPLE THINGS IN TERMINATE
