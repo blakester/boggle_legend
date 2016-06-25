@@ -29,7 +29,8 @@ namespace BoggleClient
         private string opponentName;
         private bool resumeClicked;
         private SoundPlayer countSound, incSound, decSound, winSound, lossSound, tieSound, chatSound;
-
+        BrushConverter converter;
+        Brush initialBlueBrush, yellowBrush; // colors used for the gameRectangle
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -38,6 +39,8 @@ namespace BoggleClient
         {
             InitializeComponent();
             model = new Model();
+
+            // Register the event handlers
             model.ReadyMessageEvent += GameReady;
             model.BoardMessageEvent += SetUpBoard;
             model.CountdownMessageEvent += CountDown;
@@ -51,6 +54,7 @@ namespace BoggleClient
             model.DisconnectOrErrorEvent += OppDisconnectOrErr;
             model.SocketExceptionEvent += SocketFail;
 
+            // Initialize and load the sounds
             countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/count.wav");//DISPOSE THESE!!!!!
             incSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/inc.wav");
             decSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/dec.wav");
@@ -65,6 +69,11 @@ namespace BoggleClient
             lossSound.Load();
             tieSound.Load();
             chatSound.Load();
+            
+            // Initialize Brushes used for the gameRectangle 
+            initialBlueBrush = gameRectangle.Fill;
+            converter = new BrushConverter();
+            yellowBrush = (Brush)converter.ConvertFromString("#FFFFFF94");
         }
 
 
@@ -78,14 +87,6 @@ namespace BoggleClient
         /// <param name="e">NOT USED</param>
         private void connectButton_Click(object sender, RoutedEventArgs e)
         {
-            // Clear game data and
-            // word entry box.
-            opponentBox.Text = "";
-            timeLeftBox.Text = "";
-            pScoreBox.Text = "";
-            oScoreBox.Text = "";
-            wordEntryBox.Text = "";
-
             if (connectButton.Content.ToString() == "Connect")
             {
                 // If player has a an empty name or server IP.
@@ -100,25 +101,32 @@ namespace BoggleClient
                 connectButton.Content = "Disconnect";
                 playerTextBox.IsEnabled = false;
                 serverTextBox.IsEnabled = false;
-                model.playerDisconnected = false;//**********************************************************************************************
+                model.playerDisconnected = false;
                 infoBox.Text = "You connected to the server.\n\n"
                     + "Waiting for an opponent to connect...";
 
                 // Let model handle connecting to server.
-                model.Connect(playerTextBox.Text, serverTextBox.Text);
+                model.Connect(playerTextBox.Text, serverTextBox.Text);                
             }
+
             // Disconnect was clicked
             else
             {
-                // Gets GUI elemtents ready for connection.
+                // Reset GUI to its disconnect state.
                 connectButton.Content = "Connect";
+                opponentBox.Text = "";
+                timeLeftBox.Text = "";
+                pScoreBox.Text = "";
+                oScoreBox.Text = "";
+                wordEntryBox.Text = "";
                 playerTextBox.IsEnabled = true;
                 serverTextBox.IsEnabled = true;
                 playButton.IsEnabled = false;
                 chatEntryBox.IsEnabled = false;
                 playButton.Content = "Play";
                 model.playerDisconnected = true;
-                showBoardButton.Visibility = Visibility.Hidden;//**************************************************************
+                gameRectangle.Fill = initialBlueBrush;
+                showBoardButton.Visibility = Visibility.Hidden;
                 infoBox.Visibility = Visibility.Visible;
                 infoBox.Text = "You disconnected from the server.\n\n"
                     + "Enter your name and server IP Address then click Connect.";
@@ -163,8 +171,8 @@ namespace BoggleClient
                 resumeClicked = false;
                 playButton.Content = "Cancel";
                 infoBox.Text = infoBox.Text = "Waiting for \"" + opponentName + "\" to click Play...";
-                showBoardButton.Visibility = Visibility.Hidden;//*************************************************************
-                infoBox.Visibility = Visibility.Visible;//********************************************************************
+                showBoardButton.Visibility = Visibility.Hidden;
+                infoBox.Visibility = Visibility.Visible;
                 model.ClickedPlay();
             }
             else if (playButton.Content.ToString() == "Cancel")
@@ -261,7 +269,10 @@ namespace BoggleClient
                 else
                     startingInLabel.Content = "Resuming in...";
 
-                playButton.IsEnabled = false;//**********************************************************************************
+                pScoreBox.Text = "0";//*****************************************************************************************
+                oScoreBox.Text = "0";
+                playButton.IsEnabled = false;
+                gameRectangle.Fill = yellowBrush;
                 countDownLabel.Visibility = Visibility.Visible;
                 startingInLabel.Visibility = Visibility.Visible;
                 infoBox.Visibility = Visibility.Hidden;
@@ -270,7 +281,7 @@ namespace BoggleClient
                 opacity = 0.8;
             else
                 opacity = 0.6;
-
+            
             countDownLabel.Content = s;
             countDownLabel.Opacity = opacity;
             startingInLabel.Opacity = opacity;
@@ -298,8 +309,8 @@ namespace BoggleClient
             playButton.Content = "Pause";
 
             // Sets GUI up for when game has begun.            
-            pScoreBox.Text = "0";
-            oScoreBox.Text = "0";
+            //pScoreBox.Text = "0";//**************************************************************************************
+            //oScoreBox.Text = "0";
             wordEntryBox.IsEnabled = true;
             chatEntryBox.IsEnabled = true;
             playButton.IsEnabled = true;//**********************************************************************************
@@ -354,6 +365,8 @@ namespace BoggleClient
 
         private void ScoreHelper(string[] s)
         {
+            
+            
             // Determine if player/opponent scores went down
             int pOldScore = int.Parse(pScoreBox.Text);
             int pNewScore = int.Parse(s[1]);
@@ -363,6 +376,14 @@ namespace BoggleClient
             // Update the scores
             pScoreBox.Text = s[1];
             oScoreBox.Text = s[2];
+
+            // Set background color according to who is winning
+            if (pNewScore > oNewScore)
+                gameRectangle.Fill = new SolidColorBrush(Colors.LightGreen);
+            else if (pNewScore < oNewScore)
+                gameRectangle.Fill = new SolidColorBrush(Colors.IndianRed);
+            else
+                gameRectangle.Fill = yellowBrush;
 
             // Play the appropriate sound
             if (soundOffCheckBox.IsChecked == false)
@@ -630,7 +651,8 @@ namespace BoggleClient
             oScoreBox.Text = "";
             wordEntryBox.Text = "";
 
-            showBoardButton.Visibility = Visibility.Hidden;//**************************************************************
+            gameRectangle.Fill = initialBlueBrush;
+            showBoardButton.Visibility = Visibility.Hidden;
             infoBox.Visibility = Visibility.Visible;
         }
 
@@ -654,7 +676,6 @@ namespace BoggleClient
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
-            //playButton.IsEnabled = false;//*****************************************IS THIS NEEDED***************************************
         }
     }
 }
