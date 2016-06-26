@@ -24,8 +24,7 @@ namespace BB
     /// </summary>
     internal class BoggleGame
     {
-        private Player one;
-        private Player two;
+        private Player one, two;
         private int gameID = 0;
         private byte playCount = 0;
         private byte boardSentCount = 0;
@@ -34,10 +33,8 @@ namespace BB
         private byte resumeSentCount = 0;        
         private byte countDown = 3;
         private byte resumeCountDown = 3;
-        private Timer countDownTimer; 
-        private Timer gameTimer;
-        private Timer resumeTimer;
-        Stopwatch watch;
+        private Timer countDownTimer, gameTimer, resumeTimer;
+        private Stopwatch watch;
         private int timeLeft;
         private bool paused = false;
         private bool gameOver = false;
