@@ -17,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Media;
+using System.Threading;
 
 namespace BoggleClient
 {
@@ -29,8 +30,9 @@ namespace BoggleClient
         private string opponentName;
         private bool resumeClicked;
         private SoundPlayer countSound, incSound, decSound, winSound, lossSound, tieSound, chatSound;
-        BrushConverter converter;
-        Brush initialBlueBrush, yellowBrush; // colors used for the gameRectangle
+        private BrushConverter converter;
+        private Brush initialBlueBrush, yellowBrush; // colors used for the gameRectangle
+        private Timer scoreFlashTimer;
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -74,6 +76,8 @@ namespace BoggleClient
             initialBlueBrush = gameRectangle.Fill;
             converter = new BrushConverter();
             yellowBrush = (Brush)converter.ConvertFromString("#FFFFFF94");
+
+            scoreFlashTimer = new Timer(HideScoreFlash, null, Timeout.Infinite, Timeout.Infinite);
         }
 
 
@@ -265,14 +269,16 @@ namespace BoggleClient
                 opacity = 1.0;
 
                 if (starting)
+                {
                     startingInLabel.Content = "Starting in...";
+                    pScoreBox.Text = "0";
+                    oScoreBox.Text = "0";
+                    gameRectangle.Fill = yellowBrush;
+                }
                 else
                     startingInLabel.Content = "Resuming in...";
-
-                pScoreBox.Text = "0";//*****************************************************************************************
-                oScoreBox.Text = "0";
-                playButton.IsEnabled = false;
-                gameRectangle.Fill = yellowBrush;
+                
+                playButton.IsEnabled = false;                
                 countDownLabel.Visibility = Visibility.Visible;
                 startingInLabel.Visibility = Visibility.Visible;
                 infoBox.Visibility = Visibility.Hidden;
@@ -364,18 +370,34 @@ namespace BoggleClient
 
 
         private void ScoreHelper(string[] s)
-        {
-            
-            
-            // Determine if player/opponent scores went down
+        {            
+            // Store the old and new scores and the
+            // point increase/decrease
             int pOldScore = int.Parse(pScoreBox.Text);
             int pNewScore = int.Parse(s[1]);
             int oOldScore = int.Parse(oScoreBox.Text);
             int oNewScore = int.Parse(s[2]);
+            int diff = pNewScore - pOldScore;
 
             // Update the scores
             pScoreBox.Text = s[1];
             oScoreBox.Text = s[2];
+
+            // Flash the score increase or decrease for a
+            // brief moment
+            if (diff > 0)
+            {
+                scoreFlashLabel.Content = "+" + diff;
+                scoreFlashLabel.Visibility = Visibility.Visible;
+                scoreFlashTimer.Change(500, Timeout.Infinite);
+            }
+            else if (diff < 0)
+            {
+                scoreFlashLabel.Content = diff;
+                scoreFlashLabel.Visibility = Visibility.Visible;
+                scoreFlashTimer.Change(500, Timeout.Infinite);
+            }
+             
 
             // Set background color according to who is winning
             if (pNewScore > oNewScore)
@@ -393,6 +415,12 @@ namespace BoggleClient
                 else
                     decSound.Play();
             }
+        }
+
+
+        private void HideScoreFlash(object stateInfo)
+        {
+            Dispatcher.Invoke(new Action(() => { scoreFlashLabel.Visibility = Visibility.Hidden; }));
         }
 
 
