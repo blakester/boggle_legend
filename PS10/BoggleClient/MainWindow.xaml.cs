@@ -33,6 +33,7 @@ namespace BoggleClient
         private BrushConverter converter;
         private Brush initialBlueBrush, yellowBrush; // colors used for the gameRectangle
         private Timer scoreFlashTimer;
+        private double scoreFlashOpacity = 1.0;
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -389,13 +390,13 @@ namespace BoggleClient
             {
                 scoreFlashLabel.Content = "+" + diff;
                 scoreFlashLabel.Visibility = Visibility.Visible;
-                scoreFlashTimer.Change(500, Timeout.Infinite);
+                scoreFlashTimer.Change(0, Timeout.Infinite);
             }
             else if (diff < 0)
             {
                 scoreFlashLabel.Content = diff;
                 scoreFlashLabel.Visibility = Visibility.Visible;
-                scoreFlashTimer.Change(500, Timeout.Infinite);
+                scoreFlashTimer.Change(0, Timeout.Infinite);
             }
              
 
@@ -417,10 +418,28 @@ namespace BoggleClient
             }
         }
 
-
+        // TO FADE OUT THE SCORE, KEEP CALLING TIMER.CHANGE AND SEND HIDESCOREFLASH
+        // AN OPACITY WHICH GETS DECREMENTED IN HIDESCOREFLASH AND KEEP LOOPING UNTIL
+        // THE OPACITY REACHES ZERO?
         private void HideScoreFlash(object stateInfo)
         {
-            Dispatcher.Invoke(new Action(() => { scoreFlashLabel.Visibility = Visibility.Hidden; }));
+            Dispatcher.Invoke(new Action(() => { HideScoreFlashHelper(); }));
+        }
+
+
+        private void HideScoreFlashHelper()
+        {
+            // If score has faded out, reset for next flash and return
+            if (scoreFlashOpacity < 0.05)
+            {
+                scoreFlashLabel.Visibility = Visibility.Hidden;
+                scoreFlashOpacity = 1.0;
+                return;
+            }
+
+            scoreFlashLabel.Opacity = scoreFlashOpacity;            
+            scoreFlashOpacity -= 0.05;
+            scoreFlashTimer.Change(32, Timeout.Infinite);
         }
 
 
