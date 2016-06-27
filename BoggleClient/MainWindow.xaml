@@ -76,6 +76,6 @@
         <Label x:Name="startingInLabel" Content="Starting in..." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="380,179,0,0" Height="112" Width="315" FontSize="50" Panel.ZIndex="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" FontStyle="Italic" Background="White"/>
         <CheckBox x:Name="soundOffCheckBox" Content="Sound Off" VerticalAlignment="Top" Margin="354,99,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft"/>
         <Button x:Name="showBoardButton" Content="Show Board" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="623,92,0,0" Click="showBoardButton_Click" Height="23" Visibility="Hidden"/>
-        <Label x:Name="scoreFlashLabel" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="380,177,0,0" Height="330" Width="315" Panel.ZIndex="1" FontStyle="Italic" Background="{x:Null}" FontSize="175" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Hidden" Opacity="0.5" Foreground="#FF0C00FF"/>
+        <Label x:Name="scoreFlashLabel" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="380,177,0,0" Height="330" Width="315" Panel.ZIndex="1" FontStyle="Italic" Background="{x:Null}" FontSize="175" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="Hidden" Opacity="0" Foreground="#FF0C00FF"/>
     </Grid>
 </Window>
