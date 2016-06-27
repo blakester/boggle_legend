@@ -30,10 +30,10 @@ namespace BoggleClient
         private string opponentName;
         private bool resumeClicked;
         private SoundPlayer countSound, incSound, decSound, winSound, lossSound, tieSound, chatSound;
-        private BrushConverter converter;
         private Brush initialBlueBrush, yellowBrush; // colors used for the gameRectangle
-        private Timer scoreFlashTimer;
-        private double scoreFlashOpacity = 1.0;
+        private BrushConverter converter;       
+        private Timer pointFlashTimer;
+        private double pointFlashOpacity = 1.0;
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -58,7 +58,7 @@ namespace BoggleClient
             model.SocketExceptionEvent += SocketFail;
 
             // Initialize and load the sounds
-            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/count.wav");//DISPOSE THESE!!!!!
+            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/count.wav");//DISPOSE THESE!!!!!*******************************
             incSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/inc.wav");
             decSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/dec.wav");
             winSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/win.wav");
@@ -73,12 +73,12 @@ namespace BoggleClient
             tieSound.Load();
             chatSound.Load();
             
-            // Initialize Brushes used for the gameRectangle 
+            // Initialize Brushes (colors) used for the gameRectangle 
             initialBlueBrush = gameRectangle.Fill;
             converter = new BrushConverter();
             yellowBrush = (Brush)converter.ConvertFromString("#FFFFFF94");
 
-            scoreFlashTimer = new Timer(ScoreFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);
+            pointFlashTimer = new Timer(PointFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);//DISPOSE!!!****************************
         }
 
 
@@ -98,7 +98,7 @@ namespace BoggleClient
                 if (playerTextBox.Text == "" || serverTextBox.Text == "")
                 {
                     infoBox.Text = "Name and/or server IP cannot be empty...\n\n"
-                        + "Enter your name and server IP Address then click Connect.";
+                        + "Enter your name and server IP address then click Connect.";
                     return;
                 }
 
@@ -135,7 +135,7 @@ namespace BoggleClient
                 showBoardButton.Visibility = Visibility.Hidden;
                 infoBox.Visibility = Visibility.Visible;
                 infoBox.Text = "You disconnected from the server.\n\n"
-                    + "Enter your name and server IP Address then click Connect.";
+                    + "Enter your name and server IP address then click Connect.";
 
                 // Let model handle disconnecting from server.
                 model.Terminate(false);
@@ -315,13 +315,9 @@ namespace BoggleClient
         void StartHelper()
         {
             playButton.Content = "Pause";
-
-            // Sets GUI up for when game has begun.            
-            //pScoreBox.Text = "0";//**************************************************************************************
-            //oScoreBox.Text = "0";
             wordEntryBox.IsEnabled = true;
             chatEntryBox.IsEnabled = true;
-            playButton.IsEnabled = true;//**********************************************************************************
+            playButton.IsEnabled = true;
             wordEntryBox.Clear();
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
@@ -379,27 +375,22 @@ namespace BoggleClient
             int pNewScore = int.Parse(s[1]);
             int oOldScore = int.Parse(oScoreBox.Text);
             int oNewScore = int.Parse(s[2]);
-            int diff = pNewScore - pOldScore;
+            int diff = pNewScore - pOldScore;            
 
-            // Update the scores
-            pScoreBox.Text = s[1];
-            oScoreBox.Text = s[2];
+            // Briefly flash and fade out the point increase/decrease
+            if (pntFlashesOffCheckBox.IsChecked == false)
+            {
+                if (diff != 0)
+                {
+                    if (diff > 0)
+                        pointFlashLabel.Content = "+" + diff;
+                    else
+                        pointFlashLabel.Content = diff;
 
-            // Flash the score increase or decrease for a
-            // brief moment
-            if (diff > 0)
-            {
-                scoreFlashLabel.Content = "+" + diff;
-                scoreFlashLabel.Visibility = Visibility.Visible;
-                scoreFlashTimer.Change(200, Timeout.Infinite);
+                    pointFlashLabel.Visibility = Visibility.Visible;
+                    pointFlashTimer.Change(200, Timeout.Infinite);
+                }
             }
-            else if (diff < 0)
-            {
-                scoreFlashLabel.Content = diff;
-                scoreFlashLabel.Visibility = Visibility.Visible;
-                scoreFlashTimer.Change(200, Timeout.Infinite);
-            }
-             
 
             // Set background color according to who is winning
             if (pNewScore > oNewScore)
@@ -408,6 +399,10 @@ namespace BoggleClient
                 gameRectangle.Fill = new SolidColorBrush(Colors.IndianRed);
             else
                 gameRectangle.Fill = yellowBrush;
+
+            // Update the scores
+            pScoreBox.Text = s[1];
+            oScoreBox.Text = s[2];
 
             // Play the appropriate sound
             if (soundOffCheckBox.IsChecked == false)
@@ -419,29 +414,32 @@ namespace BoggleClient
             }
         }
 
-        // TO FADE OUT THE SCORE, KEEP CALLING TIMER.CHANGE AND SEND HIDESCOREFLASH
-        // AN OPACITY WHICH GETS DECREMENTED IN HIDESCOREFLASH AND KEEP LOOPING UNTIL
-        // THE OPACITY REACHES ZERO?
-        private void ScoreFlashFadeOut(object stateInfo)
+
+        /// <summary>
+        /// Fades out the point flash label.
+        /// </summary>
+        /// <param name="stateInfo"></param>
+        private void PointFlashFadeOut(object stateInfo)
         {
-            Dispatcher.Invoke(new Action(() => { ScoreFlashFadeOutHelper(); }));
+            Dispatcher.Invoke(new Action(() => { PointFlashFadeOutHelper(); }));
         }
 
 
-        private void ScoreFlashFadeOutHelper()
+        private void PointFlashFadeOutHelper()
         {
-            // If score has faded out, reset for next flash and return
-            if (scoreFlashOpacity < 0.05)
+            // If score has faded out, reset for next flash and return.
+            // Note: fade out duration = 22 * (1.0/0.05) = 440 ms
+            if (pointFlashOpacity < 0.05)
             {
-                scoreFlashLabel.Visibility = Visibility.Hidden;
-                scoreFlashOpacity = 1.0;
-                scoreFlashLabel.Opacity = 1.0; 
+                pointFlashLabel.Visibility = Visibility.Hidden;
+                pointFlashOpacity = 1.0;
+                pointFlashLabel.Opacity = 1.0; 
                 return;
             }
 
-            scoreFlashLabel.Opacity = scoreFlashOpacity;            
-            scoreFlashOpacity -= 0.05;
-            scoreFlashTimer.Change(22, Timeout.Infinite);
+            pointFlashLabel.Opacity = pointFlashOpacity;            
+            pointFlashOpacity -= 0.05;
+            pointFlashTimer.Change(22, Timeout.Infinite);
         }
 
 
@@ -476,7 +474,7 @@ namespace BoggleClient
         {
             playButton.Content = "Pause";
             wordEntryBox.IsEnabled = true;
-            playButton.IsEnabled = true;//**********************************************************************************
+            playButton.IsEnabled = true;
             wordEntryBox.Focus();
             countDownLabel.Visibility = Visibility.Hidden;
             startingInLabel.Visibility = Visibility.Hidden;
@@ -503,13 +501,11 @@ namespace BoggleClient
             string[] sLegalWords = list[2];
             string[] pIllegalWords = list[3];
             string[] oIllegalWords = list[4];
-            string[] possibleWords = list[5];//**************************************************************************
+            string[] possibleWords = list[5];
 
             // Pulls player scores out of GUI.
             int playerScore = int.Parse(pScoreBox.Text);
             int opponentScore = int.Parse(oScoreBox.Text);
-            //int.TryParse(pScoreBox.Text, out playerScore);
-            //int.TryParse(oScoreBox.Text, out opponentScore);
 
             // Constructs Summary page.
             infoBox.Text = "Time Has Expired!\n";
@@ -551,7 +547,7 @@ namespace BoggleClient
 
             infoBox.Visibility = Visibility.Visible;
             showBoardButton.Content = "Show Board"; // Reset button
-            showBoardButton.Visibility = Visibility.Visible;//*************************************************************
+            showBoardButton.Visibility = Visibility.Visible;
 
             wordEntryBox.IsEnabled = false;
             playButton.Content = "Play";
@@ -578,7 +574,7 @@ namespace BoggleClient
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void showBoardButton_Click(object sender, RoutedEventArgs e)//**************************************************************
+        private void showBoardButton_Click(object sender, RoutedEventArgs e)
         {
             if (showBoardButton.Content.ToString() == "Show Board")
             {
@@ -688,7 +684,7 @@ namespace BoggleClient
             if (opponentDisconnected)
                 infoBox.Text = "\"" + opponentName + "\" disconnected from the server and ended your session.\n\n"
                     + "Enter your name and server IP Address then click Connect to play.";
-            // If connection with server was lost unwillingly.
+            // Connection with server was lost unwillingly.
             else
                 infoBox.Text = "The server closed or there was a communication error.\n\n"
                     + "Enter your name and server IP Address then click Connect to play.";
@@ -725,6 +721,11 @@ namespace BoggleClient
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
+        }
+
+        private void showRulesButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
