@@ -78,7 +78,7 @@ namespace BoggleClient
             converter = new BrushConverter();
             yellowBrush = (Brush)converter.ConvertFromString("#FFFFFF94");
 
-            scoreFlashTimer = new Timer(HideScoreFlash, null, Timeout.Infinite, Timeout.Infinite);
+            scoreFlashTimer = new Timer(ScoreFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);
         }
 
 
@@ -128,6 +128,7 @@ namespace BoggleClient
                 serverTextBox.IsEnabled = true;
                 playButton.IsEnabled = false;
                 chatEntryBox.IsEnabled = false;
+                wordEntryBox.IsEnabled = false;
                 playButton.Content = "Play";
                 model.playerDisconnected = true;
                 gameRectangle.Fill = initialBlueBrush;
@@ -390,13 +391,13 @@ namespace BoggleClient
             {
                 scoreFlashLabel.Content = "+" + diff;
                 scoreFlashLabel.Visibility = Visibility.Visible;
-                scoreFlashTimer.Change(0, Timeout.Infinite);
+                scoreFlashTimer.Change(200, Timeout.Infinite);
             }
             else if (diff < 0)
             {
                 scoreFlashLabel.Content = diff;
                 scoreFlashLabel.Visibility = Visibility.Visible;
-                scoreFlashTimer.Change(0, Timeout.Infinite);
+                scoreFlashTimer.Change(200, Timeout.Infinite);
             }
              
 
@@ -421,25 +422,26 @@ namespace BoggleClient
         // TO FADE OUT THE SCORE, KEEP CALLING TIMER.CHANGE AND SEND HIDESCOREFLASH
         // AN OPACITY WHICH GETS DECREMENTED IN HIDESCOREFLASH AND KEEP LOOPING UNTIL
         // THE OPACITY REACHES ZERO?
-        private void HideScoreFlash(object stateInfo)
+        private void ScoreFlashFadeOut(object stateInfo)
         {
-            Dispatcher.Invoke(new Action(() => { HideScoreFlashHelper(); }));
+            Dispatcher.Invoke(new Action(() => { ScoreFlashFadeOutHelper(); }));
         }
 
 
-        private void HideScoreFlashHelper()
+        private void ScoreFlashFadeOutHelper()
         {
             // If score has faded out, reset for next flash and return
             if (scoreFlashOpacity < 0.05)
             {
                 scoreFlashLabel.Visibility = Visibility.Hidden;
                 scoreFlashOpacity = 1.0;
+                scoreFlashLabel.Opacity = 1.0; 
                 return;
             }
 
             scoreFlashLabel.Opacity = scoreFlashOpacity;            
             scoreFlashOpacity -= 0.05;
-            scoreFlashTimer.Change(32, Timeout.Infinite);
+            scoreFlashTimer.Change(22, Timeout.Infinite);
         }
 
 
