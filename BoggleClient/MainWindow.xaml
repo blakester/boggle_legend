@@ -1,13 +1,13 @@
 ﻿<Window x:Name="mainWindow" x:Class="BoggleClient.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Boggle Legend" Height="673" Width="780.333" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" BorderThickness="1">
+        Title="Boggle Legend" Height="673" Width="780" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" BorderThickness="1">
     <Grid x:Name="mainGrid" Margin="0,0,0,0" Background="#FF498181">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="13*"/>
             <ColumnDefinition Width="177*"/>
         </Grid.ColumnDefinitions>
-        <TextBox x:Name="infoBox" HorizontalAlignment="Left" Height="315" Margin="334,195,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="315" VerticalScrollBarVisibility="Auto" FontWeight="Bold" TextAlignment="Center" FontSize="16" Background="White" Panel.ZIndex="3" ScrollViewer.CanContentScroll="True" IsReadOnly="True" Text="Welcome!&#xD;&#xA;&#xD;&#xA;Enter your name and server IP address then click Connect." Grid.Column="1"/>
+        <TextBox x:Name="infoBox" HorizontalAlignment="Left" Height="315" Margin="334,195,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="315" VerticalScrollBarVisibility="Auto" FontWeight="Bold" TextAlignment="Center" FontSize="16" Background="White" Panel.ZIndex="3" ScrollViewer.CanContentScroll="True" IsReadOnly="True" Text="Welcome to Boggle Legend!&#xA;&#xA;Enter your name and server IP address then click Connect." Grid.Column="1"/>
 
         <Button x:Name="connectButton" Content="Connect" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,28,0,0" Click="connectButton_Click" Height="23" Grid.Column="1"/>
         <Label x:Name="wordEntryLabel" Content="Enter Words" HorizontalAlignment="Left" Margin="303,587,0,0" VerticalAlignment="Top" Grid.Column="1"/>
@@ -62,7 +62,8 @@
         <TextBox x:Name="chatEntryBox" HorizontalAlignment="Left" Height="91" TextWrapping="Wrap" Text="Enter messages here" VerticalAlignment="Top" Width="253" Margin="3,68,0,0" BorderThickness="1" KeyDown="chatBox_Enter" GotFocus="chatEntryBox_GotFocus" IsEnabled="False" Panel.ZIndex="1" Grid.Column="1"/>
         <Rectangle x:Name="chatRectangle" Fill="#FF26DEDE" HorizontalAlignment="Left" Height="585" Stroke="Black" VerticalAlignment="Top" Width="300" Margin="32,28,0,0" Grid.ColumnSpan="2"/>
         <Label x:Name="chatLabel" Content="Chat" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="104,37,0,0" Width="50" FontSize="16" FontWeight="Bold" RenderTransformOrigin="3.32,0.677" Grid.Column="1"/>
-        <Button x:Name="playButton" Content="Play" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,56,0,0" IsEnabled="False" Click="playButton_Click" Grid.Column="1"/>
+        <Button x:Name="playButton" Content="Play" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Height="23" Margin="577,55
+                ,0,0" IsEnabled="False" Click="playButton_Click" Grid.Column="1"/>
         <RichTextBox x:Name="chatDisplayBox" HorizontalAlignment="Left" Height="408" VerticalAlignment="Top" Width="253
                      " Margin="3,179,0,0" IsReadOnly="True" FontSize="14" VerticalScrollBarVisibility="Auto" Background="White" Grid.Column="1">
             <FlowDocument>
@@ -78,10 +79,17 @@
         </RichTextBox>
         <Label x:Name="countDownLabel" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="334,307,0,0" Height="203" Width="315" Panel.ZIndex="2" FontStyle="Italic" Background="White" FontSize="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="1"/>
         <Label x:Name="startingInLabel" Content="Starting in..." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="334,195,0,0" Height="112" Width="315" FontSize="50" Panel.ZIndex="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" FontStyle="Italic" Background="White" Grid.Column="1"/>
-        <CheckBox x:Name="soundOffCheckBox" Content="Sound Off" VerticalAlignment="Top" Margin="310,91,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft" RenderTransformOrigin="0.482,1.236" Grid.Column="1"/>
-        <Button x:Name="showBoardButton" Content="Show Board" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,112,0,0" Click="showBoardButton_Click" Height="23" RenderTransformOrigin="-0.97,0.496" Grid.Column="1" Visibility="Hidden"/>
+        <CheckBox x:Name="soundOffCheckBox" Content="Sound Off" VerticalAlignment="Top" Margin="310,89,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft" RenderTransformOrigin="0.482,1.236" Grid.Column="1"/>
+        <Button x:Name="showBoardButton" Content="Show Board" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,109,0,0" Click="showBoardButton_Click" Height="23" RenderTransformOrigin="-0.97,0.496" Grid.Column="1" Visibility="Hidden"/>
         <Label x:Name="pointFlashLabel" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="328,177,0,0" Height="330" Width="315" Panel.ZIndex="1" FontStyle="Italic" Background="{x:Null}" FontSize="175" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="#FF0C00FF" Visibility="Hidden" Grid.Column="1"/>
-        <CheckBox x:Name="pntFlashesOffCheckBox" Content="Point flashes off" VerticalAlignment="Top" Margin="397,91,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft" Grid.Column="1"/>
-        <Button x:Name="showRulesButton" Content="Show Rules" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,84,0,0" Height="23" RenderTransformOrigin="-0.97,0.496" Grid.Column="1" Click="showRulesButton_Click"/>
+        <CheckBox x:Name="pntFlashesOffCheckBox" Content="Point flashes off" VerticalAlignment="Top" Margin="397,89,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft" Grid.Column="1"/>
+        <Button x:Name="showRulesButton" Content="Show Rules" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,82,0,0" Height="23" RenderTransformOrigin="-0.97,0.496" Grid.Column="1" Click="showRulesButton_Click"/>
+        <RichTextBox x:Name="rulesBox" HorizontalAlignment="Left" Height="523" VerticalAlignment="Top" Width="762" Margin="0,110,0,0" Panel.ZIndex="4" IsReadOnly="True" BorderThickness="8" BorderBrush="#FFFFB000" Grid.ColumnSpan="2" Background="White" Opacity="0.98" Visibility="Hidden">
+            <FlowDocument>
+                <Paragraph>
+                    <Run Text="RichTextBox"/>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
     </Grid>
 </Window>
