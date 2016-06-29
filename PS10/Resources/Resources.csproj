@@ -36,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Resources\Rules.rtf" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

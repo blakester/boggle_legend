@@ -18,6 +18,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Media;
 using System.Threading;
+using System.IO;
 
 namespace BoggleClient
 {
@@ -34,6 +35,9 @@ namespace BoggleClient
         private BrushConverter converter;       
         private Timer pointFlashTimer;
         private double pointFlashOpacity = 1.0;
+        private string rulesFileName = "../../../Resources/Resources/Rules.rtf";
+        private TextRange textRange;
+        private FileStream fileStream;
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -79,6 +83,13 @@ namespace BoggleClient
             yellowBrush = (Brush)converter.ConvertFromString("#FFFFFF94");
 
             pointFlashTimer = new Timer(PointFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);//DISPOSE!!!****************************
+                       
+            // Load "Rules.rtf" into the rules box
+            textRange = new TextRange(rulesBox.Document.ContentStart, rulesBox.Document.ContentEnd);
+            using (fileStream = new System.IO.FileStream(rulesFileName, System.IO.FileMode.OpenOrCreate))
+            {
+                textRange.Load(fileStream, DataFormats.Rtf);
+            }
         }
 
 
@@ -725,7 +736,17 @@ namespace BoggleClient
 
         private void showRulesButton_Click(object sender, RoutedEventArgs e)
         {
-
+            if (showRulesButton.Content.ToString() == "Show Rules")
+            {
+                showRulesButton.Content = "Hide Rules";
+                rulesBox.Visibility = Visibility.Visible;
+            }
+            else 
+            {
+                showRulesButton.Content = "Show Rules";
+                rulesBox.Visibility = Visibility.Hidden;
+            }
+            
         }
     }
 }
