@@ -79,12 +79,12 @@
         </RichTextBox>
         <Label x:Name="countDownLabel" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="334,307,0,0" Height="203" Width="315" Panel.ZIndex="2" FontStyle="Italic" Background="White" FontSize="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="1"/>
         <Label x:Name="startingInLabel" Content="Starting in..." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="334,195,0,0" Height="112" Width="315" FontSize="50" Panel.ZIndex="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" FontStyle="Italic" Background="White" Grid.Column="1"/>
-        <CheckBox x:Name="soundOffCheckBox" Content="Sound Off" VerticalAlignment="Top" Margin="310,89,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft" RenderTransformOrigin="0.482,1.236" Grid.Column="1"/>
+        <CheckBox x:Name="soundOffCheckBox" Content="Sound off" VerticalAlignment="Top" Margin="310,89,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft" RenderTransformOrigin="0.482,1.236" Grid.Column="1"/>
         <Button x:Name="showBoardButton" Content="Show Board" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,109,0,0" Click="showBoardButton_Click" Height="23" RenderTransformOrigin="-0.97,0.496" Grid.Column="1" Visibility="Hidden"/>
         <Label x:Name="pointFlashLabel" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="328,177,0,0" Height="330" Width="315" Panel.ZIndex="1" FontStyle="Italic" Background="{x:Null}" FontSize="175" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="#FF0C00FF" Visibility="Hidden" Grid.Column="1"/>
         <CheckBox x:Name="pntFlashesOffCheckBox" Content="Point flashes off" VerticalAlignment="Top" Margin="397,89,0,0" HorizontalAlignment="Left" FlowDirection="RightToLeft" Grid.Column="1"/>
         <Button x:Name="showRulesButton" Content="Show Rules" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,82,0,0" Height="23" RenderTransformOrigin="-0.97,0.496" Grid.Column="1" Click="showRulesButton_Click"/>
-        <RichTextBox x:Name="rulesBox" HorizontalAlignment="Left" Height="523" VerticalAlignment="Top" Width="762" Margin="0,110,0,0" Panel.ZIndex="4" IsReadOnly="True" BorderThickness="8" BorderBrush="#FFFFB000" Grid.ColumnSpan="2" Background="White" Opacity="0.98" Visibility="Hidden">
+        <RichTextBox x:Name="rulesBox" HorizontalAlignment="Left" Height="523" VerticalAlignment="Top" Width="762" Margin="0,110,0,0" Panel.ZIndex="4" IsReadOnly="True" BorderThickness="8" BorderBrush="#FFFFB000" Grid.ColumnSpan="2" Background="White" Opacity="0.98" Visibility="Hidden" VerticalScrollBarVisibility="Visible">
             <FlowDocument>
                 <Paragraph>
                     <Run Text="RichTextBox"/>
