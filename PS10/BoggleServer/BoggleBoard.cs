@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace BB
 {
@@ -190,7 +191,8 @@ namespace BB
 
             char firstChar = word[0];
             string rest = word.Substring(1);
-            int uChainLength;
+            bool impliedU = false;
+            //int uChainLength;
 
             if (firstChar != board[i, j])
             {
@@ -202,7 +204,7 @@ namespace BB
             // VERY UNCOMMON TO BE ABLE TO SPELL ENGLISH WORDS WITH Q.
 
             // ISSUE: NON-QU WORDS NOT ALLOWED
-            // ORIGINA WAY
+            // ORIGINAL WAY
             //if (firstChar == 'Q')
             //{
             //    if (rest.Length == 0)
@@ -216,57 +218,56 @@ namespace BB
             //    rest = rest.Substring(1);
             //}
 
-            // ISSUE: A LITERAL "QUIT" ON BOARD WON'T WORK
-            // NEW WAY: If the word being played contains "QU", the first U following
-            // the Q is implied and need not be adjacent to Q on the board, or even on
-            // the board at all. However, an additional U (words containing QUU) must 
-            // explicitly be adjacent to Q. The implied U should increase the likelihood
-            // that QU words can be played since Q and U won't show up next to each other
-            // very often. The word being played must still be spelled
-            // out in its entirety though.
+            // ISSUE: U(s) CAN BE FOUND ADJACENT TO A Q AND THEREFORE WON'T BE IMPLIED BUT
+            // THEY'RE IN THE WRONG PLACE. FOR EXAMPLE:
+            //
+            // U X X X
+            // Q X X X
+            // I X X X
+            // T X X X
+            //
+            // THIS WON'T IMPLY THE U EVEN THOUGH IT'S NEEDED FOR QUIT BECAUSE A U IS FOUND
+            // ABOVE THE Q.
+            //
+            // Check if an implied 'U' is needed following a 'Q'
             //if (firstChar == 'Q' && (rest.Length > 0))
             //{
-            //    //if (rest.Length == 0) // THIS "IF" DISALLOWS WORDS ENDING IN Q, THE && ABOVE FIXES THIS
-            //    //{
-            //    //    return false; 
-            //    //}
+            //    // trying to spell something containing atleast QU
             //    if (rest[0] == 'U')
             //    {
-            //        rest = rest.Substring(1);
+            //        // Get how many U's are connected
+            //        uChainLength = UChainLength(i, j);
+
+            //        // trying to spell something containing QUU
+            //        if (rest[1] == 'U')
+            //        {
+            //            if (uChainLength == 0)
+            //                return false; // not enough U's, can only imply 1
+
+            //            else if (uChainLength == 1)
+            //                rest = rest.Substring(1); // imply first U
+
+            //            // if we make it here, uChainLength == 2, so no implying needed
+            //        }
+
+            //        // trying to spell something containing only QU
+            //        else
+            //        {
+            //            if (uChainLength == 0)
+            //                rest = rest.Substring(1); // imply first U
+
+            //            // if we make it here, uChainLength > 0, so no implying needed
+            //        }
             //    }
             //}
 
-
-            // Check if an implied 'U' is needed following a 'Q'
-            if (firstChar == 'Q' && (rest.Length > 0))
+            // If trying to spell a word containing QU, automatically imply
+            // the U. If the word fails to be formed, we'll try forming it
+            // without the implied U.
+            if ((firstChar == 'Q') && (rest.Length > 0) && (rest[0] == 'U'))
             {
-                // trying to spell something containing atleast QU
-                if (rest[0] == 'U')
-                {
-                    // Get how many U's are connected
-                    uChainLength = UChainLength(i, j);
-
-                    // trying to spell something containing QUU
-                    if (rest[1] == 'U')
-                    {
-                        if (uChainLength == 0)
-                            return false; // not enough U's, can only imply 1
-
-                        else if (uChainLength == 1)
-                            rest = rest.Substring(1); // imply first U
-
-                        // if we make it here, uChainLength == 2, so no implying needed
-                    }
-
-                    // trying to spell something containing only QU
-                    else
-                    {
-                        if (uChainLength == 0)
-                            rest = rest.Substring(1); // imply first U
-
-                        // if we make it here, uChainLength > 0, so no implying needed
-                    }
-                }
+                rest = rest.Substring(1);
+                impliedU = true;
             }
 
             // Mark this square as visited.
@@ -281,6 +282,22 @@ namespace BB
             if (CanBeFormed(rest, i + 1, j - 1, visited)) return true;
             if (CanBeFormed(rest, i + 1, j, visited)) return true;
             if (CanBeFormed(rest, i + 1, j + 1, visited)) return true;
+
+            // If implying a U failed to form the word, it could be because the QU word is
+            // spelled explicitly on the board. Try forming the word again but without the implied U.
+            if (impliedU)
+            {
+                rest = word.Substring(1); // unimply U by resetting rest
+
+                if (CanBeFormed(rest, i - 1, j - 1, visited)) return true;
+                if (CanBeFormed(rest, i - 1, j, visited)) return true;
+                if (CanBeFormed(rest, i - 1, j + 1, visited)) return true;
+                if (CanBeFormed(rest, i, j - 1, visited)) return true;
+                if (CanBeFormed(rest, i, j + 1, visited)) return true;
+                if (CanBeFormed(rest, i + 1, j - 1, visited)) return true;
+                if (CanBeFormed(rest, i + 1, j, visited)) return true;
+                if (CanBeFormed(rest, i + 1, j + 1, visited)) return true;
+            }
 
             // We failed.  Unmark this square and return false.
             visited[i, j] = false;
@@ -298,60 +315,172 @@ namespace BB
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        private int UChainLength(int i, int j)
-        {
-            bool[,] visited = new bool[4, 4];
-            bool foundU;
-            int uCount = 0;
-            int adj_i, adj_j; // Coordinates of adjacent square
+        //private int UChainLength(int i, int j)
+        //{
+        //    bool[,] visited = new bool[4, 4];
+        //    bool foundU;
+        //    int uCount = 0;
+        //    int adj_i, adj_j; // Coordinates of adjacent square
 
-            // We don't want to revisit the current square
-            visited[i, j] = true;
+        //    // We don't want to revisit the current square
+        //    visited[i, j] = true;
 
-            do
-            {
-                foundU = false;
+        //    do
+        //    {
+        //        foundU = false;
 
-                // Search all squares around (i,j) for a U
-                for (int x = -1; x < 2; x++)
-                {
-                    adj_i = i + x; // row to seach
+        //        // Search all squares around (i,j) for a U
+        //        for (int x = -1; x < 2; x++)
+        //        {
+        //            adj_i = i + x; // row to seach
 
-                    // Continue to next row if this one's out of range
-                    if ((adj_i < 0 || adj_i >= 4))
-                        continue;
+        //            // Continue to next row if this one's out of range
+        //            if ((adj_i < 0 || adj_i >= 4))
+        //                continue;
 
-                    for (int y = -1; y < 2; y++)
-                    {
-                        adj_j = j + y; // column to search
+        //            for (int y = -1; y < 2; y++)
+        //            {
+        //                adj_j = j + y; // column to search
 
-                        // Continue to next square if this column is out of range or if
-                        // this square has already been visited
-                        if ((adj_j < 0 || adj_j >= 4) || (visited[adj_i, adj_j] == true))
-                            continue;
+        //                // Continue to next square if this column is out of range or if
+        //                // this square has already been visited
+        //                if ((adj_j < 0 || adj_j >= 4) || (visited[adj_i, adj_j] == true))
+        //                    continue;
 
-                        // Mark square as visited
-                        visited[adj_i, adj_j] = true;
+        //                // Mark square as visited
+        //                visited[adj_i, adj_j] = true;
 
-                        // If the square is a U, increment uCount and update (i,j)
-                        // so now we can check said square's neighbors
-                        if (board[adj_i, adj_j] == 'U')
-                        {
-                            uCount++;
-                            i = adj_i;
-                            j = adj_j;
-                            foundU = true;
-                            break;
-                        }
-                    }
+        //                // If the square is a U, increment uCount and update (i,j)
+        //                // so now we can check said square's neighbors
+        //                if (board[adj_i, adj_j] == 'U')
+        //                {
+        //                    uCount++;
+        //                    i = adj_i;
+        //                    j = adj_j;
+        //                    foundU = true;
+        //                    break;
+        //                }
+        //            }
 
-                    if (foundU)
-                        break;
-                }
-            }
-            while (foundU);
+        //            if (foundU)
+        //                break;
+        //        }
+        //    }
+        //    while (foundU);
 
-            return uCount;
-        }
+        //    return uCount;
+        //}
+
+
+
+        //public bool CanBeFormed_MltThrd(string word)
+        //{          
+        //    // Work in upper case
+        //    word = word.ToUpper();
+
+        //    // Mark every square on the board as unvisited.
+        //    //bool[,] visited = new bool[4, 4];
+
+        //    // See if there is any starting point on the board from which
+        //    // the word can be formed.
+        //    for (int i = 0; i < 4; i++)
+        //    {
+        //        int _i = i;
+
+        //        for (int j = 0; j < 4; j++)
+        //        {
+        //            int _j = j;
+        //            ThreadPool.QueueUserWorkItem(x => { CanBeFormed(word, _i, _j); });
+        //        }
+        //    }
+
+        //    // If no starting point worked, return false.
+        //    return false;
+        //}
+
+
+        //private void CanBeFormed(string word, int i, int j)
+        //{
+        //    // If the word is empty, report success.
+        //    if (word.Length == 0)
+        //    {
+        //        return true;
+        //    }
+
+        //    // If an index is out of bounds, report failure.
+        //    if (i < 0 || i >= 4 || j < 0 || j >= 4)
+        //    {
+        //        return false;
+        //    }
+
+        //    // If this square has already been visited, report failure.
+        //    if (visited[i, j])
+        //    {
+        //        return false;
+        //    }
+
+        //    // If the first letter of the word doesn't match the letter on
+        //    // this square, report failure.  Otherwise, obtain the remainder
+        //    // of the word that we should match next.
+        //    // (Note that Q gets special treatment.)
+
+        //    char firstChar = word[0];
+        //    string rest = word.Substring(1);
+        //    int uChainLength;
+
+        //    if (firstChar != board[i, j])
+        //    {
+        //        return false;
+        //    }
+
+        //    // Check if an implied 'U' is needed following a 'Q'
+        //    if (firstChar == 'Q' && (rest.Length > 0))
+        //    {
+        //        // trying to spell something containing atleast QU
+        //        if (rest[0] == 'U')
+        //        {
+        //            // Get how many U's are connected
+        //            uChainLength = UChainLength(i, j);
+
+        //            // trying to spell something containing QUU
+        //            if (rest[1] == 'U')
+        //            {
+        //                if (uChainLength == 0)
+        //                    return false; // not enough U's, can only imply 1
+
+        //                else if (uChainLength == 1)
+        //                    rest = rest.Substring(1); // imply first U
+
+        //                // if we make it here, uChainLength == 2, so no implying needed
+        //            }
+
+        //            // trying to spell something containing only QU
+        //            else
+        //            {
+        //                if (uChainLength == 0)
+        //                    rest = rest.Substring(1); // imply first U
+
+        //                // if we make it here, uChainLength > 0, so no implying needed
+        //            }
+        //        }
+        //    }
+
+        //    // Mark this square as visited.
+        //    visited[i, j] = true;
+
+        //    // Try to match the remainder of the word, beginning at a neighboring square.
+        //    if (CanBeFormed(rest, i - 1, j - 1, visited)) return true;
+        //    if (CanBeFormed(rest, i - 1, j, visited)) return true;
+        //    if (CanBeFormed(rest, i - 1, j + 1, visited)) return true;
+        //    if (CanBeFormed(rest, i, j - 1, visited)) return true;
+        //    if (CanBeFormed(rest, i, j + 1, visited)) return true;
+        //    if (CanBeFormed(rest, i + 1, j - 1, visited)) return true;
+        //    if (CanBeFormed(rest, i + 1, j, visited)) return true;
+        //    if (CanBeFormed(rest, i + 1, j + 1, visited)) return true;
+
+        //    // We failed.  Unmark this square and return false.
+        //    visited[i, j] = false;
+        //    return false;
+        //}
     }
 }
