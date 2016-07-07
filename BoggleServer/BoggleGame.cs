@@ -33,8 +33,9 @@ namespace BB
         private byte resumeSentCount = 0;        
         private byte countDown = 3;
         private byte resumeCountDown = 3;
+        private string possibleWords;//********************************************************************************************
         private Timer countDownTimer, gameTimer, resumeTimer;
-        private Stopwatch watch;
+        private Stopwatch watch;//, deleteme;//**************************************************************************************
         private int timeLeft;
         private bool paused = false;
         private bool gameOver = false;
@@ -61,6 +62,7 @@ namespace BB
             gameTimer = new Timer(TimeUpdate, null, Timeout.Infinite, Timeout.Infinite);
             resumeTimer = new Timer(ResumingUpdate, null, Timeout.Infinite, Timeout.Infinite);
             watch = new Stopwatch();
+            //deleteme = new Stopwatch();//**************************************************************************************************
 
             // Let Players know game is ready to start
             one.Ss.BeginSend("READY " + two.Name + "\n", ExceptionCheck, one);
@@ -159,7 +161,11 @@ namespace BB
 
             // Send players the board. Countdown starts after both messages are sent.
             one.Ss.BeginSend("BOARD " + board.ToString() + " " + timeLeft + "\n", Countdown, one);
-            two.Ss.BeginSend("BOARD " + board.ToString() + " " + timeLeft + "\n", Countdown, two);  
+            two.Ss.BeginSend("BOARD " + board.ToString() + " " + timeLeft + "\n", Countdown, two); 
+ 
+            // Determine all possible words on the current board in another thread.
+            // These words will be sent at the end of the game.
+            ThreadPool.QueueUserWorkItem(x => { PossibleWords(); });//*********************************************************************
         }
 
         /// <summary>
@@ -443,7 +449,7 @@ namespace BB
             string shareLegal = SetToString(one.SharedLegalWords);
             string playerOneIllegal = SetToString(one.IllegalWords);
             string playerTwoIllegal = SetToString(two.IllegalWords);
-            string possibleWords = PossibleWords();//****************************************************************************
+            //string possibleWords = PossibleWords();//****************************************************************************
 
             // Use the above strings to create messages to send to each Player.
             string playerOneStats = "STOP" + playerOneLegal + playerTwoLegal
@@ -587,18 +593,21 @@ namespace BB
 
                 // We have a potential point earning word if we make it here. Award
                 // the appropriate points if it's legal. Subtract a point otherwise.
+                //deleteme.Start();//***************************************************************************************
                 if (BoggleServer.LegalWords.Contains(word) && board.CanBeFormed(word))
-                {
+                {                   
                     player.LegalWords.Add(word);
                     player.Score += WordValue(word);
                     UpdateScore();
-                }
+                }                
                 else
                 {
                     player.IllegalWords.Add(word);
                     player.Score--;
                     UpdateScore();
                 }
+                //deleteme.Stop();//***************************************************************************************
+                //Console.WriteLine("ELAPSED: " + deleteme.ElapsedMilliseconds.ToString());//***************************************
             } // end lock
         }
 
@@ -659,7 +668,21 @@ namespace BB
         }
 
 
-        private string PossibleWords()
+        //private string PossibleWords()
+        //{
+        //    int count = 0;
+        //    StringBuilder words = new StringBuilder(2048);
+        //    foreach (string word in BoggleServer.LegalWords)
+        //        if (board.CanBeFormed(word))
+        //        {
+        //            count++;
+        //            words.Append(" " + word);
+        //        }
+        //    return words.Insert(0, " " + count).ToString();
+        //}
+
+
+        private void PossibleWords()//*****************************************************************************************************
         {
             int count = 0;
             StringBuilder words = new StringBuilder(2048);
@@ -667,9 +690,9 @@ namespace BB
                 if (board.CanBeFormed(word))
                 {
                     count++;
-                    words.Append(" " + word);                    
+                    words.Append(" " + word);
                 }
-            return words.Insert(0, " " + count).ToString();
+            possibleWords = words.Insert(0, " " + count).ToString();
         }
 
 

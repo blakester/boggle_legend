@@ -305,6 +305,150 @@ namespace BB
         }
 
 
+// ********************************************************** MULTI THREAD ATTEMPT ********************************************************
+
+
+        public bool CanBeFormed_MltThrd(string word)
+        {
+            ManualResetEvent mre = new ManualResetEvent(false);
+            bool canBeFormed = false;
+            int threadsCompleted = 0;
+            object thrdCntLock = new object();
+
+            // Work in upper case
+            word = word.ToUpper();
+
+            // Mark every square on the board as unvisited.
+            bool[,] visited = new bool[4, 4];
+
+            // See if there is any starting point on the board from which
+            // the word can be formed.
+            for (int i = 0; i < 4; i++)
+            {
+                int _i = i;
+
+                for (int j = 0; j < 4; j++)
+                {
+                    int _j = j;
+                    ThreadPool.QueueUserWorkItem(x => { CanBeFormed(word, _i, _j, visited,
+                       mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, true);
+                    });
+                }
+            }
+
+            // If no starting point worked, return false.
+            mre.WaitOne();
+            // KILL ALL USERWORKITEMS?
+            return canBeFormed;
+        }
+
+
+        private bool CanBeFormed(string word, int i, int j, bool[,] visited, ManualResetEvent mre,
+             ref bool canBeFormed, ref int threadsCompleted, ref object thrdCntLock, bool initialSquare)
+        {
+            // If the word is empty, report success.
+            if (word.Length == 0)
+            {
+                canBeFormed = true;
+                mre.Set();
+                return true;
+            }
+
+            // If an index is out of bounds, report failure.
+            if (i < 0 || i >= 4 || j < 0 || j >= 4)
+            {
+                return false;
+            }
+
+            // If this square has already been visited, report failure.
+            if (visited[i, j])
+            {
+                return false;
+            }
+
+            // If the first letter of the word doesn't match the letter on
+            // this square, report failure.  Otherwise, obtain the remainder
+            // of the word that we should match next.
+            // (Note that Q gets special treatment.)
+
+            char firstChar = word[0];
+            string rest = word.Substring(1);
+            bool impliedU = false;
+
+            if (firstChar != board[i, j])
+            {
+                if (initialSquare)
+                {
+                    lock (thrdCntLock)
+                    {
+                        if (++threadsCompleted == 16)
+                            mre.Set();
+                    }
+                }
+                return false;
+            }
+
+            // If trying to spell a word containing QU, automatically imply
+            // the U. If the word fails to be formed, we'll try forming it
+            // without the implied U.
+            if ((firstChar == 'Q') && (rest.Length > 0) && (rest[0] == 'U'))
+            {
+                rest = rest.Substring(1);
+                impliedU = true;
+            }
+
+            // Mark this square as visited.
+            visited[i, j] = true;
+
+            // Try to match the remainder of the word, beginning at a neighboring square.
+            if (CanBeFormed(rest, i - 1, j - 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+            if (CanBeFormed(rest, i - 1, j, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+            if (CanBeFormed(rest, i - 1, j + 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+            if (CanBeFormed(rest, i, j - 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+            if (CanBeFormed(rest, i, j + 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+            if (CanBeFormed(rest, i + 1, j - 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+            if (CanBeFormed(rest, i + 1, j, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+            if (CanBeFormed(rest, i + 1, j + 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+
+            // If implying a U failed to form the word, it could be because the QU word is
+            // spelled explicitly on the board. Try forming the word again but without the implied U.
+            if (impliedU)
+            {
+                rest = word.Substring(1); // unimply U by resetting rest
+
+                if (CanBeFormed(rest, i - 1, j - 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+                if (CanBeFormed(rest, i - 1, j, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+                if (CanBeFormed(rest, i - 1, j + 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+                if (CanBeFormed(rest, i, j - 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+                if (CanBeFormed(rest, i, j + 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+                if (CanBeFormed(rest, i + 1, j - 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+                if (CanBeFormed(rest, i + 1, j, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+                if (CanBeFormed(rest, i + 1, j + 1, visited, mre, ref canBeFormed, ref threadsCompleted, ref thrdCntLock, false)) return true;
+            }
+
+            // We failed.  Unmark this square and return false.
+            visited[i, j] = false;
+
+            lock(thrdCntLock)
+            {
+                if (++threadsCompleted == 16)
+                    mre.Set();
+            }
+
+            return false;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
         /// <summary>
         /// Returns the length of the chain of adjacent U's where at least one of said
         /// U's is adjacent to the square at the specified coordinates. This is only
@@ -369,118 +513,6 @@ namespace BB
         //    while (foundU);
 
         //    return uCount;
-        //}
-
-
-
-        //public bool CanBeFormed_MltThrd(string word)
-        //{          
-        //    // Work in upper case
-        //    word = word.ToUpper();
-
-        //    // Mark every square on the board as unvisited.
-        //    //bool[,] visited = new bool[4, 4];
-
-        //    // See if there is any starting point on the board from which
-        //    // the word can be formed.
-        //    for (int i = 0; i < 4; i++)
-        //    {
-        //        int _i = i;
-
-        //        for (int j = 0; j < 4; j++)
-        //        {
-        //            int _j = j;
-        //            ThreadPool.QueueUserWorkItem(x => { CanBeFormed(word, _i, _j); });
-        //        }
-        //    }
-
-        //    // If no starting point worked, return false.
-        //    return false;
-        //}
-
-
-        //private void CanBeFormed(string word, int i, int j)
-        //{
-        //    // If the word is empty, report success.
-        //    if (word.Length == 0)
-        //    {
-        //        return true;
-        //    }
-
-        //    // If an index is out of bounds, report failure.
-        //    if (i < 0 || i >= 4 || j < 0 || j >= 4)
-        //    {
-        //        return false;
-        //    }
-
-        //    // If this square has already been visited, report failure.
-        //    if (visited[i, j])
-        //    {
-        //        return false;
-        //    }
-
-        //    // If the first letter of the word doesn't match the letter on
-        //    // this square, report failure.  Otherwise, obtain the remainder
-        //    // of the word that we should match next.
-        //    // (Note that Q gets special treatment.)
-
-        //    char firstChar = word[0];
-        //    string rest = word.Substring(1);
-        //    int uChainLength;
-
-        //    if (firstChar != board[i, j])
-        //    {
-        //        return false;
-        //    }
-
-        //    // Check if an implied 'U' is needed following a 'Q'
-        //    if (firstChar == 'Q' && (rest.Length > 0))
-        //    {
-        //        // trying to spell something containing atleast QU
-        //        if (rest[0] == 'U')
-        //        {
-        //            // Get how many U's are connected
-        //            uChainLength = UChainLength(i, j);
-
-        //            // trying to spell something containing QUU
-        //            if (rest[1] == 'U')
-        //            {
-        //                if (uChainLength == 0)
-        //                    return false; // not enough U's, can only imply 1
-
-        //                else if (uChainLength == 1)
-        //                    rest = rest.Substring(1); // imply first U
-
-        //                // if we make it here, uChainLength == 2, so no implying needed
-        //            }
-
-        //            // trying to spell something containing only QU
-        //            else
-        //            {
-        //                if (uChainLength == 0)
-        //                    rest = rest.Substring(1); // imply first U
-
-        //                // if we make it here, uChainLength > 0, so no implying needed
-        //            }
-        //        }
-        //    }
-
-        //    // Mark this square as visited.
-        //    visited[i, j] = true;
-
-        //    // Try to match the remainder of the word, beginning at a neighboring square.
-        //    if (CanBeFormed(rest, i - 1, j - 1, visited)) return true;
-        //    if (CanBeFormed(rest, i - 1, j, visited)) return true;
-        //    if (CanBeFormed(rest, i - 1, j + 1, visited)) return true;
-        //    if (CanBeFormed(rest, i, j - 1, visited)) return true;
-        //    if (CanBeFormed(rest, i, j + 1, visited)) return true;
-        //    if (CanBeFormed(rest, i + 1, j - 1, visited)) return true;
-        //    if (CanBeFormed(rest, i + 1, j, visited)) return true;
-        //    if (CanBeFormed(rest, i + 1, j + 1, visited)) return true;
-
-        //    // We failed.  Unmark this square and return false.
-        //    visited[i, j] = false;
-        //    return false;
         //}
     }
 }
