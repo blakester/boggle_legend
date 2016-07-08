@@ -507,12 +507,13 @@ namespace BoggleClient
             playButton.Content = "Play";
             timeLeftBox.Text = "0";
 
-            string[] pLegalWords = list[0];
-            string[] oLegalWords = list[1];
-            string[] sLegalWords = list[2];
-            string[] pIllegalWords = list[3];
-            string[] oIllegalWords = list[4];
-            string[] possibleWords = list[5];
+            string maxScore = list[0][0];
+            string[] pLegalWords = list[1];
+            string[] oLegalWords = list[2];
+            string[] sLegalWords = list[3];
+            string[] pIllegalWords = list[4];
+            string[] oIllegalWords = list[5];
+            string[] possibleWords = list[6];
 
             // Pulls player scores out of GUI.
             int playerScore = int.Parse(pScoreBox.Text);
@@ -553,7 +554,8 @@ namespace BoggleClient
             infoBox.Text += "Opponent Illegal Words\n";
             SummaryPrinter(oIllegalWords);
 
-            infoBox.Text += "All Possible Words\n";
+            infoBox.Text += "All Possible Words\n(" + possibleWords.Length + 
+                " Words, "+ maxScore + " Total Points)\n";
             SummaryPrinter(possibleWords);
 
             infoBox.Visibility = Visibility.Visible;
