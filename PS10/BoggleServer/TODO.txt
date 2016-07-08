@@ -1,4 +1,5 @@
-﻿-Calculate max possible score or other stats?
+﻿-Scroll bar for infobox makes boggle board slightly stick out on right. Widen infobox?
+-Calculate max possible score or other stats?
 -It doesn't look like any such words appear in dictionary.txt, but keep in mind that
  words with 2 or more pairs of QU will go through the implied U checks 2 or more times,
  i.e. a U can theoretically get implied more than once in a single word.

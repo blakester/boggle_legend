@@ -36,7 +36,7 @@ namespace BB
         private string possibleWords;//********************************************************************************************
         private Timer countDownTimer, gameTimer, resumeTimer;
         private Stopwatch watch;//, deleteme;//**************************************************************************************
-        private int timeLeft;
+        private int timeLeft, maxScore;
         private bool paused = false;
         private bool gameOver = false;
         private BoggleBoard board; // The board layout of the current game.        
@@ -452,9 +452,9 @@ namespace BB
             //string possibleWords = PossibleWords();//****************************************************************************
 
             // Use the above strings to create messages to send to each Player.
-            string playerOneStats = "STOP" + playerOneLegal + playerTwoLegal
+            string playerOneStats = "STOP " + maxScore + playerOneLegal + playerTwoLegal
                 + shareLegal + playerOneIllegal + playerTwoIllegal + possibleWords + "\n";
-            string playerTwoStats = "STOP" + playerTwoLegal + playerOneLegal
+            string playerTwoStats = "STOP " + maxScore + playerTwoLegal + playerOneLegal
                 + shareLegal + playerTwoIllegal + playerOneIllegal + possibleWords + "\n";
 
             // Send the messages
@@ -685,12 +685,14 @@ namespace BB
         private void PossibleWords()//*****************************************************************************************************
         {
             int count = 0;
+            maxScore = 0;
             StringBuilder words = new StringBuilder(2048);
             foreach (string word in BoggleServer.LegalWords)
                 if (board.CanBeFormed(word))
                 {
                     count++;
                     words.Append(" " + word);
+                    maxScore += WordValue(word);
                 }
             possibleWords = words.Insert(0, " " + count).ToString();
         }

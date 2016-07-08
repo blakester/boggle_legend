@@ -192,17 +192,21 @@ namespace BoggleClient
             // List to be sent to event.
             List<string[]> results = new List<string[]>();
 
-            message = message.Substring(5); //Takes out Stop
+            message = message.Substring(5); //Takes out Stop            
 
             // Seperate the string into tokens
             char[] spaces = { ' ' };
             string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
 
+            // Add the max possible score to results
+            results.Add( new string[]{tokens[0]} ); // STOP 1000
+
+            // Add the different word lists to results
             int key = 0;
             int tempKey = 0;
             int index = 0;
             string[] temp= new string[key];
-            foreach (string s in tokens)
+            foreach (string s in tokens.Skip(1))
             {
                 if (int.TryParse(s, out tempKey))
                 {
