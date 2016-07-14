@@ -1,13 +1,10 @@
-﻿-Scroll bar for infobox makes boggle board slightly stick out on right. Widen infobox?
--Calculate max possible score or other stats?
+﻿-black horizontal lines appearing at top of player name textbox when long stream of words is typed in. glitch?
+-keep track of wins, losses, ties against opponent?
 -It doesn't look like any such words appear in dictionary.txt, but keep in mind that
  words with 2 or more pairs of QU will go through the implied U checks 2 or more times,
  i.e. a U can theoretically get implied more than once in a single word.
--The example boggle board in the Rules box is a bad example for the implied U
- illustration because QUIET can be spelled explicitly without an implied U.	
 -use if statement to clear text in chatbox only when necessary?
 -allow 16 letter words? (would have to find new list)
--have how to play info?
 -words sent right before end don't get added to summary lists. Any way to fix this?
 -finish sounds in client
 -dispose the SoundPlayers in client
