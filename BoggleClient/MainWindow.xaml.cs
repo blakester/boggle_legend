@@ -31,13 +31,9 @@ namespace BoggleClient
         private string opponentName;
         private bool resumeClicked;
         private SoundPlayer countSound, incSound, decSound, winSound, lossSound, tieSound, chatSound;
-        private Brush defaultBrush, yellowBrush; // colors used for the gameRectangle
-        private BrushConverter converter;
+        private Brush defaultBrush, yellowBrush; // colors used for the gameRectangle        
         private Timer pointFlashTimer;
-        private double pointFlashOpacity = 1.0;
-        private string rulesFileName = "../../../Resources/Resources/Rules.rtf";
-        private TextRange textRange;
-        private FileStream fileStream;
+        private double pointFlashOpacity = 1.0;         
         private int wins, ties, losses;
 
         /// <summary>
@@ -47,6 +43,10 @@ namespace BoggleClient
         {
             InitializeComponent();
             model = new Model();
+            BrushConverter converter;
+            string rulesFileName = "../../../Resources/Resources/Rules.rtf";
+            TextRange textRange;
+            FileStream fileStream;
 
             // Register the event handlers
             model.ReadyMessageEvent += GameReady;
@@ -396,9 +396,15 @@ namespace BoggleClient
                 if (diff != 0)
                 {
                     if (diff > 0)
+                    {
+                        pointFlashLabel.Foreground = Brushes.Blue;
                         pointFlashLabel.Content = "+" + diff;
+                    }
                     else
+                    {
+                        pointFlashLabel.Foreground = Brushes.Red;
                         pointFlashLabel.Content = diff;
+                    }
 
                     pointFlashLabel.Visibility = Visibility.Visible;
                     pointFlashTimer.Change(200, Timeout.Infinite);
@@ -678,7 +684,7 @@ namespace BoggleClient
         /// <param name="e"></param>
         private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            chatEntryBox.Clear();  // ANY WAY TO AVOID THIS? ONLY NEED TO CLEAR TEXT BOX THE *FIRST* TIME ITS CLICKED **********************
+            chatEntryBox.Clear();
         }
 
 
