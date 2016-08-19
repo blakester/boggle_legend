@@ -31,13 +31,14 @@ namespace BoggleClient
         private string opponentName;
         private bool resumeClicked;
         private SoundPlayer countSound, incSound, decSound, winSound, lossSound, tieSound, chatSound;
-        private Brush initialBlueBrush, yellowBrush; // colors used for the gameRectangle
-        private BrushConverter converter;       
+        private Brush defaultBrush, yellowBrush; // colors used for the gameRectangle
+        private BrushConverter converter;
         private Timer pointFlashTimer;
         private double pointFlashOpacity = 1.0;
         private string rulesFileName = "../../../Resources/Resources/Rules.rtf";
         private TextRange textRange;
         private FileStream fileStream;
+        private int wins, ties, losses;
 
         /// <summary>
         /// Initilizes windows and registers all the events in model.
@@ -76,14 +77,14 @@ namespace BoggleClient
             lossSound.Load();
             tieSound.Load();
             chatSound.Load();
-            
+
             // Initialize Brushes (colors) used for the gameRectangle 
-            initialBlueBrush = gameRectangle.Fill;
+            defaultBrush = gameRectangle.Fill;
             converter = new BrushConverter();
             yellowBrush = (Brush)converter.ConvertFromString("#FFFFFF94");
 
             pointFlashTimer = new Timer(PointFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);//DISPOSE!!!****************************
-                       
+
             // Load "Rules.rtf" into the rules box
             textRange = new TextRange(rulesBox.Document.ContentStart, rulesBox.Document.ContentEnd);
             using (fileStream = new System.IO.FileStream(rulesFileName, System.IO.FileMode.OpenOrCreate))
@@ -122,7 +123,7 @@ namespace BoggleClient
                     + "Waiting for an opponent to connect...";
 
                 // Let model handle connecting to server.
-                model.Connect(playerTextBox.Text, serverTextBox.Text);                
+                model.Connect(playerTextBox.Text, serverTextBox.Text);
             }
 
             // Disconnect was clicked
@@ -142,7 +143,7 @@ namespace BoggleClient
                 wordEntryBox.IsEnabled = false;
                 playButton.Content = "Play";
                 model.playerDisconnected = true;
-                gameRectangle.Fill = initialBlueBrush;
+                gameRectangle.Fill = defaultBrush;
                 showBoardButton.Visibility = Visibility.Hidden;
                 infoBox.Visibility = Visibility.Visible;
                 infoBox.Text = "You disconnected from the server.\n\n"
@@ -170,6 +171,7 @@ namespace BoggleClient
             serverTextBox.IsEnabled = false;
             chatEntryBox.IsEnabled = true;
             playButton.IsEnabled = true;
+            wins = losses = ties = 0;
             opponentName = s;
             infoBox.Text = "Your opponent is \"" + s + "\".\n\n"
                 + "Chat or click Play to begin!";
@@ -290,8 +292,8 @@ namespace BoggleClient
                 }
                 else
                     startingInLabel.Content = "Resuming in...";
-                
-                playButton.IsEnabled = false;                
+
+                playButton.IsEnabled = false;
                 countDownLabel.Visibility = Visibility.Visible;
                 startingInLabel.Visibility = Visibility.Visible;
                 infoBox.Visibility = Visibility.Hidden;
@@ -300,7 +302,7 @@ namespace BoggleClient
                 opacity = 0.8;
             else
                 opacity = 0.6;
-            
+
             countDownLabel.Content = s;
             countDownLabel.Opacity = opacity;
             startingInLabel.Opacity = opacity;
@@ -379,14 +381,14 @@ namespace BoggleClient
 
 
         private void ScoreHelper(string[] s)
-        {            
+        {
             // Store the old and new scores and the
             // point increase/decrease
             int pOldScore = int.Parse(pScoreBox.Text);
             int pNewScore = int.Parse(s[1]);
             int oOldScore = int.Parse(oScoreBox.Text);
             int oNewScore = int.Parse(s[2]);
-            int diff = pNewScore - pOldScore;            
+            int diff = pNewScore - pOldScore;
 
             // Briefly flash and fade out the point increase/decrease
             if (pntFlashesOffCheckBox.IsChecked == false)
@@ -444,11 +446,11 @@ namespace BoggleClient
             {
                 pointFlashLabel.Visibility = Visibility.Hidden;
                 pointFlashOpacity = 1.0;
-                pointFlashLabel.Opacity = 1.0; 
+                pointFlashLabel.Opacity = 1.0;
                 return;
             }
 
-            pointFlashLabel.Opacity = pointFlashOpacity;            
+            pointFlashLabel.Opacity = pointFlashOpacity;
             pointFlashOpacity -= 0.05;
             pointFlashTimer.Change(22, Timeout.Infinite);
         }
@@ -520,23 +522,30 @@ namespace BoggleClient
             int opponentScore = int.Parse(oScoreBox.Text);
 
             // Constructs Summary page.
-            infoBox.Text = "Time Has Expired!\n";
+            //infoBox.Text = "Time Has Expired!\n";
 
             if (playerScore > opponentScore)
             {
                 if (soundOffCheckBox.IsChecked == false) { winSound.Play(); }
-                infoBox.Text += "WINNER!\n\n";
+                infoBox.Text = "*** WINNER! ***\n\n";
+                wins++;
             }
             else if (playerScore < opponentScore)
             {
                 if (soundOffCheckBox.IsChecked == false) { lossSound.Play(); }
-                infoBox.Text += "LOSER\n\n";
+                infoBox.Text = "*** LOSER ***\n\n";
+                losses++;
             }
             else
             {
                 if (soundOffCheckBox.IsChecked == false) { tieSound.Play(); }
-                infoBox.Text += "BOTH ARE LOSERS!\n\n";
+                infoBox.Text = "*** TIE ***\n\n";  //"BOTH ARE LOSERS!\n\n";
+                ties++;
             }
+
+            infoBox.Text += "Wins: " + wins + "\n";
+            infoBox.Text += "Losses: " + losses + "\n";
+            infoBox.Text += "Ties: " + ties + "\n\n";
 
             infoBox.Text += "*** Game Summary ***\n\n"
                 + "Your Legal Words\n";
@@ -554,8 +563,8 @@ namespace BoggleClient
             infoBox.Text += "Opponent Illegal Words\n";
             SummaryPrinter(oIllegalWords);
 
-            infoBox.Text += "All Possible Words\n(" + possibleWords.Length + 
-                " Words, "+ maxScore + " Total Points)\n";
+            infoBox.Text += "All Possible Words\n(" + possibleWords.Length +
+                " Words, " + maxScore + " Total Points)\n";
             SummaryPrinter(possibleWords);
 
             infoBox.Visibility = Visibility.Visible;
@@ -577,7 +586,7 @@ namespace BoggleClient
                 foreach (string s in array)
                     infoBox.Text += s + "\n";
             else
-                infoBox.Text += "**NONE**\n";
+                infoBox.Text += "*NONE*\n";
             infoBox.Text += "\n";
         }
 
@@ -708,8 +717,8 @@ namespace BoggleClient
             pScoreBox.Text = "";
             oScoreBox.Text = "";
             wordEntryBox.Text = "";
-
-            gameRectangle.Fill = initialBlueBrush;
+            
+            gameRectangle.Fill = defaultBrush;
             showBoardButton.Visibility = Visibility.Hidden;
             infoBox.Visibility = Visibility.Visible;
         }
@@ -743,12 +752,12 @@ namespace BoggleClient
                 showRulesButton.Content = "Hide Rules";
                 rulesBox.Visibility = Visibility.Visible;
             }
-            else 
+            else
             {
                 showRulesButton.Content = "Show Rules";
                 rulesBox.Visibility = Visibility.Hidden;
             }
-            
+
         }
     }
 }
