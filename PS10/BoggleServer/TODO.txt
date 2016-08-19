@@ -1,5 +1,4 @@
-﻿-black horizontal lines appearing at top of player name textbox when long stream of words is typed in. glitch?
--keep track of wins, losses, ties against opponent?
+﻿-keep track of wins, losses, ties against opponent? add/display on summary message?
 -It doesn't look like any such words appear in dictionary.txt, but keep in mind that
  words with 2 or more pairs of QU will go through the implied U checks 2 or more times,
  i.e. a U can theoretically get implied more than once in a single word.
