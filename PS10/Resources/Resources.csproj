@@ -45,12 +45,13 @@
     <Content Include="Libraries\StringSocketOfficial.dll" />
     <Content Include="Resources\dictionary.txt" />
     <Content Include="README.txt" />
-    <Content Include="Resources\dictionary3.txt" />
+    <Content Include="Resources\dictionary_3_length.txt" />
     <Content Include="Resources\Sounds\chat.wav" />
-    <Content Include="Resources\Sounds\count.wav" />
-    <Content Include="Resources\Sounds\loss.wav" />
+    <Content Include="Resources\Sounds\countdown.wav" />
+    <Content Include="Resources\Sounds\countdown2.wav" />
+    <Content Include="Resources\Sounds\tie2.wav" />
     <Content Include="Resources\Sounds\tie.wav" />
-    <Content Include="Resources\Sounds\nautical024.wav" />
+    <Content Include="Resources\Sounds\loss.wav" />
     <Content Include="Resources\Sounds\dec.wav" />
     <Content Include="Resources\Sounds\inc.wav" />
     <Content Include="Resources\Sounds\win.wav" />

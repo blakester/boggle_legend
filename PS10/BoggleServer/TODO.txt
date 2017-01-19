@@ -4,7 +4,10 @@
 -allow 16 letter words? (would have to find new list)
 -words sent right before end don't get added to summary lists. Any way to fix this?
 -finish sounds in client
+-change "Word Values" to "Scoring" in Rules?
 -dispose the SoundPlayers in client
+-group words by length in "All Possible Words" section?
+-only clear chat entry box when selected if text == "Enter message here" OR check a bool if initial select has happened
 -Get rid of Regex's...unecessary overhead?
 -Find way to slide up chatDisplayBox when messages are at bottom
 -Finalize server messages
