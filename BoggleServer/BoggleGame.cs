@@ -33,7 +33,7 @@ namespace BB
         private byte resumeSentCount = 0;        
         private byte countDown = 3;
         private byte resumeCountDown = 3;
-        private string possibleWords;//********************************************************************************************
+        private string possibleWords;
         private Timer countDownTimer, gameTimer, resumeTimer;
         private Stopwatch watch;//, deleteme;//**************************************************************************************
         private int timeLeft, maxScore;
@@ -165,7 +165,7 @@ namespace BB
  
             // Determine all possible words on the current board in another thread.
             // These words will be sent at the end of the game.
-            ThreadPool.QueueUserWorkItem(x => { PossibleWords(); });//*********************************************************************
+            ThreadPool.QueueUserWorkItem(x => { PossibleWords(); });
         }
 
         /// <summary>
@@ -449,7 +449,6 @@ namespace BB
             string shareLegal = SetToString(one.SharedLegalWords);
             string playerOneIllegal = SetToString(one.IllegalWords);
             string playerTwoIllegal = SetToString(two.IllegalWords);
-            //string possibleWords = PossibleWords();//****************************************************************************
 
             // Use the above strings to create messages to send to each Player.
             string playerOneStats = "STOP " + maxScore + playerOneLegal + playerTwoLegal
@@ -668,21 +667,7 @@ namespace BB
         }
 
 
-        //private string PossibleWords()
-        //{
-        //    int count = 0;
-        //    StringBuilder words = new StringBuilder(2048);
-        //    foreach (string word in BoggleServer.LegalWords)
-        //        if (board.CanBeFormed(word))
-        //        {
-        //            count++;
-        //            words.Append(" " + word);
-        //        }
-        //    return words.Insert(0, " " + count).ToString();
-        //}
-
-
-        private void PossibleWords()//*****************************************************************************************************
+        private void PossibleWords()
         {
             int count = 0;
             maxScore = 0;
