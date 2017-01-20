@@ -366,7 +366,7 @@ namespace BoggleClient
             {
                 string word = wordEntryBox.Text;
                 wordEntryBox.Text = ""; // Clears Box
-                model.SendWord(word); // Sends word to server.
+                model.SendWord(word); // Sends word to server
             }
         }
 

@@ -473,14 +473,14 @@ namespace BB
             Console.WriteLine(string.Format("{0, -13} GAME {1, 4} {2, -15} {3, -15} {4}", "END", gameID, one.IP, two.IP, DateTime.Now));
 
             // DELETE ME!!!
-            //int delete = 0;
+            //int matches = 0;
             //foreach (string word in BoggleServer.LegalWords)
-            //    if (word.Length == 16)
+            //    if (!Regex.IsMatch(word, @"^[A-Z]+$"))
             //    {
-            //        delete++;
+            //        matches++;
             //        Console.WriteLine(word);
             //    }
-            //Console.WriteLine(delete);
+            //Console.WriteLine(matches); // prints # of words that the if caught
 
             // THE BELOW WAS USED FOR THE DATABASE
             //UpdateDatabase();
@@ -563,8 +563,8 @@ namespace BB
         /// <param name="word"></param>
         private void ProcessWord(Player player, string word)
         {
-            // Words must be atleast 3 characters long.
-            if (word.Length < 3)
+            // Words must be atleast 3 characters long and consist of only letters.
+            if (word.Length < 3 || !Regex.IsMatch(word, @"^[A-Z]+$"))
                 return;
 
             // Ensure the Players' data is thread safe.
