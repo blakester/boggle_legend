@@ -30,7 +30,8 @@ namespace BoggleClient
         private Model model; // The model to handle socket and computation.
         private string opponentName;
         private bool resumeClicked;
-        private SoundPlayer countSound, incSound, decSound, winSound, lossSound, tieSound, chatSound;
+        private bool chatInitialSelection = true;
+        private SoundPlayer countSound, /*countSound2,*/ incSound, decSound, winSound, lossSound, tieSound, tieSound2, chatSound;
         private Brush defaultBrush, yellowBrush; // colors used for the gameRectangle        
         private Timer pointFlashTimer;
         private double pointFlashOpacity = 1.0;         
@@ -63,12 +64,14 @@ namespace BoggleClient
             model.SocketExceptionEvent += SocketFail;
 
             // Initialize and load the sounds
-            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/count.wav");//DISPOSE THESE!!!!!*******************************
+            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/countdown.wav");//DISPOSE THESE!!!!!**************************
+            //countSound2 = new SoundPlayer(@"../../../Resources/Resources/Sounds/countdown2.wav");
             incSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/inc.wav");
             decSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/dec.wav");
             winSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/win.wav");
             lossSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/loss.wav");
             tieSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/tie.wav");
+            tieSound2 = new SoundPlayer(@"../../../Resources/Resources/Sounds/tie2.wav");
             chatSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/chat.wav");
             countSound.Load();
             incSound.Load();
@@ -76,6 +79,7 @@ namespace BoggleClient
             winSound.Load();
             lossSound.Load();
             tieSound.Load();
+            tieSound2.Load();
             chatSound.Load();
 
             // Initialize Brushes (colors) used for the gameRectangle 
@@ -307,12 +311,7 @@ namespace BoggleClient
             countDownLabel.Opacity = opacity;
             startingInLabel.Opacity = opacity;
 
-            //using (var soundPlayer = new SoundPlayer(@"../../../Resources/Resources/Sounds/beep-07.wav"))
-            //{
-            //    soundPlayer.Play(); // can also use soundPlayer.PlaySync()
-            //}
-
-            if (soundOffCheckBox.IsChecked == false) { countSound.Play(); }
+            if (soundOffCheckBox.IsChecked == false) countSound.Play();
         }
 
 
@@ -351,6 +350,8 @@ namespace BoggleClient
         private void TimeHelper(string s)
         {
             timeLeftBox.Text = s;
+            //if ((int.Parse(s) <= 5) && (soundOffCheckBox.IsChecked == false)) 
+            //    countSound2.Play();
         }
 
 
@@ -528,24 +529,30 @@ namespace BoggleClient
             int opponentScore = int.Parse(oScoreBox.Text);
 
             // Constructs Summary page.
-            //infoBox.Text = "Time Has Expired!\n";
-
             if (playerScore > opponentScore)
             {
-                if (soundOffCheckBox.IsChecked == false) { winSound.Play(); }
+                if (soundOffCheckBox.IsChecked == false) winSound.Play();
                 infoBox.Text = "*** WINNER! ***\n\n";
                 wins++;
             }
             else if (playerScore < opponentScore)
             {
-                if (soundOffCheckBox.IsChecked == false) { lossSound.Play(); }
+                if (soundOffCheckBox.IsChecked == false) lossSound.Play();
                 infoBox.Text = "*** LOSER ***\n\n";
                 losses++;
             }
             else
             {
-                if (soundOffCheckBox.IsChecked == false) { tieSound.Play(); }
-                infoBox.Text = "*** TIE ***\n\n";  //"BOTH ARE LOSERS!\n\n";
+                if (soundOffCheckBox.IsChecked == false)
+                {
+                    // The "Price is Wrong" sound only plays when
+                    // the tie score isn't zero and divisible by 3.
+                    if ((playerScore != 0) && (playerScore % 3 == 0))
+                        tieSound2.Play();
+                    else
+                        tieSound.Play();
+                }
+                infoBox.Text = "*** TIE ***\n\n";
                 ties++;
             }
 
@@ -626,18 +633,42 @@ namespace BoggleClient
         {
             if (e.Key == Key.Enter && (chatEntryBox.Text.Trim() != ""))
             {
-                // Format and append a "Me:" header to the message box
-                TextRange tr = new TextRange(chatDisplayBox.Document.ContentEnd, chatDisplayBox.Document.ContentEnd);
+                // MESSAGE IS APPENDED INSTEAD OF PREPENDED
+                //// Format and append a "Me:" header to the message box
+                //TextRange tr = new TextRange(chatDisplayBox.Document.ContentEnd, chatDisplayBox.Document.ContentEnd);
+                //tr.Text = String.Format("Me ({0})\n", DateTime.Now.ToString("h:mm tt").ToLower());
+                //tr.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
+                //tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
+                //tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Green);
+
+                //// Append the entered message to the message box (not sure if best technique for indenting)
+                //chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(10, 0, 0, 0); // indent message
+                //chatDisplayBox.AppendText(chatEntryBox.Text + "\n\n");
+                //chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(0, 0, 0, 0); // reset for next header
+                //chatDisplayBox.ScrollToEnd();
+
+                //// Send the entered message and clear the entry box
+                //model.SendChat(chatEntryBox.Text);
+                //chatEntryBox.Clear();
+
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                // NOTE: THERE'S PROBABLY CLEANER/EASIER WAYS TO ACHEIVE THE BELOW FORMAT, I JUST DON'T KNOW HOW.
+                // I GUESSED/MESSED AROUND WITH THIS UNTIL IT DISPLAYED THE WAY I WANTED IT.
+
+                // Format and prepend a "Me:" header to the message box 
+                TextRange tr = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
                 tr.Text = String.Format("Me ({0})\n", DateTime.Now.ToString("h:mm tt").ToLower());
                 tr.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
                 tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
                 tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Green);
 
-                // Append the entered message to the message box (not sure if best technique for indenting)
-                chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(10, 0, 0, 0); // indent message
-                chatDisplayBox.AppendText(chatEntryBox.Text + "\n\n");
-                chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(0, 0, 0, 0); // reset for next header
-                chatDisplayBox.ScrollToEnd();
+                // Indent and add the entered message underneath the header
+                TextRange tr2 = new TextRange(tr.End, tr.End);
+                tr2.Start.Paragraph.Margin = new Thickness(10, 0, 0, 0);
+                tr2.Text = chatEntryBox.Text + "\n\n";
+                tr2.ClearAllProperties();
+                tr2.End.Paragraph.Margin = new Thickness(0, 0, 0, 0);             
 
                 // Send the entered message and clear the entry box
                 model.SendChat(chatEntryBox.Text);
@@ -660,20 +691,35 @@ namespace BoggleClient
 
         private void ChatMessageHelper(string message)
         {
-            // Format and append an oppononent name & timestamp header to the message box
-            TextRange tr = new TextRange(chatDisplayBox.Document.ContentEnd, chatDisplayBox.Document.ContentEnd);
+            // MESSAGE IS APPENDED INSTEAD OF PREPENDED
+            //// Format and append an oppononent name & timestamp header to the message box
+            //TextRange tr = new TextRange(chatDisplayBox.Document.ContentEnd, chatDisplayBox.Document.ContentEnd);
+            //tr.Text = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:mm tt").ToLower());
+            //tr.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
+            //tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
+            //tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Red);
+
+            //// Append the received message to the message box (not sure if best technique for indenting)
+            //chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(10, 0, 0, 0); // indent message
+            //chatDisplayBox.AppendText(message + "\n\n");
+            //chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(0, 0, 0, 0); // reset for next header
+            //chatDisplayBox.ScrollToEnd();
+
+            // Format and prepend an oppononent name & timestamp header to the message box
+            TextRange tr = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
             tr.Text = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:mm tt").ToLower());
             tr.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
             tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
             tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Red);
 
-            // Append the received message to the message box (not sure if best technique for indenting)
-            chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(10, 0, 0, 0); // indent message
-            chatDisplayBox.AppendText(message + "\n\n");
-            chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(0, 0, 0, 0); // reset for next header
-            chatDisplayBox.ScrollToEnd();
+            // Indent and add the received message underneath the header
+            TextRange tr2 = new TextRange(tr.End, tr.End);
+            tr2.Start.Paragraph.Margin = new Thickness(10, 0, 0, 0);
+            tr2.Text = message + "\n\n";
+            tr2.ClearAllProperties();
+            tr2.End.Paragraph.Margin = new Thickness(0, 0, 0, 0); 
 
-            if (soundOffCheckBox.IsChecked == false) { chatSound.Play(); }
+            if (soundOffCheckBox.IsChecked == false) chatSound.Play();
         }
 
 
@@ -684,7 +730,11 @@ namespace BoggleClient
         /// <param name="e"></param>
         private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            chatEntryBox.Clear();
+            if (chatInitialSelection)
+            {
+                chatEntryBox.Clear();
+                chatInitialSelection = false;
+            }
         }
 
 
