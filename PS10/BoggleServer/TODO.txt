@@ -7,9 +7,7 @@
 -change "Word Values" to "Scoring" in Rules?
 -dispose the SoundPlayers in client
 -group words by length in "All Possible Words" section?
--only clear chat entry box when selected if text == "Enter message here" OR check a bool if initial select has happened
 -Get rid of Regex's...unecessary overhead?
--Find way to slide up chatDisplayBox when messages are at bottom
 -Finalize server messages
 -run a code analysis
 -check for notes in code
