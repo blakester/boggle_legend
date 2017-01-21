@@ -666,7 +666,10 @@ namespace BB
             return words.ToString();
         }
 
-
+        /// <summary>
+        /// Returns a string of all the possible legal words 
+        /// on this BoggleGame's current board.
+        /// </summary>
         private void PossibleWords()
         {
             int count = 0;

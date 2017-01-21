@@ -64,8 +64,8 @@ namespace BoggleClient
             model.SocketExceptionEvent += SocketFail;
 
             // Initialize and load the sounds
-            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/countdown.wav");//DISPOSE THESE!!!!!**************************
-            //countSound2 = new SoundPlayer(@"../../../Resources/Resources/Sounds/countdown2.wav");
+            countSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/countdown.wav");
+            //countSound2 = new SoundPlayer(@"../../../Resources/Resources/Sounds/countdown2.wav"); // FINAL SECONDS BEEP
             incSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/inc.wav");
             decSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/dec.wav");
             winSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/win.wav");
@@ -87,7 +87,7 @@ namespace BoggleClient
             converter = new BrushConverter();
             yellowBrush = (Brush)converter.ConvertFromString("#FFFFFF94");
 
-            pointFlashTimer = new Timer(PointFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);//DISPOSE!!!****************************
+            pointFlashTimer = new Timer(PointFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);
 
             // Load "Rules.rtf" into the rules box
             textRange = new TextRange(rulesBox.Document.ContentStart, rulesBox.Document.ContentEnd);
@@ -350,6 +350,8 @@ namespace BoggleClient
         private void TimeHelper(string s)
         {
             timeLeftBox.Text = s;
+
+            // IF I WANT A TIME RUNNING OUT SOUND...
             //if ((int.Parse(s) <= 5) && (soundOffCheckBox.IsChecked == false)) 
             //    countSound2.Play();
         }
@@ -705,6 +707,11 @@ namespace BoggleClient
             //chatDisplayBox.Document.Blocks.LastBlock.Margin = new Thickness(0, 0, 0, 0); // reset for next header
             //chatDisplayBox.ScrollToEnd();
 
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+            // NOTE: THERE'S PROBABLY CLEANER/EASIER WAYS TO ACHEIVE THE BELOW FORMAT, I JUST DON'T KNOW HOW.
+            // I GUESSED/MESSED AROUND WITH THIS UNTIL IT DISPLAYED THE WAY I WANTED IT.
+
             // Format and prepend an oppononent name & timestamp header to the message box
             TextRange tr = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
             tr.Text = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:mm tt").ToLower());
@@ -801,6 +808,7 @@ namespace BoggleClient
             serverTextBox.IsEnabled = true;
         }
 
+
         private void showRulesButton_Click(object sender, RoutedEventArgs e)
         {
             if (showRulesButton.Content.ToString() == "Show Rules")
@@ -814,6 +822,26 @@ namespace BoggleClient
                 rulesBox.Visibility = Visibility.Hidden;
             }
 
+        }
+
+
+        /// <summary>
+        /// Perhaps not necessary, but disposes all sounds and timer when application is closed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            countSound.Dispose();
+            incSound.Dispose();
+            decSound.Dispose();
+            winSound.Dispose();
+            lossSound.Dispose();
+            tieSound.Dispose();
+            tieSound2.Dispose();
+            chatSound.Dispose();
+
+            pointFlashTimer.Dispose();
         }
     }
 }
