@@ -4,8 +4,6 @@
 -allow 16 letter words? (would have to find new list)
 -words sent right before end don't get added to summary lists. Any way to fix this?
 -finish sounds in client
--dispose the SoundPlayers in client
--group words by length in "All Possible Words" section?
 -Get rid of Regex's...unecessary overhead?
 -Finalize server messages
 -run a code analysis
