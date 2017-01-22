@@ -76,11 +76,9 @@ namespace BoggleClient
             else if (Regex.IsMatch(s, @"^(TIME\s)"))            
                 ReceivedTime(s);               
             else if (Regex.IsMatch(s, @"^(SCORE\s)"))            
-                ReceivedScore(s);            
-            else if (Regex.IsMatch(s, @"^(CHAT\s)"))             
-                ReceivedChat(s);            
-            else if (Regex.IsMatch(s, @"^(COUNTDOWN\s)"))             
-                ReceivedCountdown(s, true);            
+                ReceivedScore(s);
+            else if (Regex.IsMatch(s, @"^(COUNTDOWN\s)"))
+                ReceivedCountdown(s, true);                        
             else if (Regex.IsMatch(s, @"^(RESUMING\s)"))            
                 ReceivedCountdown(s, false);            
             else if (Regex.IsMatch(s, @"^(BOARD\s)"))        
@@ -94,7 +92,9 @@ namespace BoggleClient
             else if (Regex.IsMatch(s, @"^(RESUME)"))           
                 ReceivedResume();
             else if (Regex.IsMatch(s, @"^(READY\s)"))
-                ReceivedReady(s); 
+                ReceivedReady(s);
+            else if (Regex.IsMatch(s, @"^(CHAT\s)"))
+                ReceivedChat(s); 
             else if (Regex.IsMatch(s, @"^(TERMINATED)"))
                 Terminate(true);          
         }
