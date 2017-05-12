@@ -46,6 +46,7 @@ namespace BoggleClient
             model = new Model();
             BrushConverter converter;
             string rulesFileName = "../../../Resources/Resources/Rules.rtf";
+            //string rulesFileName = "Resources/Rules.rtf"; // USE THIS FOR INSTALLER
             TextRange textRange;
             FileStream fileStream;
 
@@ -73,14 +74,36 @@ namespace BoggleClient
             tieSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/tie.wav");
             tieSound2 = new SoundPlayer(@"../../../Resources/Resources/Sounds/tie2.wav");
             chatSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/chat.wav");
-            countSound.Load();
-            incSound.Load();
-            decSound.Load();
-            winSound.Load();
-            lossSound.Load();
-            tieSound.Load();
-            tieSound2.Load();
-            chatSound.Load();
+
+            // USE THESE FOR INSTALLER
+            //countSound = new SoundPlayer(@"Resources/Sounds/countdown.wav");
+            ////countSound2 = new SoundPlayer(@"countdown2.wav"); // FINAL SECONDS BEEP
+            //incSound = new SoundPlayer(@"Resources/Sounds/inc.wav");
+            //decSound = new SoundPlayer(@"Resources/Sounds/dec.wav");
+            //winSound = new SoundPlayer(@"Resources/Sounds/win.wav");
+            //lossSound = new SoundPlayer(@"Resources/Sounds/loss.wav");
+            //tieSound = new SoundPlayer(@"Resources/Sounds/tie.wav");
+            //tieSound2 = new SoundPlayer(@"Resources/Sounds/tie2.wav");
+            //chatSound = new SoundPlayer(@"Resources/Sounds/chat.wav");
+
+            try
+            {
+                countSound.Load();
+                incSound.Load();
+                decSound.Load();
+                winSound.Load();
+                lossSound.Load();
+                tieSound.Load();
+                tieSound2.Load();
+                chatSound.Load();
+            }
+            catch (FileNotFoundException e)
+            {
+                MessageBox.Show(e.Message + "\n\nSounds are disabled.", "Boggle Legends Deluxe Error",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                soundOffCheckBox.IsChecked = true;
+                soundOffCheckBox.IsEnabled = false;
+            }
 
             // Initialize Brushes (colors) used for the gameRectangle 
             defaultBrush = gameRectangle.Fill;
@@ -91,9 +114,18 @@ namespace BoggleClient
 
             // Load "Rules.rtf" into the rules box
             textRange = new TextRange(rulesBox.Document.ContentStart, rulesBox.Document.ContentEnd);
-            using (fileStream = new System.IO.FileStream(rulesFileName, System.IO.FileMode.OpenOrCreate))
+            try
             {
-                textRange.Load(fileStream, DataFormats.Rtf);
+                using (fileStream = new FileStream(rulesFileName, FileMode.Open, FileAccess.Read))
+                {
+                    textRange.Load(fileStream, DataFormats.Rtf);
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message + "\n\n\"Show Rules\" button is disabled.", "Boggle Legends Deluxe Error",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                showRulesButton.IsEnabled = false;
             }
         }
 
@@ -400,7 +432,7 @@ namespace BoggleClient
                 {
                     if (diff > 0)
                     {
-                        pointFlashLabel.Foreground = Brushes.Blue;
+                        pointFlashLabel.Foreground = Brushes.Green;
                         pointFlashLabel.Content = "+" + diff;
                     }
                     else

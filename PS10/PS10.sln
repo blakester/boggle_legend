@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoggleClientTest", "BoggleC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoggleClientModel", "BoggleClientModel\BoggleClientModel.csproj", "{C384AB3D-7F72-4C55-A125-FF7E24216DA2}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Boggle Client Installer", "Boggle Client Installer\Boggle Client Installer.vdproj", "{C67CE7C1-455E-4121-8CA7-BEFE36DA68F8}"
-EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -51,8 +49,6 @@ Global
 		{C384AB3D-7F72-4C55-A125-FF7E24216DA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C384AB3D-7F72-4C55-A125-FF7E24216DA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C384AB3D-7F72-4C55-A125-FF7E24216DA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C67CE7C1-455E-4121-8CA7-BEFE36DA68F8}.Debug|Any CPU.ActiveCfg = Debug
-		{C67CE7C1-455E-4121-8CA7-BEFE36DA68F8}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

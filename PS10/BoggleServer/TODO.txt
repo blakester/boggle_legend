@@ -1,10 +1,8 @@
-﻿-The IP 0.0.0.0 causes the client to crash. Add exception handler? Manually check for 0.0.0.0?
--It doesn't look like any such words appear in dictionary.txt, but keep in mind that
+﻿-It doesn't look like any such words appear in dictionary.txt, but keep in mind that
  words with 2 or more pairs of QU will go through the implied U checks 2 or more times,
  i.e. a U can theoretically get implied more than once in a single word.
 -allow 16 letter words? (would have to find new list)
 -words sent right before end don't get added to summary lists. Any way to fix this?
--finish sounds in client
 -Get rid of Regex's...unecessary overhead?
 -Finalize server messages
 -run a code analysis

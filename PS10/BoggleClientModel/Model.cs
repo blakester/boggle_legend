@@ -55,7 +55,7 @@ namespace BoggleClient
                 socket.BeginSend("NEW_PLAYER " + player + "\n", ExceptionCheck, null);
                 socket.BeginReceive(ReceivedMessage, null);
             }
-            catch (SocketException)
+            catch (Exception)
             {
                 if (SocketExceptionEvent != null)
                     SocketExceptionEvent(); // Lets user know that connection has failed.
