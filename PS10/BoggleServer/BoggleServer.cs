@@ -36,6 +36,7 @@ namespace BB
         private TcpListener server; // Used to listen for player connections.        
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
+        private int port = 2000;
         //public static int gameCount = 1;
 
         // THE BELOW WAS USED FOR THE DATABASE
@@ -160,7 +161,7 @@ namespace BB
             }
             else
                 CustomBoard = null;
-            Console.WriteLine("Boggle Server is running. Press enter to close.\n");
+            Console.WriteLine("Boggle Server is listening on port " + port + ". Press enter to close.\n");
 
             // THE BELOW WAS USED FOR THE DATABASE
             // Updates server gameId to match the count in database.
@@ -177,7 +178,7 @@ namespace BB
             //}
 
             // Begin listening for game connections on port 2000
-            server = new TcpListener(IPAddress.Any, 2000);
+            server = new TcpListener(IPAddress.Any, port);
             server.Start();
 
             // THE BELOW WAS USED FOR THE DATABASE
