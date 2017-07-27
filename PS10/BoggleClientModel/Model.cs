@@ -38,7 +38,7 @@ namespace BoggleClient
         public event Action<List<string[]>> SummaryMessageEvent; 
         public event Action<string> ChatMessageEvent;            
         public event Action<bool> DisconnectOrErrorEvent;        
-        public event Action SocketExceptionEvent;                 
+        public event Action<string> SocketExceptionEvent;                 
 
 
         /// <summary>
@@ -55,10 +55,10 @@ namespace BoggleClient
                 socket.BeginSend("NEW_PLAYER " + player + "\n", ExceptionCheck, null);
                 socket.BeginReceive(ReceivedMessage, null);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 if (SocketExceptionEvent != null)
-                    SocketExceptionEvent(); // Lets user know that connection has failed.
+                    SocketExceptionEvent(e.Message); // Lets user know that connection has failed.
             }
         }
 

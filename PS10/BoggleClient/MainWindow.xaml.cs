@@ -822,17 +822,18 @@ namespace BoggleClient
         /// <summary>
         /// Sets client appropriately when connection to server cannot be made.
         /// </summary>
-        private void SocketFail()
+        private void SocketFail(string message)
         {
-            Dispatcher.Invoke(() => { SocketFailHelper(); });
+            Dispatcher.Invoke(() => { SocketFailHelper(message); });
         }
 
 
-        private void SocketFailHelper()
+        private void SocketFailHelper(string message)
         {
-            infoBox.Text = infoBox.Text = "Unable to connect to server. Server may not be "
-                + "running or you entered an invalid IP.\n\n"
-                + "Enter your name and server IP Address then click Connect.";
+            infoBox.Text = infoBox.Text = "Unable to connect to server. Perhaps the server is not "
+                + "running or you entered an invalid IP:\n\n\""
+                + message + "\""
+                + "\n\nEnter your name and server IP Address then click Connect.";
 
             // Allow player to re-enter info.
             connectButton.Content = "Connect";
