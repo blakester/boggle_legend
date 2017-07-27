@@ -112,7 +112,9 @@ namespace BB
             if (args == null || args.Length < 2 || args.Length > 3)
             {
                 // Error Message
-                Console.WriteLine("Must pass in exactly two or three non-null argurments. ");
+                Console.WriteLine("ERROR - Must pass in exactly two or three, space separated, non-null arguments:\n" + 
+                "arg1 - game duration in seconds, e.g. '60'\narg2 - file path to list of legal words, e.g. '../legalwords.txt'\n" +
+                "arg3 - (optional) custom boggle board, e.g. 'ABCDEFGHIJKLMNOP'\n");
                 Console.WriteLine("Press Enter to exit.");
                 GameLength = -1; // Used for testing purposes.
                 return;
@@ -123,7 +125,7 @@ namespace BB
             if (!(int.TryParse(args[0], out temp)) || temp < 1)
             {
                 // Error Message
-                Console.WriteLine("First argument must be a positive integer. ");
+                Console.WriteLine("ERROR - First argument must be a positive integer.");
                 Console.WriteLine("Press Enter to exit.");
                 GameLength = -1; // Used for testing purposes.
                 return;
@@ -152,7 +154,7 @@ namespace BB
                 if (!(Regex.IsMatch(args[2].ToUpper(), @"^[A-Z]{16}$")))
                 {
                     // Error Message
-                    Console.WriteLine("Third argument must be exactly 16 letters or empty.");
+                    Console.WriteLine("ERROR - Third argument must be exactly 16 letters or empty.");
                     Console.WriteLine("Press Enter to exit.");
                     GameLength = -1; // Used for testing purposes.
                     return;
@@ -281,16 +283,16 @@ namespace BB
                         // but then reconnects. However, comment out
                         // if the ability to run a game with 2 players
                         // from the same IP is wanted.)
-                        //if (firstPlayer.IP.Equals(currentPlayer.IP))
-                        //{
-                        //    // Update firstPlayer to the 
-                        //    // latest Player from the
-                        //    // same IP because firstPlayer's
-                        //    // StringSocket is closed when
-                        //    // when "Disconnect" is clicked.
-                        //    firstPlayer = currentPlayer;
-                        //    return;
-                        //}
+                        if (firstPlayer.IP.Equals(currentPlayer.IP))
+                        {
+                            // Update firstPlayer to the 
+                            // latest Player from the
+                            // same IP because firstPlayer's
+                            // StringSocket is closed when
+                            // when "Disconnect" is clicked.
+                            firstPlayer = currentPlayer;
+                            return;
+                        }
 
                         firstPlayer.Opponent = currentPlayer; // remembers opponent
                         currentPlayer.Opponent = firstPlayer;
