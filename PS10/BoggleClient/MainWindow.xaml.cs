@@ -46,7 +46,7 @@ namespace BoggleClient
             model = new Model();
             BrushConverter converter;
             string rulesFileName = "../../../Resources/Resources/Rules.rtf";
-            //string rulesFileName = "Resources/Rules.rtf"; // USE THIS FOR INSTALLER
+            //string rulesFileName = "Resources/Rules.rtf"; // USE THIS WHEN BUILDING THE INSTALLER
             TextRange textRange;
             FileStream fileStream;
 
@@ -75,7 +75,7 @@ namespace BoggleClient
             tieSound2 = new SoundPlayer(@"../../../Resources/Resources/Sounds/tie2.wav");
             chatSound = new SoundPlayer(@"../../../Resources/Resources/Sounds/chat.wav");
 
-            // USE THESE FOR INSTALLER
+            // USE THESE WHEN BUILDING THE INSTALLER
             //countSound = new SoundPlayer(@"Resources/Sounds/countdown.wav");
             ////countSound2 = new SoundPlayer(@"countdown2.wav"); // FINAL SECONDS BEEP
             //incSound = new SoundPlayer(@"Resources/Sounds/inc.wav");
