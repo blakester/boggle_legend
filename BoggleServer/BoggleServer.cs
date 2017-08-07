@@ -823,11 +823,46 @@ namespace BB
 
 
         // THE BELOW WAS USED FOR THE DATABASE
-        // (WOOPS, I THINK I ACCIDENTLY DELETED THE CLASS!)
         ///// <summary>
         ///// Holds information temporarily about a game.
         ///// </summary>
+        //private class GamePlayed
+        //{
+        //    public string Name
+        //    { get; set; }
 
+        //    public int Id
+        //    { get; set; }
+
+        //    public int GameId
+        //    { get; set; }
+
+        //    public int PScore
+        //    { get; set; }
+
+        //    public string OpponName
+        //    { get; set; }
+
+        //    public int OpponId
+        //    { get; set; }
+
+        //    public int OpponScore
+        //    { get; set; }
+
+        //    public System.DateTime Date
+        //    { get; set; }
+
+        //    public string Board
+        //    { get; set; }
+
+        //    public int Time
+        //    { get; set; }
+
+        //    public GamePlayed()
+        //    {
+
+        //    }
+        //}
 
     } // end class BoggleServer
 } // end namespace BB
