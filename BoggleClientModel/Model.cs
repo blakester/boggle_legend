@@ -247,7 +247,7 @@ namespace BoggleClient
         /// <summary>
         /// Notifies opponent that player is typing in their chat box.
         /// </summary>
-        public void SendTyping()
+        public void SendTypingNotification()
         {
             socket.BeginSend("TYPING\n", ExceptionCheck, null);
         }
