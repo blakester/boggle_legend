@@ -29,7 +29,7 @@ namespace BoggleClient
     {
         private Model model; // The model to handle socket and computation.
         private string opponentName;
-        private bool resumeClicked, oppTypNotificationVisible;
+        private bool resumeClicked/*, oppTypNotificationVisible*/;
         private bool chatInitialSelection = true;
         private int chatKeyCount = 0;
         private SoundPlayer countSound, /*countSound2,*/ incSound, decSound, winSound, lossSound, tieSound, tieSound2, chatSound;
@@ -673,32 +673,42 @@ namespace BoggleClient
         {
             if (e.Key == Key.Enter && (chatEntryBox.Text.Trim() != ""))
             {
-                if (oppTypNotificationVisible)
+                //if (oppTypNotificationVisible)
+                if (opponentTypingTR != null && !opponentTypingTR.IsEmpty)
                 {
-                    oppTypNotificationVisible = false;
+                    //oppTypNotificationVisible = false;
                     opponentTypingTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                    //chatKeyCount = 0;
                     opponentTypingTR.Text = "";
                 }
                 chatKeyCount = 0;
 
-                // NOTE: THERE'S PROBABLY CLEANER/EASIER WAYS TO ACHEIVE THE BELOW FORMAT, I JUST DON'T KNOW HOW.
-                // I GUESSED/MESSED AROUND WITH THIS UNTIL IT DISPLAYED THE WAY I WANTED IT.
-
                 // Format and prepend a "Me:" header to the message box 
-                TextRange header = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
-                header.Text = String.Format("Me ({0})\n", DateTime.Now.ToString("h:mm tt").ToLower());
-                header.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
-                header.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
-                header.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
-                header.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Green);
+                //TextRange header = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
+                //header.Text = String.Format("Me ({0})\n", DateTime.Now.ToString("h:mm tt").ToLower());
+                //header.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
+                //header.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
+                //header.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
+                //header.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Green);
+
+                //// Indent and add the entered message underneath the header
+                //TextRange myMessage = new TextRange(header.End, header.End);
+                //myMessage.Start.Paragraph.Margin = new Thickness(10, 0, 0, 0);
+                //myMessage.Text = chatEntryBox.Text + "\n\n";
+                //myMessage.ClearAllProperties();
+                //myMessage.End.Paragraph.Margin = new Thickness(0, 0, 0, 0);
+
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                // Post a "Me:" & timestamp header to the message box
+                string meHeaderText = String.Format("Me ({0})\n", DateTime.Now.ToString("h:mm tt").ToLower());
+                TextRange meHeader = PostChatBoxHeader(meHeaderText, 14.0, FontStyles.Normal, FontWeights.ExtraBold, Brushes.Green);
 
                 // Indent and add the entered message underneath the header
-                TextRange myMessage = new TextRange(header.End, header.End);
+                TextRange myMessage = new TextRange(meHeader.End, meHeader.End);
                 myMessage.Start.Paragraph.Margin = new Thickness(10, 0, 0, 0);
                 myMessage.Text = chatEntryBox.Text + "\n\n";
                 myMessage.ClearAllProperties();
-                myMessage.End.Paragraph.Margin = new Thickness(0, 0, 0, 0);             
+                myMessage.End.Paragraph.Margin = new Thickness(0, 0, 0, 0);
 
                 // Send the entered message and clear the entry box
                 model.SendChat(chatEntryBox.Text);
@@ -712,9 +722,9 @@ namespace BoggleClient
                 {
                     model.SendTypingNotification();
                 }
-                else if (chatKeyCount == 10)
+                else if (chatKeyCount == 15)
                 {
-                    chatKeyCount = -9;
+                    chatKeyCount = -14;
                     model.SendTypingNotification();
                 }
             }
@@ -732,19 +742,22 @@ namespace BoggleClient
 
         private void OpponentTypingHelper()
         {
-            if (!oppTypNotificationVisible)
+            //if (!oppTypNotificationVisible)
+            if ((opponentTypingTR == null) || opponentTypingTR.IsEmpty)
             {
-                oppTypNotificationVisible = true;
-                opponentTypingTR = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
-                opponentTypingTR.Text = "opponent is typing ...\n\n";
-                opponentTypingTR.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);                
-                opponentTypingTR.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Italic);
-                opponentTypingTR.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
-                opponentTypingTR.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Blue);
+                //oppTypNotificationVisible = true;
+                //opponentTypingTR = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
+                //opponentTypingTR.Text = "opponent is typing ...\n\n";
+                //opponentTypingTR.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);                
+                //opponentTypingTR.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Italic);
+                //opponentTypingTR.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
+                //opponentTypingTR.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Blue);
+
+                opponentTypingTR = PostChatBoxHeader("opponent is typing ...\n\n", 14.0, FontStyles.Italic, FontWeights.ExtraBold, Brushes.Blue);
                 
-                opponentTypingTimer.Change(1500, Timeout.Infinite);
+                opponentTypingTimer.Change(2000, Timeout.Infinite);
             }
-        }
+        }        
 
 
         /// <summary>
@@ -759,33 +772,66 @@ namespace BoggleClient
 
         private void ChatMessageHelper(string message)
         {
-            if (oppTypNotificationVisible)
+            //if (oppTypNotificationVisible)
+            if (opponentTypingTR != null && !opponentTypingTR.IsEmpty)
             {
-                oppTypNotificationVisible = false;
+                //oppTypNotificationVisible = false;
                 opponentTypingTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 chatKeyCount = 0;
                 opponentTypingTR.Text = "";
             }
 
-            // NOTE: THERE'S PROBABLY CLEANER/EASIER WAYS TO ACHEIVE THE BELOW FORMAT, I JUST DON'T KNOW HOW.
-            // I GUESSED/MESSED AROUND WITH THIS UNTIL IT DISPLAYED THE WAY I WANTED IT.
-
             // Format and prepend an oppononent name & timestamp header to the message box
-            TextRange header = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
-            header.Text = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:mm tt").ToLower());
-            header.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
-            header.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
-            header.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
-            header.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Red);
+            //TextRange header = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
+            //header.Text = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:mm tt").ToLower());
+            //header.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
+            //header.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
+            //header.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
+            //header.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Red);
 
             // Indent and add the received message underneath the header
-            TextRange oppMessage = new TextRange(header.End, header.End);
+            //TextRange oppMessage = new TextRange(header.End, header.End);
+            //oppMessage.Start.Paragraph.Margin = new Thickness(10, 0, 0, 0);
+            //oppMessage.Text = message + "\n\n";
+            //oppMessage.ClearAllProperties();
+            //oppMessage.End.Paragraph.Margin = new Thickness(0, 0, 0, 0);
+
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+            // Post an oppononent name & timestamp header to the message box
+            string oppHeaderText = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:mm tt").ToLower());
+            TextRange oppHeader = PostChatBoxHeader(oppHeaderText, 14.0, FontStyles.Normal, FontWeights.ExtraBold, Brushes.Red);
+
+            // Indent and add the received message underneath the header
+            TextRange oppMessage = new TextRange(oppHeader.End, oppHeader.End);
             oppMessage.Start.Paragraph.Margin = new Thickness(10, 0, 0, 0);
             oppMessage.Text = message + "\n\n";
             oppMessage.ClearAllProperties();
             oppMessage.End.Paragraph.Margin = new Thickness(0, 0, 0, 0);
 
             if (soundOffCheckBox.IsChecked == false) chatSound.Play();
+        }
+
+
+        /// <summary>
+        /// Posts and returns a TextRange header to the top of the chat box with the specified attributes.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="size"></param>
+        /// <param name="style"></param>
+        /// <param name="weight"></param>
+        /// <param name="color"></param>
+        /// <returns>the created header</returns>
+        private TextRange PostChatBoxHeader(string text, double size, FontStyle style, FontWeight weight, Brush color)
+        {
+            TextRange header = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
+            header.Text = text;
+            header.ApplyPropertyValue(TextElement.FontSizeProperty, size);
+            header.ApplyPropertyValue(TextElement.FontStyleProperty, style);
+            header.ApplyPropertyValue(TextElement.FontWeightProperty, weight);
+            header.ApplyPropertyValue(TextElement.ForegroundProperty, color);
+
+            return header;
         }
 
 
@@ -801,7 +847,7 @@ namespace BoggleClient
 
         private void RemoveOppTypNotificationHelper()
         {
-            oppTypNotificationVisible = false;
+            //oppTypNotificationVisible = false;
             chatKeyCount = 0;
             opponentTypingTR.Text = "";
         }
