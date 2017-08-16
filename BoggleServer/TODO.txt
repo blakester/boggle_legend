@@ -1,4 +1,8 @@
-﻿-It doesn't look like any such words appear in dictionary.txt, but keep in mind that
+﻿-Let player know when opponenet is typing in chat box?
+-Allow mulit-line pasting into the chat box?
+-Make simple cipher for messages so it isn't plain text?
+-List word counts and/or my words to words possible ratio/percentage?
+-It doesn't look like any such words appear in dictionary.txt, but keep in mind that
  words with 2 or more pairs of QU will go through the implied U checks 2 or more times,
  i.e. a U can theoretically get implied more than once in a single word.
 -allow 16 letter words? (would have to find new list)

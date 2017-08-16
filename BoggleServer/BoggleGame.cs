@@ -97,7 +97,9 @@ namespace BB
 
                 // Handle the message
                 if (Regex.IsMatch(s.ToUpper(), @"^(WORD\s)"))
-                    ProcessWord(player, s.Substring(5).Trim().ToUpper());            
+                    ProcessWord(player, s.Substring(5).Trim().ToUpper());
+                else if (Regex.IsMatch(s.ToUpper(), @"^(TYPING)"))
+                    NotifyOpponentTyping(player);
                 else if (Regex.IsMatch(s.ToUpper(), @"^(CHAT\s)"))                
                     RelayChatMessage(player, s.Substring(5));                
                 else if (Regex.IsMatch(s.ToUpper(), @"^(PLAY)"))                
@@ -395,7 +397,7 @@ namespace BB
 
         /// <summary>
         /// Called by the Timer every second. The time left
-        /// in the game is decremented by one and the Player's
+        /// in the game is decremented by one and the Players
         /// are sent said value each time this method is called.
         /// The game will end once the time runs out.
         /// </summary>
@@ -486,6 +488,17 @@ namespace BB
             //UpdateDatabase();
 
         } // end private method End
+
+
+        /// <summary>
+        /// Notifies the specified player's opponent that the player
+        /// is typing in their chat box.
+        /// </summary>
+        /// <param name="player"></param>
+        private void NotifyOpponentTyping(Player player)
+        {
+            player.Opponent.Ss.BeginSend("OPP_TYPING\n", ExceptionCheck, player.Opponent);
+        }
 
 
         /// <summary>
