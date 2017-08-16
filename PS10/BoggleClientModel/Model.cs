@@ -35,7 +35,8 @@ namespace BoggleClient
         public event Action<string[]> ScoreMessageEvent;        
         public event Action PauseMessageEvent;                        
         public event Action ResumeMessageEvent;
-        public event Action<List<string[]>> SummaryMessageEvent; 
+        public event Action<List<string[]>> SummaryMessageEvent;
+        public event Action OpponentTypingEvent;  
         public event Action<string> ChatMessageEvent;            
         public event Action<bool> DisconnectOrErrorEvent;        
         public event Action<string> SocketExceptionEvent;                 
@@ -93,6 +94,8 @@ namespace BoggleClient
                 ReceivedResume();
             else if (Regex.IsMatch(s, @"^(READY\s)"))
                 ReceivedReady(s);
+            else if (Regex.IsMatch(s, @"^(OPP_TYPING)"))
+                ReceivedOpponentTyping();
             else if (Regex.IsMatch(s, @"^(CHAT\s)"))
                 ReceivedChat(s); 
             else if (Regex.IsMatch(s, @"^(TERMINATED)"))
@@ -242,12 +245,31 @@ namespace BoggleClient
 
 
         /// <summary>
+        /// Notifies opponent that player is typing in their chat box.
+        /// </summary>
+        public void SendTyping()
+        {
+            socket.BeginSend("TYPING\n", ExceptionCheck, null);
+        }
+
+
+        /// <summary>
         /// Sends the chat message to be relayed to the opponent.
         /// </summary>
         /// <param name="word"></param>
         public void SendChat(string message)
         {
             socket.BeginSend("CHAT " + message + "\n", ExceptionCheck, null);
+        }
+
+
+        /// <summary>
+        /// Fires event when the opponent is typing in their chat box.
+        /// </summary>
+        private void ReceivedOpponentTyping()
+        {
+            OpponentTypingEvent();
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
 

@@ -283,16 +283,16 @@ namespace BB
                         // but then reconnects. However, comment out
                         // if the ability to run a game with 2 players
                         // from the same IP is wanted.)
-                        if (firstPlayer.IP.Equals(currentPlayer.IP))
-                        {
-                            // Update firstPlayer to the 
-                            // latest Player from the
-                            // same IP because firstPlayer's
-                            // StringSocket is closed when
-                            // when "Disconnect" is clicked.
-                            firstPlayer = currentPlayer;
-                            return;
-                        }
+                        //if (firstPlayer.IP.Equals(currentPlayer.IP))
+                        //{
+                        //    // Update firstPlayer to the 
+                        //    // latest Player from the
+                        //    // same IP because firstPlayer's
+                        //    // StringSocket is closed when
+                        //    // when "Disconnect" is clicked.
+                        //    firstPlayer = currentPlayer;
+                        //    return;
+                        //}
 
                         firstPlayer.Opponent = currentPlayer; // remembers opponent
                         currentPlayer.Opponent = firstPlayer;
