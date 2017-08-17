@@ -968,5 +968,6 @@ namespace BoggleClient
             pointFlashTimer.Dispose();
             opponentTypingTimer.Dispose();
         }
+        
     }
 }

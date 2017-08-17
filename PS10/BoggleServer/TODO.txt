@@ -1,6 +1,4 @@
-﻿-Rules.rtf says "7+"... this should be "8+"
--Allow mulit-line pasting into the chat box?
--Make simple cipher for messages so it isn't plain text?
+﻿-Make simple cipher for messages so it isn't plain text?
 -List word counts and/or my words to words possible ratio/percentage?
 -It doesn't look like any such words appear in dictionary.txt, but keep in mind that
  words with 2 or more pairs of QU will go through the implied U checks 2 or more times,

@@ -65,7 +65,7 @@
             <TextBlock x:Name="oScoreBlock" HorizontalAlignment="Left" Margin="230,375,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="111" Text="Opponent  Score" RenderTransformOrigin="-0.216,0.678" FontSize="14" FontWeight="Bold" TextDecorations="Underline"/>
             <TextBlock x:Name="oScoreBox" HorizontalAlignment="Left" Margin="230,393,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="111" RenderTransformOrigin="-0.216,0.678" Padding="0" FontSize="16" Height="21"><Run/><LineBreak/><Run/></TextBlock>
         </Grid>
-        <TextBox x:Name="chatEntryBox" HorizontalAlignment="Left" Height="91" TextWrapping="Wrap" Text="Enter messages here" VerticalAlignment="Top" Width="253" Margin="3,68,0,0" BorderThickness="1" KeyDown="chatBox_KeyDown" GotFocus="chatEntryBox_GotFocus" Panel.ZIndex="1" Grid.Column="1" IsEnabled="False"/>
+        <TextBox x:Name="chatEntryBox" HorizontalAlignment="Left" Height="91" TextWrapping="Wrap" Text="Enter messages here" VerticalAlignment="Top" Width="253" Margin="3,68,0,0" BorderThickness="1" GotFocus="chatEntryBox_GotFocus" Panel.ZIndex="1" Grid.Column="1" IsEnabled="False" KeyDown="chatBox_KeyDown"/>
         <Rectangle x:Name="chatRectangle" HorizontalAlignment="Left" Height="585" Stroke="Black" VerticalAlignment="Top" Width="300" Margin="32,28,0,0" Grid.ColumnSpan="2" Fill="Gray"/>
         <Label x:Name="chatLabel" Content="Chat" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="104,37,0,0" Width="50" FontSize="16" FontWeight="Bold" RenderTransformOrigin="3.32,0.677" Grid.Column="1"/>
         <Button x:Name="playButton" Content="Play" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Height="23" Margin="577,55
