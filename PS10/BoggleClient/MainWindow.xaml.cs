@@ -29,15 +29,13 @@ namespace BoggleClient
     {
         private Model model; // The model to handle socket and computation.
         private string opponentName;
-        private bool resumeClicked/*, oppTypNotificationVisible*/;
+        private bool resumeClicked;
         private bool chatInitialSelection = true;
         private int chatKeyCount = 0;
         private SoundPlayer countSound, /*countSound2,*/ incSound, decSound, winSound, lossSound, tieSound, tieSound2, chatSound;
-        private Brush defaultBrush, yellowBrush; // colors used for the gameRectangle        
-
-        private Timer pointFlashTimer, opponentTypingTimer;//******************************************************************************
-        private TextRange opponentTypingTR;
-
+        private Brush defaultBrush, yellowBrush; // colors used for the gameRectangle  
+        private Timer pointFlashTimer, opponentTypingTimer;
+        private TextRange opponentTypingTR; // "opponent is typing" notification in the chat box
         private double pointFlashOpacity = 1.0;         
         private int wins, ties, losses;
 
@@ -115,8 +113,9 @@ namespace BoggleClient
             converter = new BrushConverter();
             yellowBrush = (Brush)converter.ConvertFromString("#FFFFFF94");
 
+            // Initialize Timers
             pointFlashTimer = new Timer(PointFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);            
-            opponentTypingTimer = new Timer(RemoveOppTypNotification, null, Timeout.Infinite, Timeout.Infinite);//****************
+            opponentTypingTimer = new Timer(RemoveOppTypNotification, null, Timeout.Infinite, Timeout.Infinite);
 
             // Load "Rules.rtf" into the rules box
             textRange = new TextRange(rulesBox.Document.ContentStart, rulesBox.Document.ContentEnd);
@@ -665,41 +664,59 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Handler for enter key in the chatbox
+        /// Toggles between showing or hiding the rules document.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void showRulesButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (showRulesButton.Content.ToString() == "Show Rules")
+            {
+                showRulesButton.Content = "Hide Rules";
+                rulesBox.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                showRulesButton.Content = "Show Rules";
+                rulesBox.Visibility = Visibility.Hidden;
+            }
+        }
+
+
+        /// <summary>
+        /// Handler when chatEntryBox receives focus.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (chatInitialSelection)
+            {
+                chatEntryBox.Clear();
+                chatInitialSelection = false;
+            }
+        }
+
+
+        /// <summary>
+        /// Handler for keys typed in the chatbox
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void chatBox_KeyDown(object sender, KeyEventArgs e)
         {
+            // Nonempty string entered
             if (e.Key == Key.Enter && (chatEntryBox.Text.Trim() != ""))
             {
-                //if (oppTypNotificationVisible)
+                // Get rid of opponent typing notification if it is present
                 if (opponentTypingTR != null && !opponentTypingTR.IsEmpty)
                 {
-                    //oppTypNotificationVisible = false;
                     opponentTypingTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     opponentTypingTR.Text = "";
                 }
-                chatKeyCount = 0;
+                chatKeyCount = 0; // reset key count for opponent typing notification
 
-                // Format and prepend a "Me:" header to the message box 
-                //TextRange header = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
-                //header.Text = String.Format("Me ({0})\n", DateTime.Now.ToString("h:mm tt").ToLower());
-                //header.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
-                //header.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
-                //header.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
-                //header.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Green);
-
-                //// Indent and add the entered message underneath the header
-                //TextRange myMessage = new TextRange(header.End, header.End);
-                //myMessage.Start.Paragraph.Margin = new Thickness(10, 0, 0, 0);
-                //myMessage.Text = chatEntryBox.Text + "\n\n";
-                //myMessage.ClearAllProperties();
-                //myMessage.End.Paragraph.Margin = new Thickness(0, 0, 0, 0);
-
-                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-                // Post a "Me:" & timestamp header to the message box
+                // Post a "Me:" timestamp header to the message box
                 string meHeaderText = String.Format("Me ({0})\n", DateTime.Now.ToString("h:mm tt").ToLower());
                 TextRange meHeader = PostChatBoxHeader(meHeaderText, 14.0, FontStyles.Normal, FontWeights.ExtraBold, Brushes.Green);
 
@@ -714,17 +731,21 @@ namespace BoggleClient
                 model.SendChat(chatEntryBox.Text);
                 chatEntryBox.Clear();
             }
+
+            // Empty string entered (move caret back to beginning)
             else if (e.Key == Key.Enter && (chatEntryBox.Text.Trim() == ""))
-                chatEntryBox.CaretIndex = 0; // move caret back to beginning for entered empty strings
+                chatEntryBox.CaretIndex = 0;
+
+            // A regular key is pressed. Send opponent typing notification if necessary.
             else
             {
-                if (++chatKeyCount == 1)
+                if (++chatKeyCount == 1) // 1st key down
                 {
                     model.SendTypingNotification();
                 }
-                else if (chatKeyCount == 15)
+                else if (chatKeyCount == 15) // 15th key down
                 {
-                    chatKeyCount = -14;
+                    chatKeyCount = -14; // reset
                     model.SendTypingNotification();
                 }
             }
@@ -732,7 +753,7 @@ namespace BoggleClient
 
 
        /// <summary>
-       /// Notifies the player that the opponent is typing in their chat box.
+       /// Notifies this player that their opponent is typing in their chat box.
        /// </summary>
         private void OpponentTyping()
         {
@@ -742,22 +763,30 @@ namespace BoggleClient
 
         private void OpponentTypingHelper()
         {
-            //if (!oppTypNotificationVisible)
+            // Only post the notification if one isn't already posted
             if ((opponentTypingTR == null) || opponentTypingTR.IsEmpty)
             {
-                //oppTypNotificationVisible = true;
-                //opponentTypingTR = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
-                //opponentTypingTR.Text = "opponent is typing ...\n\n";
-                //opponentTypingTR.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);                
-                //opponentTypingTR.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Italic);
-                //opponentTypingTR.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
-                //opponentTypingTR.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Blue);
-
                 opponentTypingTR = PostChatBoxHeader("opponent is typing ...\n\n", 14.0, FontStyles.Italic, FontWeights.ExtraBold, Brushes.Blue);
-                
-                opponentTypingTimer.Change(2000, Timeout.Infinite);
+                opponentTypingTimer.Change(2000, Timeout.Infinite); // remove notification after 2 seconds
             }
-        }        
+        }
+
+
+        /// <summary>
+        /// Removes the opponent is typing notification from the top of the chat box.
+        /// </summary>
+        /// <param name="stateInfo"></param>
+        private void RemoveOppTypNotification(object stateInfo)
+        {
+            Dispatcher.Invoke(new Action(() => { RemoveOppTypNotificationHelper(); }));
+        }
+
+
+        private void RemoveOppTypNotificationHelper()
+        {
+            chatKeyCount = 0;
+            opponentTypingTR.Text = "";
+        }
 
 
         /// <summary>
@@ -772,33 +801,15 @@ namespace BoggleClient
 
         private void ChatMessageHelper(string message)
         {
-            //if (oppTypNotificationVisible)
+            // Remove opponent typing notification if one is posted
             if (opponentTypingTR != null && !opponentTypingTR.IsEmpty)
             {
-                //oppTypNotificationVisible = false;
                 opponentTypingTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 chatKeyCount = 0;
                 opponentTypingTR.Text = "";
             }
 
-            // Format and prepend an oppononent name & timestamp header to the message box
-            //TextRange header = new TextRange(chatDisplayBox.Document.ContentStart, chatDisplayBox.Document.ContentStart);
-            //header.Text = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:mm tt").ToLower());
-            //header.ApplyPropertyValue(TextElement.FontSizeProperty, chatEntryBox.FontSize + 2);
-            //header.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
-            //header.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.ExtraBold);
-            //header.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Red);
-
-            // Indent and add the received message underneath the header
-            //TextRange oppMessage = new TextRange(header.End, header.End);
-            //oppMessage.Start.Paragraph.Margin = new Thickness(10, 0, 0, 0);
-            //oppMessage.Text = message + "\n\n";
-            //oppMessage.ClearAllProperties();
-            //oppMessage.End.Paragraph.Margin = new Thickness(0, 0, 0, 0);
-
-            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-            // Post an oppononent name & timestamp header to the message box
+            // Post an oppononent name timestamp header to the message box
             string oppHeaderText = String.Format("{0} ({1})\n", opponentName, DateTime.Now.ToString("h:mm tt").ToLower());
             TextRange oppHeader = PostChatBoxHeader(oppHeaderText, 14.0, FontStyles.Normal, FontWeights.ExtraBold, Brushes.Red);
 
@@ -814,7 +825,7 @@ namespace BoggleClient
 
 
         /// <summary>
-        /// Posts and returns a TextRange header to the top of the chat box with the specified attributes.
+        /// Posts and returns a TextRange header to the top of the chat box with the specified properties.
         /// </summary>
         /// <param name="text"></param>
         /// <param name="size"></param>
@@ -832,40 +843,7 @@ namespace BoggleClient
             header.ApplyPropertyValue(TextElement.ForegroundProperty, color);
 
             return header;
-        }
-
-
-        /// <summary>
-        /// Removes the opponent is typing notification from the top of the chat box.
-        /// </summary>
-        /// <param name="stateInfo"></param>
-        private void RemoveOppTypNotification(object stateInfo)
-        {
-            Dispatcher.Invoke(new Action(() => { RemoveOppTypNotificationHelper(); }));
-        }
-
-
-        private void RemoveOppTypNotificationHelper()
-        {
-            //oppTypNotificationVisible = false;
-            chatKeyCount = 0;
-            opponentTypingTR.Text = "";
-        }
-
-
-        /// <summary>
-        /// Handler when chatEntryBox receives focus.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void chatEntryBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (chatInitialSelection)
-            {
-                chatEntryBox.Clear();
-                chatInitialSelection = false;
-            }
-        }
+        }          
 
 
         /// <summary>
@@ -930,27 +908,11 @@ namespace BoggleClient
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
-        }
-
-
-        private void showRulesButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (showRulesButton.Content.ToString() == "Show Rules")
-            {
-                showRulesButton.Content = "Hide Rules";
-                rulesBox.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                showRulesButton.Content = "Show Rules";
-                rulesBox.Visibility = Visibility.Hidden;
-            }
-
-        }
+        }       
 
 
         /// <summary>
-        /// Perhaps not necessary, but disposes all sounds and timer when application is closed.
+        /// Perhaps not necessary, but disposes all sounds and timers when application is closed.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -967,7 +929,6 @@ namespace BoggleClient
 
             pointFlashTimer.Dispose();
             opponentTypingTimer.Dispose();
-        }
-        
+        }        
     }
 }
