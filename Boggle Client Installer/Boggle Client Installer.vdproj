@@ -52,13 +52,13 @@
         "Entry"
         {
         "MsmKey" = "8:_78D8AC13FD3000CD8B3465E5572BD474"
-        "OwnerKey" = "8:_D3818D9AF34045C48F3A0D305B592012"
+        "OwnerKey" = "8:_34063DF0F13D49100F479BFA7DC90949"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_78D8AC13FD3000CD8B3465E5572BD474"
-        "OwnerKey" = "8:_34063DF0F13D49100F479BFA7DC90949"
+        "OwnerKey" = "8:_D3818D9AF34045C48F3A0D305B592012"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -81,6 +81,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_CB5945B9BD614579A6DF14DAC693FB3C"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_D039FCA546544B4F97EDAF4576854ED0"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -93,20 +99,14 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_F38D4FAB98EB4ED4A500DD0359E57DB7"
-        "OwnerKey" = "8:_UNDEFINED"
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_D3818D9AF34045C48F3A0D305B592012"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_34063DF0F13D49100F479BFA7DC90949"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_D3818D9AF34045C48F3A0D305B592012"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -133,6 +133,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -149,6 +157,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
@@ -400,12 +416,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D039FCA546544B4F97EDAF4576854ED0"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CB5945B9BD614579A6DF14DAC693FB3C"
             {
-            "SourcePath" = "8:..\\Resources\\Resources\\Sounds\\dec.wav"
-            "TargetName" = "8:dec.wav"
+            "SourcePath" = "8:..\\Resources\\Resources\\Rules.rtf"
+            "TargetName" = "8:Rules.rtf"
             "Tag" = "8:"
-            "Folder" = "8:_462B80B26ADA43E1BD3E30239F300025"
+            "Folder" = "8:_AF031D4F116E4B3D81107819DFDDB0AC"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -420,12 +436,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F38D4FAB98EB4ED4A500DD0359E57DB7"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D039FCA546544B4F97EDAF4576854ED0"
             {
-            "SourcePath" = "8:..\\Resources\\Resources\\Rules.rtf"
-            "TargetName" = "8:Rules.rtf"
+            "SourcePath" = "8:..\\Resources\\Resources\\Sounds\\dec.wav"
+            "TargetName" = "8:dec.wav"
             "Tag" = "8:"
-            "Folder" = "8:_AF031D4F116E4B3D81107819DFDDB0AC"
+            "Folder" = "8:_462B80B26ADA43E1BD3E30239F300025"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
