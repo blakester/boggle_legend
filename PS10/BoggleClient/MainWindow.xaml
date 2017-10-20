@@ -20,8 +20,8 @@
         <TextBox x:Name="wordEntryBox" HorizontalAlignment="Left" Height="26" Margin="381,587,0,0" VerticalAlignment="Top" Width="293" IsEnabled="False" KeyDown="wordEntryBox_Enter" Grid.Column="1"/>
         <Label x:Name="serverLabel" Content="Boggle Server IP Address" HorizontalAlignment="Left" Margin="304,25,0,0" VerticalAlignment="Top" Grid.Column="1" Foreground="Yellow"/>
         <Label x:Name="playerLabel" Content="Player Name" HorizontalAlignment="Left" Margin="304,52,0,0" VerticalAlignment="Top" Grid.Column="1" Foreground="Yellow"/>
-        <TextBox x:Name="playerTextBox" HorizontalAlignment="Left" Height="23" Margin="381,55,0,0" VerticalAlignment="Top" Width="191" Grid.Column="1" Text="Blakey Boy"/>
-        <TextBox x:Name="serverTextBox" HorizontalAlignment="Left" Height="23" Margin="452,28,0,0" VerticalAlignment="Top" Width="120" Grid.Column="1" Text="localhost"/>
+        <TextBox x:Name="playerTextBox" HorizontalAlignment="Left" Height="23" Margin="381,55,0,0" VerticalAlignment="Top" Width="191" Grid.Column="1"/>
+        <TextBox x:Name="serverTextBox" HorizontalAlignment="Left" Height="23" Margin="452,28,0,0" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
         <Grid x:Name="gameGrid" HorizontalAlignment="Left" Height="448" Margin="308,149,0,0" VerticalAlignment="Top" Width="368" RenderTransformOrigin="0.497,0.509" Visibility="Visible" Grid.Column="1">
             <Rectangle x:Name="gameRectangle" HorizontalAlignment="Left" Height="433" Margin="0,-9,0,0" Stroke="Black" VerticalAlignment="Top" Width="368" RenderTransformOrigin="0.489,0.533" Fill="Gray"/>
             <TextBlock x:Name="opponentBlock" HorizontalAlignment="Left" Margin="4,-9,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="75" Text="Opponent" RenderTransformOrigin="-0.216,0.678" FontSize="14" FontWeight="Bold" TextDecorations="Underline" IsEnabled="False"/>
