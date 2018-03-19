@@ -185,6 +185,9 @@ namespace BoggleClient
                 wordEntryBox.IsEnabled = false;
                 playButton.Content = "Play";
                 model.playerDisconnected = true;
+                lengthTextBox.IsEnabled = false;
+                lengthTextBox.Clear();
+                setButton.IsEnabled = false;
                 gameRectangle.Fill = defaultBrush;
                 showBoardButton.Visibility = Visibility.Hidden;
                 infoBox.Visibility = Visibility.Visible;
@@ -201,21 +204,24 @@ namespace BoggleClient
         /// Enables client to start game and/or chat.
         /// </summary>
         /// <param name="s"></param>
-        private void GameReady(string s)
+        private void GameReady(string[] tokens)
         {
-            Dispatcher.Invoke(new Action(() => { GameReadyHelper(s); }));
+            Dispatcher.Invoke(new Action(() => { GameReadyHelper(tokens); }));
         }
 
 
-        private void GameReadyHelper(string s)
+        private void GameReadyHelper(string[] tokens)
         {
             playerTextBox.IsEnabled = false;
             serverTextBox.IsEnabled = false;
             chatEntryBox.IsEnabled = true;
             playButton.IsEnabled = true;
+            lengthTextBox.IsEnabled = true;
+            setButton.IsEnabled = true;
             wins = losses = ties = 0;
-            opponentName = s;
-            infoBox.Text = "Your opponent is \"" + s + "\".\n\n"
+            opponentName = tokens[1];
+            lengthTextBox.Text = tokens[2];
+            infoBox.Text = "Your opponent is \"" + tokens[1] + "\".\n\n"
                 + "Chat or click Play to begin!";
         }
 
@@ -319,6 +325,9 @@ namespace BoggleClient
 
         private void CountdownHelper(string s, bool starting)
         {
+            lengthTextBox.IsEnabled = false;
+            setButton.IsEnabled = false;
+
             double opacity;
 
             if (s.Equals("3"))
@@ -626,6 +635,8 @@ namespace BoggleClient
 
             wordEntryBox.IsEnabled = false;
             playButton.Content = "Play";
+            lengthTextBox.IsEnabled = true;
+            setButton.IsEnabled = true;
         }
 
 
@@ -866,6 +877,9 @@ namespace BoggleClient
             wordEntryBox.IsEnabled = false;
             playButton.IsEnabled = false;
             chatEntryBox.IsEnabled = false;
+            lengthTextBox.IsEnabled = false;
+            lengthTextBox.Clear();
+            setButton.IsEnabled = false;
             playButton.Content = "Play";
 
             if (opponentDisconnected)

@@ -36,7 +36,7 @@ namespace BB
         private string possibleWords;
         private Timer countDownTimer, gameTimer, resumeTimer;
         private Stopwatch watch;//, deleteme;//**************************************************************************************
-        private int timeLeft, maxScore;
+        private int gameLength, timeLeft, maxScore;
         private bool paused = false;
         private bool gameOver = false;
         private BoggleBoard board; // The board layout of the current game.        
@@ -65,8 +65,8 @@ namespace BB
             //deleteme = new Stopwatch();//**************************************************************************************************
 
             // Let Players know game is ready to start
-            one.Ss.BeginSend("READY " + two.Name + "\n", ExceptionCheck, one);
-            two.Ss.BeginSend("READY " + one.Name + "\n", ExceptionCheck, two);
+            one.Ss.BeginSend("READY " + two.Name + " " + BoggleServer.GameLength + "\n", ExceptionCheck, one);
+            two.Ss.BeginSend("READY " + one.Name + " " + BoggleServer.GameLength + "\n", ExceptionCheck, two);
 
             // Begin waiting for messages from the Players.
             one.Ss.BeginReceive(MessageReceived, one);
@@ -158,8 +158,11 @@ namespace BB
             else
                 board = new BoggleBoard(BoggleServer.CustomBoard);
 
-            // reset timeLeft
-            timeLeft = BoggleServer.GameLength;
+            // reset timeLeft; use custom gameLength if set
+            if (gameLength == 0)
+                timeLeft = BoggleServer.GameLength;
+            else
+                timeLeft = gameLength;
 
             // Send players the board. Countdown starts after both messages are sent.
             one.Ss.BeginSend("BOARD " + board.ToString() + " " + timeLeft + "\n", Countdown, one);
