@@ -27,7 +27,7 @@ namespace BoggleClient
         public bool playerDisconnected;
         
         // Events for the controller to handle.        
-        public event Action<string> ReadyMessageEvent;
+        public event Action<string[]> ReadyMessageEvent;
         public event Action<string[]> BoardMessageEvent;
         public event Action<string, bool> CountdownMessageEvent;
         public event Action StartMessageEvent;                   
@@ -109,7 +109,9 @@ namespace BoggleClient
         /// <param name="message"></param>
         private void ReceivedReady(string message)
         {
-            ReadyMessageEvent(message.Substring(6)); // send the opponent's name
+            char[] spaces = { ' ' }; // Ensures that empty entries are not created.
+            string[] tokens = message.Split(spaces, StringSplitOptions.RemoveEmptyEntries);
+            ReadyMessageEvent(tokens); // send the opponent's name and game length
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 
