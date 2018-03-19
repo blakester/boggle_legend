@@ -17,10 +17,10 @@
 
         <Button x:Name="connectButton" Content="Connect" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,28,0,0" Click="connectButton_Click" Height="23" Grid.Column="1"/>
         <Label x:Name="wordEntryLabel" Content="Enter Words" HorizontalAlignment="Left" Margin="303,587,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <TextBox x:Name="wordEntryBox" HorizontalAlignment="Left" Height="26" Margin="381,587,0,0" VerticalAlignment="Top" Width="293" IsEnabled="False" KeyDown="wordEntryBox_Enter" Grid.Column="1"/>
+        <TextBox x:Name="wordEntryBox" HorizontalAlignment="Left" Height="26" Margin="381,587,0,0" VerticalAlignment="Top" Width="295" IsEnabled="False" KeyDown="wordEntryBox_Enter" Grid.Column="1"/>
         <Label x:Name="serverLabel" Content="Boggle Server IP Address" HorizontalAlignment="Left" Margin="304,25,0,0" VerticalAlignment="Top" Grid.Column="1" Foreground="Yellow"/>
         <Label x:Name="playerLabel" Content="Player Name" HorizontalAlignment="Left" Margin="304,52,0,0" VerticalAlignment="Top" Grid.Column="1" Foreground="Yellow"/>
-        <TextBox x:Name="playerTextBox" HorizontalAlignment="Left" Height="23" Margin="381,55,0,0" VerticalAlignment="Top" Width="191" Grid.Column="1"/>
+        <TextBox x:Name="playerTextBox" HorizontalAlignment="Left" Height="23" Margin="386,55,0,0" VerticalAlignment="Top" Width="186" Grid.Column="1"/>
         <TextBox x:Name="serverTextBox" HorizontalAlignment="Left" Height="23" Margin="452,28,0,0" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
         <Grid x:Name="gameGrid" HorizontalAlignment="Left" Height="448" Margin="308,149,0,0" VerticalAlignment="Top" Width="368" RenderTransformOrigin="0.497,0.509" Visibility="Visible" Grid.Column="1">
             <Rectangle x:Name="gameRectangle" HorizontalAlignment="Left" Height="433" Margin="0,-9,0,0" Stroke="Black" VerticalAlignment="Top" Width="368" RenderTransformOrigin="0.489,0.533" Fill="Gray"/>
@@ -85,7 +85,7 @@
         </RichTextBox>
         <Label x:Name="countDownLabel" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="334,307,0,0" Height="203" Width="315" Panel.ZIndex="2" FontStyle="Italic" Background="White" FontSize="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="1"/>
         <Label x:Name="startingInLabel" Content="Starting in..." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="334,195,0,0" Height="112" Width="315" FontSize="50" Panel.ZIndex="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" FontStyle="Italic" Background="White" Grid.Column="1"/>
-        <CheckBox x:Name="soundOffCheckBox" Content="Sound off" VerticalAlignment="Top" Margin="310,89,0,0" HorizontalAlignment="Left" RenderTransformOrigin="0.482,1.236" Grid.Column="1" Foreground="Yellow" FlowDirection="RightToLeft">
+        <CheckBox x:Name="soundOffCheckBox" Content="Sound off" VerticalAlignment="Top" Margin="309,114,0,0" HorizontalAlignment="Left" RenderTransformOrigin="0.482,1.236" Grid.Column="1" Foreground="Yellow" FlowDirection="RightToLeft">
             <CheckBox.Resources>
                 <Style TargetType="{x:Type Path}">
                     <Setter Property="FlowDirection" Value="LeftToRight"/>
@@ -94,7 +94,7 @@
         </CheckBox>
         <Button x:Name="showBoardButton" Content="Show Board" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,109,0,0" Click="showBoardButton_Click" Height="23" RenderTransformOrigin="-0.97,0.496" Grid.Column="1" Visibility="Hidden"/>
         <Label x:Name="pointFlashLabel" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="328,177,0,0" Height="330" Width="315" Panel.ZIndex="1" FontStyle="Italic" Background="{x:Null}" FontSize="175" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="#FF0C00FF" Visibility="Hidden" Grid.Column="1"/>
-        <CheckBox x:Name="pntFlashesOffCheckBox" Content="Point flashes off" VerticalAlignment="Top" Margin="397,89,0,0" HorizontalAlignment="Left" Grid.Column="1" Foreground="Yellow" FlowDirection="RightToLeft">
+        <CheckBox x:Name="pntFlashesOffCheckBox" Content="Point flashes off" VerticalAlignment="Top" Margin="401,114,0,0" HorizontalAlignment="Left" Grid.Column="1" Foreground="Yellow" FlowDirection="RightToLeft">
             <CheckBox.Resources>
                 <Style TargetType="{x:Type Path}">
                     <Setter Property="FlowDirection" Value="LeftToRight"/>
@@ -102,12 +102,15 @@
             </CheckBox.Resources>
         </CheckBox>
         <Button x:Name="showRulesButton" Content="Show Rules" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,82,0,0" Height="23" RenderTransformOrigin="-0.97,0.496" Grid.Column="1" Click="showRulesButton_Click"/>
-        <RichTextBox x:Name="rulesBox" HorizontalAlignment="Left" Height="523" VerticalAlignment="Top" Width="762" Margin="0,110,0,0" Panel.ZIndex="4" IsReadOnly="True" BorderThickness="0,10" Grid.ColumnSpan="2" Background="White" VerticalScrollBarVisibility="Visible" Opacity="0.98" BorderBrush="#FFFF952A" Visibility="Hidden">
+        <RichTextBox x:Name="rulesBox" HorizontalAlignment="Left" Height="503" VerticalAlignment="Top" Width="697" Margin="32,110,0,0" Panel.ZIndex="4" IsReadOnly="True" BorderThickness="0,10" Grid.ColumnSpan="2" Background="White" VerticalScrollBarVisibility="Visible" Opacity="0.98" BorderBrush="#FFFF952A" Visibility="Hidden">
             <FlowDocument>
                 <Paragraph>
                     <Run Text="RichTextBox"/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
+        <Label x:Name="gameLengthLabel" Content="Game Length" HorizontalAlignment="Left" Margin="304,79,0,0" VerticalAlignment="Top" Grid.Column="1" Foreground="Yellow"/>
+        <TextBox x:Name="lengthTextBox" HorizontalAlignment="Left" Height="23" Margin="386,82,0,0" VerticalAlignment="Top" Width="61" Grid.Column="1" IsEnabled="False"/>
+        <Button x:Name="setButton" Content="Set" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" Height="23" Margin="452,82,0,0" IsEnabled="False" Click="playButton_Click" Grid.Column="1"/>
     </Grid>
 </Window>
