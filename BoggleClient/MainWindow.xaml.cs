@@ -132,6 +132,7 @@ namespace BoggleClient
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 showRulesButton.IsEnabled = false;
             }
+            serverTextBox.Focus(); // put cursor in server box
         }
 
 
