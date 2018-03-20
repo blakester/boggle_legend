@@ -37,7 +37,8 @@ namespace BoggleClient
         public event Action ResumeMessageEvent;
         public event Action<List<string[]>> SummaryMessageEvent;
         public event Action OpponentTypingEvent;  
-        public event Action<string> ChatMessageEvent;            
+        public event Action<string> ChatMessageEvent;
+        public event Action<string> GameLengthEvent;
         public event Action<bool> DisconnectOrErrorEvent;        
         public event Action<string> SocketExceptionEvent;                 
 
@@ -97,7 +98,9 @@ namespace BoggleClient
             else if (Regex.IsMatch(s, @"^(OPP_TYPING)"))
                 ReceivedOpponentTyping();
             else if (Regex.IsMatch(s, @"^(CHAT\s)"))
-                ReceivedChat(s); 
+                ReceivedChat(s);
+            else if (Regex.IsMatch(s, @"^(LENGTH\s)"))
+                ReceivedGameLength(s); 
             else if (Regex.IsMatch(s, @"^(TERMINATED)"))
                 Terminate(true);          
         }
@@ -197,7 +200,7 @@ namespace BoggleClient
             // List to be sent to event.
             List<string[]> results = new List<string[]>();
 
-            message = message.Substring(5); //Takes out Stop            
+            message = message.Substring(5); //Takes out STOP            
 
             // Seperate the string into tokens
             char[] spaces = { ' ' };
@@ -243,6 +246,33 @@ namespace BoggleClient
         public void SendWord(string word)
         {
             socket.BeginSend("WORD " + word + "\n", ExceptionCheck, null);
+        }
+
+
+        /// <summary>
+        /// Returns true if s is a single digit
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public bool IsDigit(string s)
+        {
+            return Regex.IsMatch(s, @"\d");
+        }
+
+
+        /// <summary>
+        /// Sends and sets the new game time length (seconds). Only positive integers
+        /// 5 digits or less will be sent. 
+        /// </summary>
+        /// <param name="length"></param>
+        public void SendGameLength(string length)
+        {
+            // Interface allows leading zeros, so remove any here
+            char[] zero = {'0'};
+            length = length.TrimStart(zero);
+
+            if (Regex.IsMatch(length, @"^[1-9]\d{0,4}$"))
+                socket.BeginSend("LENGTH " + length + "\n", ExceptionCheck, null);           
         }
 
 
@@ -339,6 +369,17 @@ namespace BoggleClient
         private void ReceivedResume()
         {
             ResumeMessageEvent();
+            socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
+        }
+
+
+        /// <summary>
+        /// Fires event when a new game length (seconds) has been received.
+        /// </summary>
+        /// <param name="s"></param>
+        private void ReceivedGameLength(string s)
+        {
+            GameLengthEvent(s.Substring(7));
             socket.BeginReceive(ReceivedMessage, null); // Receiving Loop
         }
 

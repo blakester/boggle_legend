@@ -36,7 +36,7 @@ namespace BoggleClient
         private Brush defaultBrush, yellowBrush; // colors used for the gameRectangle  
         private Timer pointFlashTimer, opponentTypingTimer;
         private TextRange opponentTypingTR; // "opponent is typing" notification in the chat box
-        private double pointFlashOpacity = 1.0;         
+        private double pointFlashOpacity = 1.0;
         private int wins, ties, losses;
 
         /// <summary>
@@ -64,6 +64,7 @@ namespace BoggleClient
             model.SummaryMessageEvent += GameCompleted;
             model.OpponentTypingEvent += OpponentTyping;
             model.ChatMessageEvent += ChatMessage;
+            model.GameLengthEvent += GameLength;
             model.DisconnectOrErrorEvent += OppDisconnectOrErr;
             model.SocketExceptionEvent += SocketFail;
 
@@ -114,7 +115,7 @@ namespace BoggleClient
             yellowBrush = (Brush)converter.ConvertFromString("#FFFFFF94");
 
             // Initialize Timers
-            pointFlashTimer = new Timer(PointFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);            
+            pointFlashTimer = new Timer(PointFlashFadeOut, null, Timeout.Infinite, Timeout.Infinite);
             opponentTypingTimer = new Timer(RemoveOppTypNotification, null, Timeout.Infinite, Timeout.Infinite);
 
             // Load "Rules.rtf" into the rules box
@@ -414,7 +415,8 @@ namespace BoggleClient
             if (e.Key == Key.Enter)
             {
                 string word = wordEntryBox.Text;
-                wordEntryBox.Text = ""; // Clears Box
+                wordEntryBox.Clear(); // Clears Box
+                //wordEntryBox.Text = ""; ****************************************************** DELETE ME *********************************
                 model.SendWord(word); // Sends word to server
             }
         }
@@ -656,6 +658,40 @@ namespace BoggleClient
 
 
         /// <summary>
+        /// Allows only digits and spaces to be entered in lengthTextBox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void LengthValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !model.IsDigit(e.Text);
+        }
+
+
+        /// <summary>
+        /// Disallows spaces to be entered in lengthTextBox b/c above function is not sufficient
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void lengthTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space)
+                e.Handled = true;
+        }
+
+
+        /// <summary>
+        /// Handler when Set is clicked. Send the new game length to the server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void setButton_Click(object sender, RoutedEventArgs e)
+        {
+            model.SendGameLength(lengthTextBox.Text);
+        }
+
+
+        /// <summary>
         /// Toggles between the game board and message board after games.
         /// </summary>
         /// <param name="sender"></param>
@@ -764,9 +800,9 @@ namespace BoggleClient
         }
 
 
-       /// <summary>
-       /// Notifies this player that their opponent is typing in their chat box.
-       /// </summary>
+        /// <summary>
+        /// Notifies this player that their opponent is typing in their chat box.
+        /// </summary>
         private void OpponentTyping()
         {
             Dispatcher.Invoke(() => { OpponentTypingHelper(); });
@@ -855,7 +891,23 @@ namespace BoggleClient
             header.ApplyPropertyValue(TextElement.ForegroundProperty, color);
 
             return header;
-        }          
+        }
+
+
+        /// <summary>
+        /// Displays the newly set game time length (seconds)
+        /// </summary>
+        /// <param name="length"></param>
+        private void GameLength(string length)
+        {
+            Dispatcher.Invoke(new Action(() => { GameLengthHelper(length); }));
+        }
+
+
+        private void GameLengthHelper(string length)
+        {
+            lengthTextBox.Text = length;
+        }
 
 
         /// <summary>
@@ -896,7 +948,7 @@ namespace BoggleClient
             pScoreBox.Text = "";
             oScoreBox.Text = "";
             wordEntryBox.Text = "";
-            
+
             gameRectangle.Fill = defaultBrush;
             showBoardButton.Visibility = Visibility.Hidden;
             infoBox.Visibility = Visibility.Visible;
@@ -923,7 +975,7 @@ namespace BoggleClient
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
             serverTextBox.IsEnabled = true;
-        }       
+        }
 
 
         /// <summary>
@@ -944,6 +996,6 @@ namespace BoggleClient
 
             pointFlashTimer.Dispose();
             opponentTypingTimer.Dispose();
-        }        
+        }
     }
 }
