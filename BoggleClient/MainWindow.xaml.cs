@@ -4,20 +4,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+//using System.Linq;                  // ********************************************** DELETE ME?
+//using System.Text;                  // ********************************************** DELETE ME?
+//using System.Threading.Tasks;       // ********************************************** DELETE ME?
+using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
+//using System.Windows.Controls;      // ********************************************** DELETE ME?
+//using System.Windows.Data;          // ********************************************** DELETE ME?
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+//using System.Windows.Media.Imaging; // ********************************************** DELETE ME?
+//using System.Windows.Navigation;    // ********************************************** DELETE ME?
+//using System.Windows.Shapes;        // ********************************************** DELETE ME?
 using System.Media;
-using System.Threading;
 using System.IO;
 
 namespace BoggleClient
@@ -410,13 +410,12 @@ namespace BoggleClient
         /// </summary>
         /// <param name="sender">NOT USED</param>
         /// <param name="e">The Key pressed. Looking only for Enter.</param>
-        private void wordEntryBox_Enter(object sender, KeyEventArgs e)
+        private void wordEntryBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
                 string word = wordEntryBox.Text;
                 wordEntryBox.Clear(); // Clears Box
-                //wordEntryBox.Text = ""; ****************************************************** DELETE ME *********************************
                 model.SendWord(word); // Sends word to server
             }
         }
@@ -658,6 +657,18 @@ namespace BoggleClient
 
 
         /// <summary>
+        /// Handler when game length box is clicked. Text turns bold and green to indicate editing.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void lengthTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            lengthTextBox.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF0CCD15"));
+            lengthTextBox.FontWeight = FontWeights.Bold;
+        }
+
+
+        /// <summary>
         /// Allows only digits and spaces to be entered in lengthTextBox
         /// </summary>
         /// <param name="sender"></param>
@@ -688,6 +699,34 @@ namespace BoggleClient
         private void setButton_Click(object sender, RoutedEventArgs e)
         {
             model.SendGameLength(lengthTextBox.Text);
+            ResetGameLengthTextStyle();
+        }
+
+
+        private void lengthTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                model.SendGameLength(lengthTextBox.Text);
+                ResetGameLengthTextStyle();
+
+                // Stackoverflow code: moves focus away from game length box to a parent.
+                // I think this better indicates to the user that the length was actually set.
+                FrameworkElement parent = (FrameworkElement)lengthTextBox.Parent;
+                while (parent != null && parent is IInputElement && !((IInputElement)parent).Focusable)
+                {
+                    parent = (FrameworkElement)parent.Parent;
+                }
+                DependencyObject scope = FocusManager.GetFocusScope(lengthTextBox);
+                FocusManager.SetFocusedElement(scope, parent as IInputElement);
+            }
+        }
+
+
+        private void ResetGameLengthTextStyle()
+        {
+            lengthTextBox.Foreground = Brushes.Black;
+            lengthTextBox.FontWeight = FontWeights.Normal;
         }
 
 
@@ -891,7 +930,7 @@ namespace BoggleClient
             header.ApplyPropertyValue(TextElement.ForegroundProperty, color);
 
             return header;
-        }
+        }        
 
 
         /// <summary>
@@ -907,6 +946,7 @@ namespace BoggleClient
         private void GameLengthHelper(string length)
         {
             lengthTextBox.Text = length;
+            ResetGameLengthTextStyle();
         }
 
 
@@ -996,6 +1036,6 @@ namespace BoggleClient
 
             pointFlashTimer.Dispose();
             opponentTypingTimer.Dispose();
-        }
+        }        
     }
 }

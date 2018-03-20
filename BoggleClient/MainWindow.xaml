@@ -17,7 +17,7 @@
 
         <Button x:Name="connectButton" Content="Connect" HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Margin="577,28,0,0" Click="connectButton_Click" Height="23" Grid.Column="1"/>
         <Label x:Name="wordEntryLabel" Content="Enter Words" HorizontalAlignment="Left" Margin="303,587,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <TextBox x:Name="wordEntryBox" HorizontalAlignment="Left" Height="26" Margin="381,587,0,0" VerticalAlignment="Top" Width="295" IsEnabled="False" KeyDown="wordEntryBox_Enter" Grid.Column="1"/>
+        <TextBox x:Name="wordEntryBox" HorizontalAlignment="Left" Height="26" Margin="381,587,0,0" VerticalAlignment="Top" Width="295" IsEnabled="False" KeyDown="wordEntryBox_KeyDown" Grid.Column="1"/>
         <Label x:Name="serverLabel" Content="Boggle Server IP Address" HorizontalAlignment="Left" Margin="304,25,0,0" VerticalAlignment="Top" Grid.Column="1" Foreground="Yellow"/>
         <Label x:Name="playerLabel" Content="Player Name" HorizontalAlignment="Left" Margin="304,52,0,0" VerticalAlignment="Top" Grid.Column="1" Foreground="Yellow"/>
         <TextBox x:Name="playerTextBox" HorizontalAlignment="Left" Height="23" Margin="386,55,0,0" VerticalAlignment="Top" Width="186" Grid.Column="1" Text="TEST"/>
@@ -110,7 +110,7 @@
             </FlowDocument>
         </RichTextBox>
         <Label x:Name="gameLengthLabel" Content="Game Length" HorizontalAlignment="Left" Margin="304,79,0,0" VerticalAlignment="Top" Grid.Column="1" Foreground="Yellow"/>
-        <TextBox x:Name="lengthTextBox" HorizontalAlignment="Left" Height="23" Margin="386,82,0,0" VerticalAlignment="Top" Width="61" Grid.Column="1" IsEnabled="False" PreviewTextInput="LengthValidationTextBox" PreviewKeyDown="lengthTextBox_PreviewKeyDown" MaxLength="5"/>
+        <TextBox x:Name="lengthTextBox" HorizontalAlignment="Left" Height="23" Margin="386,82,0,0" VerticalAlignment="Top" Width="61" Grid.Column="1" PreviewTextInput="LengthValidationTextBox" PreviewKeyDown="lengthTextBox_PreviewKeyDown" MaxLength="5" Foreground="Black" TextDecorations="{x:Null}" GotFocus="lengthTextBox_GotFocus" KeyDown="lengthTextBox_KeyDown" IsEnabled="False"/>
         <Button x:Name="setButton" Content="Set" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" Height="23" Margin="452,82,0,0" IsEnabled="False" Grid.Column="1" Click="setButton_Click"/>
     </Grid>
 </Window>
