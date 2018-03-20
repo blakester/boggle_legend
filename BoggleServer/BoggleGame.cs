@@ -109,7 +109,9 @@ namespace BB
                 else if (Regex.IsMatch(s.ToUpper(), @"^(RESUME)"))                
                     ResumingCountdown();                
                 else if (Regex.IsMatch(s.ToUpper(), @"^(CANCEL\s)"))                
-                    Cancel(s.Substring(7));                            
+                    Cancel(s.Substring(7));
+                else if (Regex.IsMatch(s.ToUpper(), @"^(LENGTH\s)"))
+                    ChangeGameLength(player, s.Substring(7));            
             }
             else
                 Terminate(e, payload);                       
@@ -512,6 +514,22 @@ namespace BB
         private void RelayChatMessage(Player player, string message)
         {
             player.Opponent.Ss.BeginSend("CHAT " + message + "\n", ExceptionCheck, player.Opponent);
+        }
+
+
+        /// <summary>
+        /// Changes the length of the game (seconds) to the specified number
+        /// and notifies the other player.
+        /// </summary>
+        /// <param name="s"></param>
+        private void ChangeGameLength(Player player, string s)
+        {
+            int length;
+            if (int.TryParse(s, out length))
+            {
+                gameLength = length;
+                player.Opponent.Ss.BeginSend("LENGTH " + length + "\n", ExceptionCheck, player.Opponent);
+            }
         }
 
 

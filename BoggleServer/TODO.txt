@@ -1,6 +1,6 @@
-﻿-change Cancel button to "Cancel Play" and "Cancel Resume" when appropriate
+﻿-turn game length green when it's set
+-change Cancel button to "Cancel Play" and "Cancel Resume" when appropriate
 -end game option, but keep connection (use Connect/Disconnect button during gameplay)
--allow clients to change game length
 -Make simple cipher for messages so it isn't plain text?
 -List word counts and/or my words to words possible ratio/percentage?
 -It doesn't look like any such words appear in dictionary.txt, but keep in mind that

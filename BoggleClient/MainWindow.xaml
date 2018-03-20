@@ -110,7 +110,7 @@
             </FlowDocument>
         </RichTextBox>
         <Label x:Name="gameLengthLabel" Content="Game Length" HorizontalAlignment="Left" Margin="304,79,0,0" VerticalAlignment="Top" Grid.Column="1" Foreground="Yellow"/>
-        <TextBox x:Name="lengthTextBox" HorizontalAlignment="Left" Height="23" Margin="386,82,0,0" VerticalAlignment="Top" Width="61" Grid.Column="1" IsEnabled="False"/>
-        <Button x:Name="setButton" Content="Set" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" Height="23" Margin="452,82,0,0" IsEnabled="False" Grid.Column="1"/>
+        <TextBox x:Name="lengthTextBox" HorizontalAlignment="Left" Height="23" Margin="386,82,0,0" VerticalAlignment="Top" Width="61" Grid.Column="1" IsEnabled="False" PreviewTextInput="LengthValidationTextBox" PreviewKeyDown="lengthTextBox_PreviewKeyDown" MaxLength="5"/>
+        <Button x:Name="setButton" Content="Set" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" Height="23" Margin="452,82,0,0" IsEnabled="False" Grid.Column="1" Click="setButton_Click"/>
     </Grid>
 </Window>
