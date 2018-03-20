@@ -29,7 +29,6 @@ namespace BoggleClient
     {
         private Model model; // The model to handle socket and computation.
         private string opponentName;
-        private bool resumeClicked;
         private bool chatInitialSelection = true;
         private int chatKeyCount = 0;
         private SoundPlayer countSound, /*countSound2,*/ incSound, decSound, winSound, lossSound, tieSound, tieSound2, chatSound;
@@ -236,26 +235,17 @@ namespace BoggleClient
         {
             if (playButton.Content.ToString() == "Play")
             {
-                resumeClicked = false;
-                playButton.Content = "Cancel";
+                playButton.Content = "Cancel Play";
                 infoBox.Text = infoBox.Text = "Waiting for \"" + opponentName + "\" to click Play...";
                 showBoardButton.Visibility = Visibility.Hidden;
                 infoBox.Visibility = Visibility.Visible;
                 model.ClickedPlay();
             }
-            else if (playButton.Content.ToString() == "Cancel")
+            else if (playButton.Content.ToString() == "Cancel Play")
             {
-                if (resumeClicked)
-                {
-                    playButton.Content = "Resume";
-                    infoBox.Text = "Click Resume to continue.";
-                }
-                else
-                {
-                    playButton.Content = "Play";
-                    infoBox.Text = "Chat or click Play to begin!";
-                }
-                model.ClickedCancel(resumeClicked);
+                playButton.Content = "Play";
+                infoBox.Text = "Chat or click Play to begin!";
+                model.ClickedCancel(false);
             }
             else if (playButton.Content.ToString() == "Pause")
             {
@@ -265,13 +255,18 @@ namespace BoggleClient
                 infoBox.Text = "You paused the game.\n\nClick Resume to continue.";
                 infoBox.Visibility = Visibility.Visible;
             }
-            // the Resume button was clicked
-            else
+            else if (playButton.Content.ToString() == "Resume")
             {
-                resumeClicked = true;
-                playButton.Content = "Cancel";
+                playButton.Content = "Cancel Resume";
                 infoBox.Text = "Waiting for \"" + opponentName + "\" to click Resume...";
                 model.ClickedResume();
+            }
+            // the Cancel Resume button was clicked
+            else
+            {
+                playButton.Content = "Resume";
+                infoBox.Text = "Click Resume to continue.";
+                model.ClickedCancel(true);
             }
         }
 
