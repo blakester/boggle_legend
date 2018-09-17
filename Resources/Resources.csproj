@@ -46,6 +46,7 @@
     <Content Include="Resources\dictionary.txt" />
     <Content Include="README.txt" />
     <Content Include="Resources\dictionary_3_length.txt" />
+    <Content Include="Resources\favicon.ico" />
     <Content Include="Resources\Sounds\chat.wav" />
     <Content Include="Resources\Sounds\countdown.wav" />
     <Content Include="Resources\Sounds\countdown2.wav" />

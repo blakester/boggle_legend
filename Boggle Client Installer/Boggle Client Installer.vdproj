@@ -15,19 +15,25 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_12DD1AF2CE8EA6B2FB6B38144DC03577"
+        "OwnerKey" = "8:_ACE63E9CF46654B01383E9C9F777E4DC"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_12DD1AF2CE8EA6B2FB6B38144DC03577"
+        "OwnerKey" = "8:_D3818D9AF34045C48F3A0D305B592012"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_161EEBFC4BB4402DA2831317B16B54D6"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_34063DF0F13D49100F479BFA7DC90949"
-        "OwnerKey" = "8:_D3818D9AF34045C48F3A0D305B592012"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_39464C945A904BC1886C1657550A82EC"
+        "MsmKey" = "8:_4645A6A47CBF4B84AE6F80A076717CC9"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -51,20 +57,14 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_78D8AC13FD3000CD8B3465E5572BD474"
-        "OwnerKey" = "8:_34063DF0F13D49100F479BFA7DC90949"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_78D8AC13FD3000CD8B3465E5572BD474"
-        "OwnerKey" = "8:_D3818D9AF34045C48F3A0D305B592012"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_A8E11BC7C3084646A318749523E059EE"
         "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_ACE63E9CF46654B01383E9C9F777E4DC"
+        "OwnerKey" = "8:_D3818D9AF34045C48F3A0D305B592012"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -106,13 +106,13 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_34063DF0F13D49100F479BFA7DC90949"
+        "OwnerKey" = "8:_ACE63E9CF46654B01383E9C9F777E4DC"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_78D8AC13FD3000CD8B3465E5572BD474"
+        "OwnerKey" = "8:_12DD1AF2CE8EA6B2FB6B38144DC03577"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -210,6 +210,37 @@
         }
         "File"
         {
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_12DD1AF2CE8EA6B2FB6B38144DC03577"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:StringSocketOfficial, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_12DD1AF2CE8EA6B2FB6B38144DC03577"
+                    {
+                    "Name" = "8:StringSocketOfficial.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:StringSocketOfficial.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_DCAADAC73F864266924843020C90BE3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_161EEBFC4BB4402DA2831317B16B54D6"
             {
             "SourcePath" = "8:..\\Resources\\Resources\\Sounds\\inc.wav"
@@ -230,40 +261,9 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_34063DF0F13D49100F479BFA7DC90949"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4645A6A47CBF4B84AE6F80A076717CC9"
             {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:BoggleClientModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_34063DF0F13D49100F479BFA7DC90949"
-                    {
-                    "Name" = "8:BoggleClientModel.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:BoggleClientModel.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_DCAADAC73F864266924843020C90BE3D"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_39464C945A904BC1886C1657550A82EC"
-            {
-            "SourcePath" = "8:..\\favicon.ico"
+            "SourcePath" = "8:..\\Resources\\Resources\\favicon.ico"
             "TargetName" = "8:favicon.ico"
             "Tag" = "8:"
             "Folder" = "8:_DCAADAC73F864266924843020C90BE3D"
@@ -341,37 +341,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_78D8AC13FD3000CD8B3465E5572BD474"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:StringSocketOfficial, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_78D8AC13FD3000CD8B3465E5572BD474"
-                    {
-                    "Name" = "8:StringSocketOfficial.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:StringSocketOfficial.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_DCAADAC73F864266924843020C90BE3D"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A8E11BC7C3084646A318749523E059EE"
             {
             "SourcePath" = "8:..\\Resources\\Resources\\Sounds\\tie2.wav"
@@ -390,6 +359,37 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_ACE63E9CF46654B01383E9C9F777E4DC"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:BoggleClientModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_ACE63E9CF46654B01383E9C9F777E4DC"
+                    {
+                    "Name" = "8:BoggleClientModel.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:BoggleClientModel.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_DCAADAC73F864266924843020C90BE3D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B109DE980D384640B6A278F9DDEFD3C5"
@@ -682,7 +682,7 @@
             "Target" = "8:_D3818D9AF34045C48F3A0D305B592012"
             "Folder" = "8:_06B4CCB593F148B0971592C94C52E780"
             "WorkingFolder" = "8:_DCAADAC73F864266924843020C90BE3D"
-            "Icon" = "8:_39464C945A904BC1886C1657550A82EC"
+            "Icon" = "8:_4645A6A47CBF4B84AE6F80A076717CC9"
             "Feature" = "8:"
             }
         }
