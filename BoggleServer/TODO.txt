@@ -1,4 +1,5 @@
-﻿-end game option, but keep connection (use Connect/Disconnect button during gameplay)
+﻿-make ports configurable? This would require changes to server and client.
+-end game option, but keep connection (use Connect/Disconnect button during gameplay)
 -Make simple cipher for messages so it isn't plain text?
 -List word counts and/or my words to words possible ratio/percentage?
 -It doesn't look like any such words appear in dictionary.txt, but keep in mind that
