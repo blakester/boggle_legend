@@ -41,11 +41,8 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="Libraries\MySql.Data.dll" />
-    <Content Include="Libraries\StringSocket.dll" />
     <Content Include="Libraries\StringSocketOfficial.dll" />
-    <Content Include="Resources\dictionary.txt" />
-    <Content Include="README.txt" />
-    <Content Include="Resources\dictionary_3_length.txt" />
+    <Content Include="Resources\legal_words.txt" />
     <Content Include="Resources\favicon.ico" />
     <Content Include="Resources\Sounds\chat.wav" />
     <Content Include="Resources\Sounds\countdown.wav" />

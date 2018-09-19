@@ -94,9 +94,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="README.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\BoggleClientModel\BoggleClientModel.csproj">
       <Project>{c384ab3d-7f72-4c55-a125-ff7e24216da2}</Project>
       <Name>BoggleClientModel</Name>

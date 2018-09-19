@@ -1,1 +1,0 @@
-﻿SEE INDIVIDUAL README FILES IN PROJECTS BoggleServer AND BoggleClient.

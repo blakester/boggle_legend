@@ -37,12 +37,11 @@ namespace BB
         private Player firstPlayer = null; // Used to hold the first player to connect.
         private readonly object playerMatch = new object(); // Lock for firstPlayer.
         private int port = 2000;
-        //public static int gameCount = 1;
 
         // THE BELOW WAS USED FOR THE DATABASE
         //private TcpListener webServer; // Used to listen for web page requests.
-        //public static string connectionString = "server=atr.eng.utah.edu;database=cs3500_blakeb;" +
-        //"uid=cs3500_blakeb;password=249827684"; // Used to connect to database.
+        //public static string connectionString = "server=DB_SERVER;database=DB_NAME;" +
+        //"uid=DB_USERNAME;password=USERNAME_PASSWORD"; // Used to connect to database.
 
         /// <summary>
         /// The length of a game in seconds.

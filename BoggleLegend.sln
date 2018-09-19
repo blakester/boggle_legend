@@ -11,7 +11,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoggleClient", "BoggleClien
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoggleClientModel", "BoggleClientModel\BoggleClientModel.csproj", "{C384AB3D-7F72-4C55-A125-FF7E24216DA2}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Boggle Client Installer", "Boggle Client Installer\Boggle Client Installer.vdproj", "{E94284A7-8E69-416E-B899-0465E3B24CB5}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Boggle Client Installer", "Boggle Client Installer\Boggle Client Installer.vdproj", "{F9DF8FDD-F067-4088-9967-92CD2FFA81FF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EE36E5AE-6423-4DDB-9B08-AE712161BD50}"
+	ProjectSection(SolutionItems) = preProject
+		README.txt = README.txt
+		TODO-NOTES.txt = TODO-NOTES.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
@@ -39,10 +45,10 @@ Global
 		{C384AB3D-7F72-4C55-A125-FF7E24216DA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C384AB3D-7F72-4C55-A125-FF7E24216DA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C384AB3D-7F72-4C55-A125-FF7E24216DA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E94284A7-8E69-416E-B899-0465E3B24CB5}.Debug|Any CPU.ActiveCfg = Debug
-		{E94284A7-8E69-416E-B899-0465E3B24CB5}.Debug|Any CPU.Build.0 = Debug
-		{E94284A7-8E69-416E-B899-0465E3B24CB5}.Release|Any CPU.ActiveCfg = Release
-		{E94284A7-8E69-416E-B899-0465E3B24CB5}.Release|Any CPU.Build.0 = Release
+		{F9DF8FDD-F067-4088-9967-92CD2FFA81FF}.Debug|Any CPU.ActiveCfg = Debug
+		{F9DF8FDD-F067-4088-9967-92CD2FFA81FF}.Debug|Any CPU.Build.0 = Debug
+		{F9DF8FDD-F067-4088-9967-92CD2FFA81FF}.Release|Any CPU.ActiveCfg = Release
+		{F9DF8FDD-F067-4088-9967-92CD2FFA81FF}.Release|Any CPU.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
