@@ -11,7 +11,7 @@ The server (BoggleServer) or client (BoggleClient) can now be run depending on w
 - BoggleServer.cs also used to function as a web server that connected to a database and returned simple HTML. The database is no longer running and hence the web server code has been commented out.
 - Some comments in the code my be outdated.
 
-# Repo Overview
+# Repository Overview
 #### Boggle Client Installer
 You may build this project to generate a .msi file which will formally install the client. This project is not required to run the server or client.
 (see the BoggleClientInstaller README for details)
