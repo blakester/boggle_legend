@@ -7,6 +7,7 @@ The server (BoggleServer) or client (BoggleClient) can now be run depending on w
 
 # Notes
 - Every two consecutive clients that connect to the server are paired together for gameplay. There is no direct way to choose an opponent.
+- If you want to test a game all on one machine, i.e. run the server and two clients on the same machine, make sure the `if (firstPlayer.IP.Equals(newPlayer.IP))` statement in BoggleServer.cs is commented out.
 - The server and client are currently hard-coded to communicate on port 2000.
 - BoggleServer.cs also used to function as a web server that connected to a database and returned simple HTML. The database is no longer running and hence the web server code has been commented out.
 - Some comments in the code my be outdated.
