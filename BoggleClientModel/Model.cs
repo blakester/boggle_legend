@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CustomNetworking;
+using CustomNetworking; // needed for StringSocketOfficial.dll
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 

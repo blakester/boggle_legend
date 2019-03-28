@@ -10,7 +10,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using CustomNetworking;
+using CustomNetworking; // needed for StringSocketOfficial.dll
 using System.Threading;
 // THE BELOW WAS USED FOR THE DATABASE
 //using MySql.Data.MySqlClient;
@@ -28,7 +28,7 @@ namespace BB
     /// server will start a Boggle game between the two.
     /// 
     /// The server has been expanded to allow webpage request pertaining
-    /// to information from the Boggle Games. (THE WEBPAGE IS NOT FUNC
+    /// to information from the Boggle Games. (THE WEBPAGE IS NOT FUNC-
     /// TIONING ANYMORE)
     /// </summary>
     public class BoggleServer
@@ -88,10 +88,13 @@ namespace BB
             BoggleServer BS = new BoggleServer(args);
             Console.Read(); //Keep Console window open.
 
-            // Closes TCPListener.
+            // Closes TCPListener and client socket, if any
             if (BS.server != null)
             {
                 BS.server.Stop();
+                if (BS.firstPlayer != null)
+                    BS.firstPlayer.Ss.Close();
+
                 // THE BELOW WAS USED FOR THE DATABASE
                 //BS.webServer.Stop();
             }
@@ -161,8 +164,7 @@ namespace BB
                 CustomBoard = args[2];
             }
             else
-                CustomBoard = null;
-            Console.WriteLine("Boggle Server is listening on port " + port + ". Press enter to close.\n");
+                CustomBoard = null;            
 
             // THE BELOW WAS USED FOR THE DATABASE
             // Updates server gameId to match the count in database.
@@ -188,10 +190,10 @@ namespace BB
             //webServer.Start();
 
             server.BeginAcceptSocket(ConnectionRequested, server);
+            Console.WriteLine("Boggle Server is listening on port " + port + ". Press enter to close.\n");
 
             // THE BELOW WAS USED FOR THE DATABASE
             //webServer.BeginAcceptSocket(WebRequested, null);
-
         }
 
 
@@ -201,11 +203,9 @@ namespace BB
         /// <param name="result">Result of BeginAcceptSocket</param>
         private void ConnectionRequested(IAsyncResult result)
         {
-            // ConnectionRequested is invoked when the server is closed
-            // due to the BeginAcceptSocket loop, however the code below
-            // will throw an exception due to null values. This try/catch
-            // simply allows the server to close during debugging without
-            // being stopped by an exception.
+            // ConnectionRequested is invoked when the server is closed due to the BeginAcceptSocket
+            // loop, however the code below will throw an exception due to null values. This try/catch
+            // simply allows the server to close during debugging without being stopped by an exception.
             try
             {
                 // Create a StringSocket with the client.
@@ -216,12 +216,11 @@ namespace BB
                 IPAddress clientIP = ((IPEndPoint)s.RemoteEndPoint).Address;
                 Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "CONNECTION RECEIVED", clientIP, DateTime.Now));
 
-                // Create an IPAndStringSocket object and pass it
-                // as the payload to BeginReceive. Begin listening
-                // for messages from the client.
-                IPAndStringSocket ipss = new IPAndStringSocket(clientIP, ss);
-                ss.BeginReceive(ReceivedMessage, ipss); 
-
+                // Create a nameless Player object and pass it as the payload to BeginReceive.
+                // Begin listening for messages from the client.
+                Player newPlayer = new Player(null, clientIP, ss);
+                ss.BeginReceive(ReceivedMessage, newPlayer);                                   
+                
                 // Begin listening for another connection.
                 server.BeginAcceptSocket(ConnectionRequested, server);
             }
@@ -233,110 +232,65 @@ namespace BB
 
 
         /// <summary>
-        /// Called when a message has been received through
-        /// the StringSocket from a client. A new game will be
-        /// initialized when two players have sent the "NEW_PLAYER"
-        /// command. Will ignore if string does not start as such. 
-        /// If 'e' is non-null, then we assume that the connection
-        /// has been lost.
+        /// Called when a message has been received through the StringSocket from a Player. A new game will be
+        /// initialized when two players have sent the "NEW_PLAYER" command. Will ignore if string does not start
+        /// as such. If 'e' is non-null, then we assume that the connection has been lost.
         /// </summary>
         /// <param name="s">the received string</param>
         /// <param name="e">an Exception, if any</param>
-        /// <param name="payload">the StringSocket connecting
-        /// the server and client</param>
+        /// <param name="payload">the Player who sent the message</param>
         private void ReceivedMessage(String s, Exception e, object payload)
         {
-            IPAndStringSocket ipss = (IPAndStringSocket)payload;
+            Player newPlayer = (Player)payload;
 
             // The server should never receive a null string because BeginReceive
             // is only called once and should immediately receive NEW_PLAYER.
             // However, there could be an excepton while receiving.
             if (e != null || s == null)
             {
-                 // Print error info and close the socket
-                Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "NEW_PLAYER ERROR", ipss.IP, DateTime.Now));
-                ipss.Ss.Close();
+                // Print error info and close the socket
+                Console.WriteLine(string.Format("{0, -23} {1, -31} {2}", "NEW_PLAYER ERROR", newPlayer.IP, DateTime.Now));
+                newPlayer.Ss.Close();
             }
 
             // NEW_PLAYER should be received immediately after client clicks Connect
             else if (Regex.IsMatch(s.ToUpper(), @"^(NEW_PLAYER\s)"))
             {
-                // Create a new Player using the player's name,
-                // IP, and StringSocket connection with the server.
-                Player currentPlayer = new Player(s.Substring(10).Trim(), ipss.IP, ipss.Ss);
+                // Set newPlayer's name
+                newPlayer.Name = s.Substring(10).Trim();
 
-                // Keep firstPlayer threadsafe.
+                // Keep firstPlayer threadsafe
                 lock (playerMatch)
                 {
                     // Null if first player, non-null if second player.
-                    if (firstPlayer == null)                        
-                        firstPlayer = currentPlayer;                        
+                    if (firstPlayer == null)
+                        firstPlayer = newPlayer;
 
                     // We have two players, so initialize a game between them.
                     else
                     {
-                        // Ensure players from the same IP address
-                        // do not initialize a game with each other.
-                        // (This handles the small gui error that
-                        // occurs when a single player disconnects
-                        // but then reconnects. However, comment out
-                        // if the ability to run a game with 2 players
-                        // from the same IP is wanted.)
-                        //if (firstPlayer.IP.Equals(currentPlayer.IP))
-                        //{
-                        //    // Update firstPlayer to the 
-                        //    // latest Player from the
-                        //    // same IP because firstPlayer's
-                        //    // StringSocket is closed when
-                        //    // when "Disconnect" is clicked.
-                        //    firstPlayer = currentPlayer;
-                        //    return;
-                        //}
+                        // Ensure players from the same IP address do not initialize
+                        // a game with each other. (This handles the small GUI error 
+                        // that occurs when a single player disconnects then reconnects
+                        // before another opponent arrives. Comment out if the ability  
+                        // to run a game with 2 players from the same IP is wanted.)
+                        if (firstPlayer.IP.Equals(newPlayer.IP))
+                        {
+                            // Update firstPlayer to the latest Player from the same IP
+                            // because firstPlayer's StringSocket is closed when "Disconnect" is clicked.
+                            firstPlayer.Ss.Close();
+                            firstPlayer = newPlayer;
+                            return;
+                        }
 
-                        firstPlayer.Opponent = currentPlayer; // remembers opponent
-                        currentPlayer.Opponent = firstPlayer;
-                        new BoggleGame(firstPlayer, currentPlayer); // initialize a BoggleGame
-                        firstPlayer = null; // gets firstPlayer ready for next pair up.
+                        firstPlayer.Opponent = newPlayer;
+                        newPlayer.Opponent = firstPlayer;
+                        new BoggleGame(firstPlayer, newPlayer); // initialize a BoggleGame
+                        firstPlayer = null; // reset for next pair-up
                     }
                 } // end Lock
             }           
-        }        
-
-
-        /// <summary>
-        /// This class stores a player's IP address
-        /// and their StringSocket connection to the
-        /// Boggle server. It is passed as a payload
-        /// and eventually used to create a new Player.
-        /// </summary>
-        private class IPAndStringSocket
-        {
-            /// <summary>
-            /// This will be the Player's IP address.
-            /// </summary>
-            public IPAddress IP
-            { get; private set; }
-
-            /// <summary>
-            /// This will be the Player's IP StringSocket
-            /// connection to the Boggle server.
-            /// </summary>
-            public StringSocket Ss
-            { get; private set; }
-
-
-            /// <summary>
-            /// Creates a new IPAndStringSocket using the specified
-            /// EndPoint and StringSocket.
-            /// </summary>
-            /// <param name="ip">the EndPoint</param>
-            /// <param name="ss">the StringSocket</param>
-            public IPAndStringSocket(IPAddress ip, StringSocket ss)
-            {
-                IP = ip;
-                Ss = ss;
-            }
-        } // end class IPAndStringSocket
+        }
 
 
         // THE BELOW WAS USED FOR THE DATABASE

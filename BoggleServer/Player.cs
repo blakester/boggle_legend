@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CustomNetworking;
+using CustomNetworking; // needed for StringSocketOfficial.dll
 using System.Net;
 
 namespace BB
@@ -25,7 +25,7 @@ namespace BB
         /// Players name.
         /// </summary>
         public string Name
-        { get; private set; }
+        { get; set; }
 
         /// <summary>
         /// Players IP address.

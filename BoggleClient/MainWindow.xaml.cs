@@ -1028,9 +1028,9 @@ namespace BoggleClient
             tieSound.Dispose();
             tieSound2.Dispose();
             chatSound.Dispose();
-
             pointFlashTimer.Dispose();
             opponentTypingTimer.Dispose();
+            model.Terminate(false);
         }        
     }
 }

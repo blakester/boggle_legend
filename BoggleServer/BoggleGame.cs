@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CustomNetworking;
+using CustomNetworking; // needed for StringSocketOfficial.dll
 using System.Threading;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
@@ -75,11 +75,9 @@ namespace BB
 
 
         /// <summary>
-        /// Called when a word has been received through the
+        /// Called when a message has been received through the
         /// StringSocket with a Player. Exceptions will end this
-        /// BoggleGame. If the received string doesn't begin with
-        /// "WORD ", the message is ignored. Words will be scored
-        /// and updated as the game progresses.
+        /// BoggleGame. Words will be scored and updated as the game progresses.
         /// </summary>
         /// <param name="s">the received string</param>
         /// <param name="e">an Exception, if any</param>
