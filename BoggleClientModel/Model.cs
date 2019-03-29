@@ -48,11 +48,13 @@ namespace BoggleClient
         /// </summary>
         /// <param name="player">The clients name.</param>
         /// <param name="ip">The servers IP Adress.</param>
-        public void Connect(string player, string ip)
+        public void Connect(string player, string ip, string port)
         {
             try
             {
-                client = new TcpClient(ip, port);
+                int tryPort;
+                int.TryParse(port, out tryPort);
+                client = new TcpClient(ip, tryPort);
                 socket = new StringSocket(client.Client, UTF8Encoding.Default);
                 socket.BeginSend("NEW_PLAYER " + player + "\n", ExceptionCheck, null);
                 socket.BeginReceive(ReceivedMessage, null);
@@ -406,8 +408,10 @@ namespace BoggleClient
         ///                                    disconnected or opponent disconnected.</param>
         public void Terminate(bool opponentDisconnected)
         {
-            socket.Close();
-            client.Close();
+            if (socket != null)
+                socket.Close();
+            if (client != null)
+                client.Close();
 
             if (!playerDisconnected)
                 DisconnectOrErrorEvent(opponentDisconnected);

@@ -29,6 +29,8 @@ namespace BoggleClient
     {
         private Model model; // The model to handle socket and computation.
         private string opponentName;
+        private bool ipInitialSelection = true;
+        private bool portInitialSelection = true;
         private bool chatInitialSelection = true;
         private int chatKeyCount = 0;
         private SoundPlayer countSound, /*countSound2,*/ incSound, decSound, winSound, lossSound, tieSound, tieSound2, chatSound;
@@ -132,8 +134,40 @@ namespace BoggleClient
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 showRulesButton.IsEnabled = false;
             }
-            serverTextBox.Focus(); // put cursor in server box
+            //serverIPTextBox.Focus(); // put cursor in server box
         }
+
+
+        /// <summary>
+        /// Handler when the server IP text box is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void serverIPTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (ipInitialSelection)
+            {
+                serverIPTextBox.Clear();
+                serverIPTextBox.FontStyle = FontStyles.Normal;
+                ipInitialSelection = false;
+            }
+        }
+
+
+        /// <summary>
+        /// Handler when the server port box is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void serverPortTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (portInitialSelection)
+            {
+                serverPortTextBox.Clear();
+                serverPortTextBox.FontStyle = FontStyles.Normal;
+                portInitialSelection = false;
+            }
+        }    
 
 
         /// <summary>
@@ -148,24 +182,25 @@ namespace BoggleClient
         {
             if (connectButton.Content.ToString() == "Connect")
             {
-                // If player has a an empty name or server IP.
-                if (playerTextBox.Text == "" || serverTextBox.Text == "")
+                // If player has a an empty name, server IP, or port.
+                if (playerTextBox.Text == "" || serverIPTextBox.Text == "" || serverPortTextBox.Text == "")
                 {
-                    infoBox.Text = "Name and/or server IP cannot be empty...\n\n"
-                        + "Enter your name and server IP address then click Connect.";
+                    infoBox.Text = "Name and/or IP address and/or port cannot be empty...\n\n"
+                        + "Enter all information then click Connect.";
                     return;
                 }
 
                 // Gets GUI elements ready for play.
                 connectButton.Content = "Disconnect";
                 playerTextBox.IsEnabled = false;
-                serverTextBox.IsEnabled = false;
+                serverIPTextBox.IsEnabled = false;
+                serverPortTextBox.IsEnabled = false;
                 model.playerDisconnected = false;
                 infoBox.Text = "You connected to the server.\n\n"
                     + "Waiting for an opponent to connect...";
 
                 // Let model handle connecting to server.
-                model.Connect(playerTextBox.Text, serverTextBox.Text);
+                model.Connect(playerTextBox.Text, serverIPTextBox.Text, serverPortTextBox.Text);
             }
 
             // Disconnect was clicked
@@ -179,7 +214,8 @@ namespace BoggleClient
                 oScoreBox.Text = "";
                 wordEntryBox.Text = "";
                 playerTextBox.IsEnabled = true;
-                serverTextBox.IsEnabled = true;
+                serverIPTextBox.IsEnabled = true;
+                serverPortTextBox.IsEnabled = true;
                 playButton.IsEnabled = false;
                 chatEntryBox.IsEnabled = false;
                 wordEntryBox.IsEnabled = false;
@@ -192,7 +228,7 @@ namespace BoggleClient
                 showBoardButton.Visibility = Visibility.Hidden;
                 infoBox.Visibility = Visibility.Visible;
                 infoBox.Text = "You disconnected from the server.\n\n"
-                    + "Enter your name and server IP address then click Connect.";
+                    + "Enter your name and server IP address/port then click Connect.";
 
                 // Let model handle disconnecting from server.
                 model.Terminate(false);
@@ -213,7 +249,8 @@ namespace BoggleClient
         private void GameReadyHelper(string[] tokens)
         {
             playerTextBox.IsEnabled = false;
-            serverTextBox.IsEnabled = false;
+            serverIPTextBox.IsEnabled = false;
+            serverPortTextBox.IsEnabled = false;
             chatEntryBox.IsEnabled = true;
             playButton.IsEnabled = true;
             lengthTextBox.IsEnabled = true;
@@ -775,6 +812,7 @@ namespace BoggleClient
             if (chatInitialSelection)
             {
                 chatEntryBox.Clear();
+                chatEntryBox.FontStyle = FontStyles.Normal;
                 chatInitialSelection = false;
             }
         }
@@ -960,7 +998,8 @@ namespace BoggleClient
         {
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
-            serverTextBox.IsEnabled = true;
+            serverIPTextBox.IsEnabled = true;
+            serverPortTextBox.IsEnabled = true;
             wordEntryBox.IsEnabled = false;
             playButton.IsEnabled = false;
             chatEntryBox.IsEnabled = false;
@@ -971,11 +1010,11 @@ namespace BoggleClient
 
             if (opponentDisconnected)
                 infoBox.Text = "\"" + opponentName + "\" disconnected from the server and ended your session.\n\n"
-                    + "Enter your name and server IP Address then click Connect to play.";
+                    + "Enter your name and server IP address/port then click Connect to play.";
             // Connection with server was lost unwillingly.
             else
                 infoBox.Text = "The server closed or there was a communication error.\n\n"
-                    + "Enter your name and server IP Address then click Connect to play.";
+                    + "Enter your name and server IP address/port then click Connect to play.";
 
             // Clear game data and word entry box.
             opponentBox.Text = "";
@@ -1002,14 +1041,15 @@ namespace BoggleClient
         private void SocketFailHelper(string message)
         {
             infoBox.Text = infoBox.Text = "Unable to connect to server. Perhaps the server is not "
-                + "running or you entered an invalid IP:\n\n\""
+                + "running or you entered an invalid IP and/or port:\n\n\""
                 + message + "\""
-                + "\n\nEnter your name and server IP Address then click Connect.";
+                + "\n\nEnter your name and server IP address/port then click Connect.";
 
             // Allow player to re-enter info.
             connectButton.Content = "Connect";
             playerTextBox.IsEnabled = true;
-            serverTextBox.IsEnabled = true;
+            serverIPTextBox.IsEnabled = true;
+            serverPortTextBox.IsEnabled = true;
         }
 
 
@@ -1031,6 +1071,6 @@ namespace BoggleClient
             pointFlashTimer.Dispose();
             opponentTypingTimer.Dispose();
             model.Terminate(false);
-        }        
+        }    
     }
 }

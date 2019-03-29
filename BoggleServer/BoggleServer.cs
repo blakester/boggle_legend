@@ -19,13 +19,15 @@ namespace BB
 {
     /// <summary>
     /// This class contains the main method to launch a Boggle server.
-    /// The server takes 3 command line arguments: the length of the game
-    /// in seconds, the pathname to the file of the legal words to use in
-    /// the game, and an optional 16 character string specifying the
-    /// 16 letters to be used in the board.
+    /// The server requires 4 command line arguments:
+    /// (1) the length of the game in seconds
+    /// (2) the pathname to the file of the legal words to use in the game
+    /// (3) a 16 character string specifying the 16 letters to be used 
+    ///     in the board (use 'null' for a random board)
+    /// (4) a port number to receive connections (use 'null' for 2000).
     /// 
-    /// Once two clients have connected to this server on port 2000, the
-    /// server will start a Boggle game between the two.
+    /// Once two clients have connected to this server, the server will start a
+    /// BoggleGame between the two.
     /// 
     /// The server has been expanded to allow webpage request pertaining
     /// to information from the Boggle Games. (THE WEBPAGE IS NOT FUNC-
@@ -79,9 +81,10 @@ namespace BB
         /// games will use the settings specified in the command line
         /// arguments.
         /// </summary>
-        /// <param name="args">String array consisting of: length of
-        /// game in seconds, pathname to legal words file, and 16 character
-        /// string specifying the board layout.</param>
+        /// <param name="args">String array consisting of: port number to
+        /// receive connections, length of game in seconds, pathname to legal
+        /// words file, and 16 character string specifying the board layout.
+        /// </param>
         public static void Main(string[] args)
         {
             // Initilize server
@@ -103,22 +106,24 @@ namespace BB
 
         /// <summary>
         /// Validates the command line arguments and begins listening
-        /// for client connections on port 2000.
+        /// for client connections on the specified port.
         /// </summary>
         /// <param name="args">String array consisting of: length of
-        /// game in seconds, pathname to legal words file, and 16 character
-        /// string specifying the board layout</param>
+        /// game in seconds, pathname to legal words file, 16 letter
+        /// string specifying the board layout, and listening port number
+        /// </param>
         public BoggleServer(string[] args)
         {
-            // There must be exactly two or three non-null arguments.
-            if (args == null || args.Length < 2 || args.Length > 3)
+            // There must be four arguments.
+            if (args == null || args.Length != 4)
             {
-                // Error Message
-                Console.WriteLine("ERROR - Must pass in exactly two or three, space separated, non-null arguments:\n" + 
-                "arg1 - game duration in seconds, e.g. '60'\narg2 - file path to list of legal words, e.g. '../legalwords.txt'\n" +
-                "arg3 - (optional) custom boggle board, e.g. 'ABCDEFGHIJKLMNOP'\n");
-                Console.WriteLine("Press Enter to exit.");
-                GameLength = -1; // Used for testing purposes.
+                Console.WriteLine("ERROR - Must pass in exactly four space separated arguments:\n" + 
+                "arg1 - game duration in seconds, e.g. '60'\n" +
+                "arg2 - file path to list of legal words, e.g. '../legalwords.txt'\n" +
+                "arg3 - board configuration (use 'null' for random boards or a 16 character string, " +
+                "e.g. 'ABCDEFGHIJKLMNOP', for a custom board)\n" +
+                "arg4 - port number to receive connections, e.g. '2115' (use 'null' for 2000)\n\n" +
+                "Press Enter to exit.");
                 return;
             }
 
@@ -126,16 +131,12 @@ namespace BB
             int temp = -1;
             if (!(int.TryParse(args[0], out temp)) || temp < 1)
             {
-                // Error Message
-                Console.WriteLine("ERROR - First argument must be a positive integer.");
-                Console.WriteLine("Press Enter to exit.");
-                GameLength = -1; // Used for testing purposes.
+                Console.WriteLine("ERROR - First argument must be a positive integer.\nPress Enter to exit.\n");
                 return;
             }
             GameLength = temp;
 
-            // Check validity of the file path. If valid, the legal 
-            // words are added to a HashSet. Null otherwise.
+            // Check validity of the file path. If valid, the legal words are added to a HashSet.
             try
             {
                 LegalWords = new HashSet<string>(
@@ -143,28 +144,28 @@ namespace BB
             }
             catch (Exception e)
             {
-                // Error Message
-                Console.Write("EXCEPTION: " + e.Message);
-                Console.WriteLine("Press Enter to exit.");
-                GameLength = -1; // Used for testing purposes.
+                Console.Write("EXCEPTION: " + e.Message + "\nPress Enter to exit.\n");
                 return;
             }
 
-            // Check validity of optional Boggle Board layout string.
-            if (args.Length == 3)
-            {
-                if (!(Regex.IsMatch(args[2].ToUpper(), @"^[A-Z]{16}$")))
-                {
-                    // Error Message
-                    Console.WriteLine("ERROR - Third argument must be exactly 16 letters or empty.");
-                    Console.WriteLine("Press Enter to exit.");
-                    GameLength = -1; // Used for testing purposes.
-                    return;
-                }
+            // Check validity of Boggle Board layout string.
+            if (args[2].ToUpper() == "NULL")
+                CustomBoard = null; 
+            else if (Regex.IsMatch(args[2].ToUpper(), @"^[A-Z]{16}$"))
                 CustomBoard = args[2];
-            }
             else
-                CustomBoard = null;            
+            {
+                Console.WriteLine("ERROR - Third argument must be a 16 letter string or 'null'.\nPress Enter to exit.\n");
+                return;
+            }
+
+            // Check validity of port number
+            if ((args[3].ToUpper() != "NULL") && !(int.TryParse(args[3], out port)))
+            {
+                Console.WriteLine("ERROR - Fourth argument must be a valid port number.\nPress Enter to exit.\n");
+                return;
+            }
+                       
 
             // THE BELOW WAS USED FOR THE DATABASE
             // Updates server gameId to match the count in database.
@@ -180,8 +181,16 @@ namespace BB
             //    GameId = Convert.ToInt32(command.ExecuteScalar());
             //}
 
-            // Begin listening for game connections on port 2000
-            server = new TcpListener(IPAddress.Any, port);
+            // Begin listening for game connections on port
+            try
+            {
+                server = new TcpListener(IPAddress.Any, port);
+            }
+            catch (Exception e)
+            {
+                Console.Write("EXCEPTION: " + e.Message + "\nPress Enter to exit.\n");
+                return;
+            }                                
             server.Start();
 
             // THE BELOW WAS USED FOR THE DATABASE
