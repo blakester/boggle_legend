@@ -13,7 +13,7 @@ The server (BoggleServer) or client (BoggleClient) can now be run depending on w
 
 # Repository Overview
 #### Boggle Client Installer
-You may build this project to generate a .msi file which will formally install the client. This project is not required to run the server or client.
+You may build this project to generate a .msi file which will formally install the client on Windows machines. This project is not required to run the server or client.
 (see the BoggleClientInstaller README for details)
 
 #### BoggleClient
