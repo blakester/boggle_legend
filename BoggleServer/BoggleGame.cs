@@ -65,8 +65,8 @@ namespace BB
             //deleteme = new Stopwatch();//**************************************************************************************************
 
             // Let Players know game is ready to start
-            one.Ss.BeginSend("READY " + two.Name + " " + BoggleServer.GameLength + "\n", ExceptionCheck, one);
-            two.Ss.BeginSend("READY " + one.Name + " " + BoggleServer.GameLength + "\n", ExceptionCheck, two);
+            one.Ss.BeginSend("READY " + BoggleServer.GameLength + " " + two.Name + "\n", ExceptionCheck, one);
+            two.Ss.BeginSend("READY " + BoggleServer.GameLength + " " + one.Name + "\n", ExceptionCheck, two);
 
             // Begin waiting for messages from the Players.
             one.Ss.BeginReceive(MessageReceived, one);

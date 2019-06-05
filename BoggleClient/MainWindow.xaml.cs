@@ -134,7 +134,6 @@ namespace BoggleClient
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 showRulesButton.IsEnabled = false;
             }
-            //serverIPTextBox.Focus(); // put cursor in server box
         }
 
 
@@ -256,9 +255,14 @@ namespace BoggleClient
             lengthTextBox.IsEnabled = true;
             setButton.IsEnabled = true;
             wins = losses = ties = 0;
-            opponentName = tokens[1];
-            lengthTextBox.Text = tokens[2];
-            infoBox.Text = "Your opponent is \"" + tokens[1] + "\".\n\n"
+            lengthTextBox.Text = tokens[1];
+            // reconstruct the space delimited tokens of the opponent's name
+            opponentName = "";
+            for (int i = 2; i < tokens.Length - 1; i++)
+                opponentName += (tokens[i] + " ");
+            opponentName += tokens[tokens.Length - 1];
+
+            infoBox.Text = "Your opponent is \"" + opponentName + "\".\n\n"
                 + "Chat or click Play to begin!";
         }
 
@@ -431,7 +435,7 @@ namespace BoggleClient
         {
             timeLeftBox.Text = s;
 
-            // IF I WANT A TIME RUNNING OUT SOUND...
+            // UNCOMMENT FOR TIME RUNNING OUT SOUND...
             //if ((int.Parse(s) <= 5) && (soundOffCheckBox.IsChecked == false)) 
             //    countSound2.Play();
         }
@@ -1071,6 +1075,6 @@ namespace BoggleClient
             pointFlashTimer.Dispose();
             opponentTypingTimer.Dispose();
             model.Terminate(false);
-        }    
+        }
     }
 }
