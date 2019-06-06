@@ -365,7 +365,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:BoggleClientModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:BoggleClientModel, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_ACE63E9CF46654B01383E9C9F777E4DC"
@@ -550,15 +550,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Boggle Legend Deluxe"
-        "ProductCode" = "8:{E2947DB5-F910-4634-9446-44A5A8F985D4}"
-        "PackageCode" = "8:{32BCA673-CBBF-43F4-A668-AE2AF13839D8}"
+        "ProductCode" = "8:{D27B3F97-4D70-490D-8A20-38731D78BB65}"
+        "PackageCode" = "8:{66F7D203-A17A-448C-B44D-0E0C8CE612E1}"
         "UpgradeCode" = "8:{64B16DEC-0D75-4026-BFA0-4E0F82F806C4}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:1.0.3"
         "Manufacturer" = "8:BurtMink Laboratories"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
